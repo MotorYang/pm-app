@@ -3,9 +3,13 @@ import { ref, onMounted } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Minus, FullScreenOne, Close, Home, Terminal, Setting, FolderOpen } from '@icon-park/vue-next'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
+import { useProjectsStore } from '@/stores/projects.js'
+import { useTauri } from '@/composables/useTauri'
 
 const appWindow = getCurrentWindow()
 const isMaximized = ref(false)
+const projectsStore = useProjectsStore()
+const tauri = useTauri()
 
 onMounted(async () => {
   isMaximized.value = await appWindow.isMaximized()
@@ -23,6 +27,16 @@ const handleMaximize = async () => {
 const handleClose = async () => {
   await appWindow.close()
 }
+
+const handleHomeClick = (id) => {
+  if (id === 'menu-home') {
+    projectsStore.setActiveProject(null)
+  } else if (id === 'menu-terminal') {
+    tauri.invokeCommand("open_terminal", null)
+  } else if (id === 'menu-folder') {
+    tauri.invokeCommand("open_in_file_explorer", null)
+  }
+}
 </script>
 
 <template>
@@ -35,16 +49,16 @@ const handleClose = async () => {
       <div class="vertical-divider"></div>
       <!-- 菜单工具栏 -->
       <div class="menu-tools">
-        <button >
+        <button @click="handleHomeClick('menu-home')">
           <Home :size="20" theme="outline" />
         </button>
-        <button >
+        <button @click="handleHomeClick('menu-terminal')">
           <Terminal :size="20" theme="outline" />
         </button>
-        <button >
+        <button @click="handleHomeClick('menu-folder')">
           <FolderOpen :size="20" theme="outline" />
         </button>
-        <button >
+        <button @click="handleHomeClick('menu-setting')">
           <Setting :size="20" theme="outline" />
         </button>
       </div>

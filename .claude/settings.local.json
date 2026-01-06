@@ -9,7 +9,8 @@
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
       "Bash(timeout /t 15)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(cat:*)"
     ]
   }
 }
