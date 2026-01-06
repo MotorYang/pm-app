@@ -54,7 +54,9 @@ const handleClick = (event) => {
     @click="handleClick"
   >
     <span v-if="loading" class="cartoon-loading"></span>
-    <slot v-else></slot>
+    <span v-else class="cartoon-btn-content">
+      <slot></slot>
+    </span>
   </button>
 </template>
 
@@ -75,6 +77,9 @@ const handleClick = (event) => {
   position: relative;
   overflow: hidden;
   white-space: nowrap;
+
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .cartoon-btn::before {
@@ -87,6 +92,17 @@ const handleClick = (event) => {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
   opacity: 0;
   transition: opacity var(--transition-fast);
+}
+
+.cartoon-btn-content {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+}
+
+.cartoon-btn svg,
+.cartoon-btn i {
+  display: block;
 }
 
 .cartoon-btn:hover:not(:disabled) {
@@ -111,7 +127,7 @@ const handleClick = (event) => {
 /* Variants */
 .cartoon-btn-primary {
   background-color: var(--color-primary);
-  color: var(--color-text-inverse);
+  color: white;
   border-color: var(--color-primary);
 }
 
@@ -135,7 +151,6 @@ const handleClick = (event) => {
 
 .cartoon-btn-ghost {
   background-color: transparent;
-  color: var(--color-text-primary);
   border-color: var(--color-border);
 }
 

@@ -17,6 +17,8 @@ export const useProjectsStore = defineStore('projects', () => {
 
   const projectCount = computed(() => projects.value.length)
 
+  const activeProjectName = computed(() => activeProject.value?.name || '未选择项目')
+
   // Database connection
   let db = null
   async function getDb() {
@@ -91,10 +93,14 @@ export const useProjectsStore = defineStore('projects', () => {
       try {
         const database = await getDb()
         await database.execute(
-          'UPDATE projects SET last_accessed = CURRENT_TIMESTAMP WHERE id = ?',
-          [id]
+            'UPDATE projects SET last_accessed = CURRENT_TIMESTAMP WHERE id = ?',
+            [id]
         )
-        await loadProjects() // Reload to update the sort order
+        // 只更新当前项目的 last_accessed，不重新排序整个列表
+        const project = projects.value.find(p => p.id === id)
+        if (project) {
+          project.last_accessed = new Date().toISOString()
+        }
       } catch (e) {
         console.error('Failed to update access time:', e)
       }
@@ -109,6 +115,7 @@ export const useProjectsStore = defineStore('projects', () => {
     // State
     projects,
     activeProjectId,
+    activeProjectName,
     loading,
     error,
 

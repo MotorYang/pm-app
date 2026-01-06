@@ -101,7 +101,7 @@ const handleDeleteProject = async (project) => {
 
 <style scoped>
 .app-sidebar {
-  width: 280px;
+  width: 250px;
   height: 100%;
   background-color: var(--color-bg-secondary);
   border-right: var(--border-width) solid var(--color-border);
@@ -123,7 +123,7 @@ const handleDeleteProject = async (project) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
-  min-height: 60px;
+  height: 48px;
 }
 
 .collapsed .sidebar-header {
@@ -143,6 +143,7 @@ const handleDeleteProject = async (project) => {
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .toggle-btn:hover {

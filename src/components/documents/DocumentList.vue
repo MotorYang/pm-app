@@ -217,6 +217,7 @@ const handleCloseRenameModal = () => {
 }
 
 .document-list-header {
+  height: 48px;
   padding: var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border);
   display: flex;

@@ -31,11 +31,11 @@ const handleDelete = (e) => {
 
 <template>
   <CartoonCard
-    hoverable
-    shadow="sm"
-    :padding="collapsed ? 'xs' : 'sm'"
-    :class="['project-card', { 'project-card-active': active, 'project-card-collapsed': collapsed }]"
-    @click="handleClick"
+      hoverable
+      shadow="sm"
+      :padding="collapsed ? 'none' : 'sm'"
+      :class="['project-card', { 'project-card-active': active, 'project-card-collapsed': collapsed }]"
+      @click="handleClick"
   >
     <div class="project-content" :class="{ collapsed }">
       <div class="project-icon" :style="{ color: project.color }" :title="collapsed ? project.name : ''">
@@ -46,10 +46,10 @@ const handleDelete = (e) => {
         <p class="project-path">{{ project.path }}</p>
       </div>
       <button
-        v-if="!collapsed"
-        class="project-delete-btn"
-        @click="handleDelete"
-        title="删除项目"
+          v-if="!collapsed"
+          class="project-delete-btn"
+          @click="handleDelete"
+          title="删除项目"
       >
         <Delete :size="16" theme="outline" />
       </button>
@@ -67,6 +67,9 @@ const handleDelete = (e) => {
 .project-card-collapsed {
   width: 44px;
   height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .project-card-active {
@@ -81,7 +84,10 @@ const handleDelete = (e) => {
 }
 
 .project-content.collapsed {
+  width: 100%;
+  height: 100%;
   justify-content: center;
+  align-items: center;
   gap: 0;
 }
 
@@ -90,11 +96,21 @@ const handleDelete = (e) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 0; /* 移除行高影响 */
+}
+
+/* 修正图标垂直对齐 */
+.project-icon :deep(svg) {
+  display: block;
+  vertical-align: middle;
 }
 
 .project-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .project-name {
@@ -105,6 +121,7 @@ const handleDelete = (e) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.4;
 }
 
 .project-path {
@@ -114,6 +131,7 @@ const handleDelete = (e) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.4;
 }
 
 .project-delete-btn {
@@ -130,8 +148,12 @@ const handleDelete = (e) => {
   cursor: pointer;
   opacity: 0;
   transition: opacity var(--transition-fast),
-              background-color var(--transition-fast),
-              color var(--transition-fast);
+  background-color var(--transition-fast),
+  color var(--transition-fast);
+}
+
+.project-delete-btn :deep(svg) {
+  display: block;
 }
 
 .project-card:hover .project-delete-btn {

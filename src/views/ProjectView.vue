@@ -4,33 +4,16 @@ import { FileText, Github, SolidStateDisk, Lock } from '@icon-park/vue-next'
 import CartoonTabs from '@/components/ui/CartoonTabs.vue'
 import CartoonTab from '@/components/ui/CartoonTab.vue'
 import DocumentsView from './DocumentsView.vue'
+import { useProjectsStore } from '@/stores/projects.js'
 
 const activeTab = ref('documents')
+const projectsStore = useProjectsStore()
+
 </script>
 
 <template>
   <div class="project-view">
-    <CartoonTabs v-model="activeTab">
-      <CartoonTab name="documents" label="文档库" :icon="FileText">
-        <DocumentsView />
-      </CartoonTab>
-
-      <CartoonTab name="git" label="Git" :icon="Github">
-        <div class="placeholder">
-          <h2>Git 集成</h2>
-          <p>查看项目的Git状态和提交历史</p>
-          <p class="hint">将在阶段4实现</p>
-        </div>
-      </CartoonTab>
-
-      <CartoonTab name="files" label="文件统计" :icon="SolidStateDisk">
-        <div class="placeholder">
-          <h2>文件统计</h2>
-          <p>分析和可视化项目文件占用情况</p>
-          <p class="hint">将在阶段5实现</p>
-        </div>
-      </CartoonTab>
-
+    <CartoonTabs v-model="activeTab" :title="projectsStore.activeProjectName">
       <CartoonTab name="vault" label="保险箱" :icon="Lock">
         <div class="placeholder">
           <h2>安全保险箱</h2>
@@ -38,6 +21,24 @@ const activeTab = ref('documents')
           <p class="hint">将在阶段6实现</p>
         </div>
       </CartoonTab>
+      <CartoonTab name="files" label="文件统计" :icon="SolidStateDisk">
+        <div class="placeholder">
+          <h2>文件统计</h2>
+          <p>分析和可视化项目文件占用情况</p>
+          <p class="hint">将在阶段5实现</p>
+        </div>
+      </CartoonTab>
+      <CartoonTab name="git" label="版本管理" :icon="Github">
+        <div class="placeholder">
+          <h2>Git 集成</h2>
+          <p>查看项目的Git状态和提交历史</p>
+          <p class="hint">将在阶段4实现</p>
+        </div>
+      </CartoonTab>
+      <CartoonTab name="documents" label="文档库" :icon="FileText">
+        <DocumentsView />
+      </CartoonTab>
+
     </CartoonTabs>
   </div>
 </template>

@@ -125,7 +125,7 @@ const handleCloseModal = () => {
 }
 
 .documents-sidebar {
-  width: 280px;
+  width: 200px;
   height: 100%;
   border-right: var(--border-width) solid var(--color-border);
   flex-shrink: 0;
