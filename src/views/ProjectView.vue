@@ -4,6 +4,7 @@ import { FileText, Github, SolidStateDisk, Lock } from '@icon-park/vue-next'
 import CartoonTabs from '@/components/ui/CartoonTabs.vue'
 import CartoonTab from '@/components/ui/CartoonTab.vue'
 import DocumentsView from './DocumentsView.vue'
+import FilesView from './FilesView.vue'
 import { useProjectsStore } from '@/stores/projects.js'
 
 const activeTab = ref('documents')
@@ -22,11 +23,7 @@ const projectsStore = useProjectsStore()
         </div>
       </CartoonTab>
       <CartoonTab name="files" label="文件统计" :icon="SolidStateDisk">
-        <div class="placeholder">
-          <h2>文件统计</h2>
-          <p>分析和可视化项目文件占用情况</p>
-          <p class="hint">将在阶段5实现</p>
-        </div>
+        <FilesView />
       </CartoonTab>
       <CartoonTab name="git" label="版本管理" :icon="Github">
         <div class="placeholder">

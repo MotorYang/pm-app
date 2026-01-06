@@ -6,6 +6,7 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "shell:allow-execute",
     "core:window:allow-close",
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
@@ -13,8 +14,39 @@
     "sql:default",
     "sql:allow-load",
     "sql:allow-execute",
-    "fs:read-all",
-    "fs:write-all",
-    "fs:allow-write-text-file"
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-stat",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    "fs:allow-write-text-file",
+    "fs:allow-write-file"
   ]
 }
