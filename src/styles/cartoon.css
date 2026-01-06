@@ -96,11 +96,6 @@
               box-shadow var(--transition-normal);
 }
 
-.cartoon-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
 .cartoon-card-header {
   display: flex;
   align-items: center;

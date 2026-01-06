@@ -2,7 +2,7 @@
 import { onMounted, watch } from 'vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useFilesStore } from '@/stores/files'
-import { Analysis } from '@icon-park/vue-next'
+import { Refresh } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import FileTypeStats from '@/components/files/FileTypeStats.vue'
 import LargestFiles from '@/components/files/LargestFiles.vue'
@@ -34,12 +34,6 @@ const analyzeCurrentProject = async () => {
 <template>
   <div class="files-view">
     <div class="files-header">
-      <div class="header-info">
-        <h2 class="view-title">文件统计</h2>
-        <p v-if="projectsStore.activeProject" class="project-path">
-          {{ projectsStore.activeProject.path }}
-        </p>
-      </div>
       <CartoonButton
         v-if="projectsStore.activeProject"
         variant="primary"
@@ -47,8 +41,7 @@ const analyzeCurrentProject = async () => {
         :loading="filesStore.loading"
         :disabled="filesStore.loading"
       >
-        <Analysis :size="16" theme="outline" />
-        重新分析
+        <Refresh :size="16" theme="outline" />
       </CartoonButton>
     </div>
 
@@ -108,11 +101,13 @@ const analyzeCurrentProject = async () => {
 }
 
 .files-header {
+  height: 48px;
   padding: var(--spacing-lg);
   border-bottom: var(--border-width) solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: row-reverse;
   gap: var(--spacing-md);
   background-color: var(--color-bg-secondary);
 }

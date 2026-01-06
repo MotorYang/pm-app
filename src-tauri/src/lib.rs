@@ -22,7 +22,15 @@ pub fn run() {
         /* 绑定命令 */
         .invoke_handler(tauri::generate_handler![
             commands::terminal::open_terminal,
-            commands::folder::open_in_file_explorer
+            commands::folder::open_in_file_explorer,
+            commands::git::git_is_repository,
+            commands::git::git_get_current_branch,
+            commands::git::git_get_branches,
+            commands::git::git_get_commits,
+            commands::git::git_get_commit_detail,
+            commands::git::git_checkout_branch,
+            commands::git::git_get_status,
+            commands::git::git_get_remotes,
             ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

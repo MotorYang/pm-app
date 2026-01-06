@@ -2,3 +2,4 @@
 // pub mod projects;
 pub mod terminal;
 pub mod folder;
+pub mod git;

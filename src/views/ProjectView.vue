@@ -5,6 +5,7 @@ import CartoonTabs from '@/components/ui/CartoonTabs.vue'
 import CartoonTab from '@/components/ui/CartoonTab.vue'
 import DocumentsView from './DocumentsView.vue'
 import FilesView from './FilesView.vue'
+import GitView from './GitView.vue'
 import { useProjectsStore } from '@/stores/projects.js'
 
 const activeTab = ref('documents')
@@ -26,11 +27,7 @@ const projectsStore = useProjectsStore()
         <FilesView />
       </CartoonTab>
       <CartoonTab name="git" label="版本管理" :icon="Github">
-        <div class="placeholder">
-          <h2>Git 集成</h2>
-          <p>查看项目的Git状态和提交历史</p>
-          <p class="hint">将在阶段4实现</p>
-        </div>
+        <GitView />
       </CartoonTab>
       <CartoonTab name="documents" label="文档库" :icon="FileText">
         <DocumentsView />
