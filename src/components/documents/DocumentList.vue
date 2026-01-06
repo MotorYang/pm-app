@@ -5,9 +5,10 @@ import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import { useDocumentsStore } from '@/stores/documents'
+import { useConfirm } from "@/composables/useConfirm.js";
 
 const documentsStore = useDocumentsStore()
-
+const confirmDialog = useConfirm()
 const emit = defineEmits(['create'])
 
 const showRenameModal = ref(false)
@@ -45,14 +46,20 @@ const handleCreate = () => {
 const handleDelete = async (doc, event) => {
   event.stopPropagation()
 
-  if (!confirm(`确定要删除文档"${doc.title}.md"吗？`)) {
-    return
-  }
+  const result = await confirmDialog({
+    title: '删除文档',
+    message: `确定要删除文档"${doc.title}.md"吗？`,
+    danger: true,
+    confirmText: '删除',
+    cancelText: '取消'
+  })
 
-  try {
-    await documentsStore.deleteDocument(doc.id)
-  } catch (e) {
-    alert('删除失败: ' + (e.message || '未知错误'))
+  if (result) {
+    try {
+      await documentsStore.deleteDocument(doc.id)
+    } catch (e) {
+      alert('删除失败: ' + (e.message || '未知错误'))
+    }
   }
 }
 
