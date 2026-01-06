@@ -169,8 +169,16 @@ const handleRefresh = async () => {
   min-height: 0;
 }
 
+.commit-list,
+.commit-detail {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .commit-list-card,
 .commit-detail-card {
+  min-width: 0;
   min-height: 0;
   height: 100%;
 }

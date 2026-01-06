@@ -43,6 +43,7 @@ pub fn run() {
             commands::vault::vault_encrypt_entry,
             commands::vault::vault_decrypt_entry,
             commands::vault::vault_generate_password,
+            commands::editor::open_in_editor,
             ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

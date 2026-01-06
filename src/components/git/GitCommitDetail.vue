@@ -1,10 +1,18 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { FileText, User, Time, Code } from '@icon-park/vue-next'
 import { useGitStore } from '@/stores/git'
+import { useSettingsStore } from '@/stores/settings'
+import { useProjectsStore } from '@/stores/projects'
+import { invoke } from '@tauri-apps/api/core'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
 const gitStore = useGitStore()
+const settingsStore = useSettingsStore()
+const projectsStore = useProjectsStore()
+
+const showEditorWarning = ref(false)
 
 const commit = computed(() => gitStore.currentCommit)
 
@@ -39,6 +47,37 @@ const getStatusColor = (status) => {
       return 'var(--color-accent)'
     default:
       return 'var(--color-text-secondary)'
+  }
+}
+
+// Load settings on mount
+settingsStore.loadSettings()
+
+// Handle file click
+const handleFileClick = async (filename) => {
+  // Check if editor is configured
+  if (!settingsStore.editorPath) {
+    showEditorWarning.value = true
+    return
+  }
+
+  // Build full file path
+  const projectPath = projectsStore.activeProject?.path
+  if (!projectPath) {
+    console.error('No active project')
+    return
+  }
+
+  const filePath = `${projectPath}/${filename}`
+
+  try {
+    await invoke('open_in_editor', {
+      editorPath: settingsStore.editorPath,
+      filePath: filePath
+    })
+  } catch (err) {
+    console.error('Failed to open file in editor:', err)
+    alert('打开文件失败: ' + err)
   }
 }
 </script>
@@ -107,7 +146,13 @@ const getStatusColor = (status) => {
                   <span class="file-status" :style="{ color: getStatusColor(file.status) }">
                     {{ getStatusIcon(file.status) }}
                   </span>
-                  <span class="file-name">{{ file.filename }}</span>
+                  <span
+                    class="file-name clickable"
+                    @click="handleFileClick(file.filename)"
+                    :title="'点击在编辑器中打开: ' + file.filename"
+                  >
+                    {{ file.filename }}
+                  </span>
                 </div>
                 <div class="file-stats">
                   <span v-if="file.additions > 0" class="additions">
@@ -123,6 +168,16 @@ const getStatusColor = (status) => {
         </div>
       </div>
     </div>
+
+    <!-- Editor Warning Dialog -->
+    <ConfirmDialog
+      v-model:open="showEditorWarning"
+      title="未设置编辑器"
+      message="您还没有设置默认编辑器，请先在设置中配置编辑器路径。"
+      confirm-text="去设置"
+      cancel-text="取消"
+      @confirm="$router ? $router.push('/settings') : null"
+    />
   </CartoonCard>
 </template>
 
@@ -131,11 +186,14 @@ const getStatusColor = (status) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .commit-detail-card :deep(.cartoon-card-body) {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -144,6 +202,7 @@ const getStatusColor = (status) => {
 .commit-detail-wrapper {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -154,6 +213,7 @@ const getStatusColor = (status) => {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 .no-selection {
@@ -170,6 +230,7 @@ const getStatusColor = (status) => {
 .detail-content {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -184,6 +245,7 @@ const getStatusColor = (status) => {
   padding-bottom: var(--spacing-md);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .commit-subject {
@@ -206,16 +268,21 @@ const getStatusColor = (status) => {
   gap: var(--spacing-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  min-width: 0;
 }
 
 .label {
   font-weight: var(--font-weight-medium);
   min-width: 60px;
+  flex-shrink: 0;
 }
 
 .value {
   flex: 1;
+  min-width: 0;
   color: var(--color-text-primary);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .value.hash {
@@ -260,7 +327,7 @@ const getStatusColor = (status) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .section-title {
@@ -284,6 +351,7 @@ const getStatusColor = (status) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  min-width: 0;
 }
 
 .file-item {
@@ -295,6 +363,8 @@ const getStatusColor = (status) => {
   border-radius: var(--border-radius-md);
   background-color: var(--color-bg-tertiary);
   transition: all var(--transition-fast);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .file-item:hover {
@@ -324,8 +394,40 @@ const getStatusColor = (status) => {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 自定义滚动条样式 */
+.file-name::-webkit-scrollbar {
+  height: 4px;
+}
+
+.file-name::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+  border-radius: 2px;
+}
+
+.file-name::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+.file-name::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+.file-name.clickable {
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.file-name.clickable:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
 }
 
 .file-stats {

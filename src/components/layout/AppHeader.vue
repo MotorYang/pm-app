@@ -3,11 +3,13 @@ import { ref, onMounted } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Minus, FullScreenOne, Close, Home, Terminal, Setting, FolderOpen } from '@icon-park/vue-next'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
+import SettingsModal from '@/components/settings/SettingsModal.vue'
 import { useProjectsStore } from '@/stores/projects.js'
 import { useTauri } from '@/composables/useTauri'
 
 const appWindow = getCurrentWindow()
 const isMaximized = ref(false)
+const showSettings = ref(false)
 const projectsStore = useProjectsStore()
 const tauri = useTauri()
 
@@ -35,6 +37,8 @@ const handleHomeClick = (id) => {
     tauri.invokeCommand("open_terminal", null)
   } else if (id === 'menu-folder') {
     tauri.invokeCommand("open_in_file_explorer", null)
+  } else if (id === 'menu-setting') {
+    showSettings.value = true
   }
 }
 </script>
@@ -93,6 +97,9 @@ const handleHomeClick = (id) => {
         </button>
       </div>
     </div>
+
+    <!-- Settings Modal -->
+    <SettingsModal v-model:show="showSettings" @close="showSettings = false" />
   </header>
 </template>
 
