@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Plus } from '@icon-park/vue-next'
+import { Plus, MenuFold, MenuUnfold } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import ProjectCard from '@/components/projects/ProjectCard.vue'
 import AddProjectModal from '@/components/projects/AddProjectModal.vue'
@@ -11,9 +11,25 @@ const projectsStore = useProjectsStore()
 const confirmDialog = useConfirm()
 const showAddModal = ref(false)
 
+// Sidebar collapse state
+const isCollapsed = ref(false)
+
+// Load collapse state from localStorage
+onMounted(() => {
+  const savedState = localStorage.getItem('sidebar-collapsed')
+  if (savedState !== null) {
+    isCollapsed.value = savedState === 'true'
+  }
+})
+
 onMounted(() => {
   projectsStore.loadProjects()
 })
+
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+  localStorage.setItem('sidebar-collapsed', isCollapsed.value.toString())
+}
 
 const handleProjectClick = (project) => {
   projectsStore.setActiveProject(project.id)
@@ -35,10 +51,15 @@ const handleDeleteProject = async (project) => {
 </script>
 
 <template>
-  <aside class="app-sidebar">
+  <aside class="app-sidebar" :class="{ collapsed: isCollapsed }">
     <div class="sidebar-header">
-      <h3 class="sidebar-title">项目列表</h3>
+      <button class="toggle-btn" @click="toggleCollapse" :title="isCollapsed ? '展开侧边栏' : '收缩侧边栏'">
+        <MenuUnfold v-if="isCollapsed" :size="20" theme="outline" />
+        <MenuFold v-else :size="20" theme="outline" />
+      </button>
+      <h3 v-if="!isCollapsed" class="sidebar-title">项目列表</h3>
       <CartoonButton
+        v-if="!isCollapsed"
         variant="primary"
         size="sm"
         @click="showAddModal = true"
@@ -49,11 +70,11 @@ const handleDeleteProject = async (project) => {
     </div>
 
     <div class="sidebar-content">
-      <div v-if="projectsStore.loading" class="sidebar-loading">
+      <div v-if="projectsStore.loading && !isCollapsed" class="sidebar-loading">
         加载中...
       </div>
 
-      <div v-else-if="projectsStore.projects.length === 0" class="sidebar-empty">
+      <div v-else-if="projectsStore.projects.length === 0 && !isCollapsed" class="sidebar-empty">
         <p>还没有项目</p>
         <p class="empty-hint">点击上方按钮添加项目</p>
       </div>
@@ -64,6 +85,7 @@ const handleDeleteProject = async (project) => {
           :key="project.id"
           :project="project"
           :active="project.id === projectsStore.activeProjectId"
+          :collapsed="isCollapsed"
           @click="handleProjectClick"
           @delete="handleDeleteProject"
         />
@@ -86,6 +108,12 @@ const handleDeleteProject = async (project) => {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  transition: width var(--transition-normal);
+  overflow: hidden;
+}
+
+.app-sidebar.collapsed {
+  width: 60px;
 }
 
 .sidebar-header {
@@ -95,6 +123,31 @@ const handleDeleteProject = async (project) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
+  min-height: 60px;
+}
+
+.collapsed .sidebar-header {
+  justify-content: center;
+  padding: var(--spacing-md) var(--spacing-sm);
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.toggle-btn:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
 }
 
 .sidebar-title {
@@ -102,12 +155,19 @@ const handleDeleteProject = async (project) => {
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-md);
+}
+
+.collapsed .sidebar-content {
+  padding: var(--spacing-sm);
 }
 
 .sidebar-loading {
@@ -135,5 +195,9 @@ const handleDeleteProject = async (project) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+}
+
+.collapsed .projects-list {
+  align-items: center;
 }
 </style>

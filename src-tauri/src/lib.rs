@@ -9,6 +9,12 @@ pub fn run() {
             description: "create initial tables",
             sql: include_str!("../migrations/001_init.sql"),
             kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "add documents table",
+            sql: include_str!("../migrations/002_add_documents.sql"),
+            kind: MigrationKind::Up,
         }
     ];
 

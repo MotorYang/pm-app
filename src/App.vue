@@ -3,8 +3,9 @@ import { computed } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
+import ProjectView from '@/views/ProjectView.vue'
 import { useProjectsStore } from '@/stores/projects'
-import { FolderPlus, FileText, Github, SolidStateDisk ,Lock } from '@icon-park/vue-next'
+import { FolderPlus, FileText, Github, SolidStateDisk, Lock } from '@icon-park/vue-next'
 
 const projectsStore = useProjectsStore()
 
@@ -83,20 +84,7 @@ const hasActiveProject = computed(() => projectsStore.activeProject !== null)
       </div>
 
       <!-- Project view when a project is selected -->
-      <div v-else class="project-section">
-        <h2 class="project-title">{{ projectsStore.activeProject.name }}</h2>
-        <p class="project-path">{{ projectsStore.activeProject.path }}</p>
-
-        <div class="features-placeholder">
-          <p>项目功能将在后续阶段实现：</p>
-          <ul>
-            <li>Markdown文档库</li>
-            <li>Git状态查看</li>
-            <li>文件占用统计</li>
-            <li>保险箱</li>
-          </ul>
-        </div>
-      </div>
+      <ProjectView v-else />
     </AppLayout>
   </div>
 </template>
@@ -109,8 +97,7 @@ const hasActiveProject = computed(() => projectsStore.activeProject !== null)
   flex-direction: column;
 }
 
-.welcome-section,
-.project-section {
+.welcome-section {
   padding: var(--spacing-xl);
   max-width: 1200px;
   margin: 0 auto;
@@ -184,43 +171,6 @@ const hasActiveProject = computed(() => projectsStore.activeProject !== null)
 .info-text {
   font-size: var(--font-size-md);
   color: var(--color-text-secondary);
-  margin: var(--spacing-sm) 0;
-}
-
-/* Project section */
-.project-title {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-xs);
-}
-
-.project-path {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  margin-bottom: var(--spacing-xl);
-}
-
-.features-placeholder {
-  padding: var(--spacing-xl);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--border-radius-lg);
-  border: var(--border-width) solid var(--color-border);
-}
-
-.features-placeholder p {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-md);
-}
-
-.features-placeholder ul {
-  list-style: disc;
-  padding-left: var(--spacing-xl);
-  color: var(--color-text-secondary);
-}
-
-.features-placeholder li {
   margin: var(--spacing-sm) 0;
 }
 </style>

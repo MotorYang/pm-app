@@ -10,6 +10,10 @@ const props = defineProps({
   active: {
     type: Boolean,
     default: false
+  },
+  collapsed: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -29,19 +33,20 @@ const handleDelete = (e) => {
   <CartoonCard
     hoverable
     shadow="sm"
-    padding="sm"
-    :class="['project-card', { 'project-card-active': active }]"
+    :padding="collapsed ? 'xs' : 'sm'"
+    :class="['project-card', { 'project-card-active': active, 'project-card-collapsed': collapsed }]"
     @click="handleClick"
   >
-    <div class="project-content">
-      <div class="project-icon" :style="{ color: project.color }">
-        <FolderOpen :size="24" theme="filled" />
+    <div class="project-content" :class="{ collapsed }">
+      <div class="project-icon" :style="{ color: project.color }" :title="collapsed ? project.name : ''">
+        <FolderOpen :size="collapsed ? 20 : 24" theme="filled" />
       </div>
-      <div class="project-info">
+      <div v-if="!collapsed" class="project-info">
         <h4 class="project-name">{{ project.name }}</h4>
         <p class="project-path">{{ project.path }}</p>
       </div>
       <button
+        v-if="!collapsed"
         class="project-delete-btn"
         @click="handleDelete"
         title="删除项目"
@@ -59,6 +64,11 @@ const handleDelete = (e) => {
   border-radius: 5px;
 }
 
+.project-card-collapsed {
+  width: 44px;
+  height: 44px;
+}
+
 .project-card-active {
   border-color: var(--color-primary);
   background-color: var(--color-bg-tertiary);
@@ -70,8 +80,16 @@ const handleDelete = (e) => {
   gap: var(--spacing-sm);
 }
 
+.project-content.collapsed {
+  justify-content: center;
+  gap: 0;
+}
+
 .project-icon {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .project-info {
