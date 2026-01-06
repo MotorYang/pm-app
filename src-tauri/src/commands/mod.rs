@@ -3,3 +3,4 @@
 pub mod terminal;
 pub mod folder;
 pub mod git;
+pub mod vault;

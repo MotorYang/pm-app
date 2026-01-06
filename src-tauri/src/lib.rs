@@ -1,5 +1,6 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 mod commands;
+mod crypto;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -14,6 +15,12 @@ pub fn run() {
             version: 2,
             description: "add documents table",
             sql: include_str!("../migrations/002_add_documents.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 3,
+            description: "add vault tables",
+            sql: include_str!("../migrations/003_add_vault.sql"),
             kind: MigrationKind::Up,
         }
     ];
@@ -31,6 +38,11 @@ pub fn run() {
             commands::git::git_checkout_branch,
             commands::git::git_get_status,
             commands::git::git_get_remotes,
+            commands::vault::vault_hash_password,
+            commands::vault::vault_verify_master,
+            commands::vault::vault_encrypt_entry,
+            commands::vault::vault_decrypt_entry,
+            commands::vault::vault_generate_password,
             ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

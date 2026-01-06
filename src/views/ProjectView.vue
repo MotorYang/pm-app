@@ -6,6 +6,7 @@ import CartoonTab from '@/components/ui/CartoonTab.vue'
 import DocumentsView from './DocumentsView.vue'
 import FilesView from './FilesView.vue'
 import GitView from './GitView.vue'
+import VaultView from './VaultView.vue'
 import { useProjectsStore } from '@/stores/projects.js'
 
 const activeTab = ref('documents')
@@ -17,11 +18,7 @@ const projectsStore = useProjectsStore()
   <div class="project-view">
     <CartoonTabs v-model="activeTab" :title="projectsStore.activeProjectName">
       <CartoonTab name="vault" label="保险箱" :icon="Lock">
-        <div class="placeholder">
-          <h2>安全保险箱</h2>
-          <p>加密存储账号密码等敏感信息</p>
-          <p class="hint">将在阶段6实现</p>
-        </div>
+        <VaultView />
       </CartoonTab>
       <CartoonTab name="files" label="文件统计" :icon="SolidStateDisk">
         <FilesView />
