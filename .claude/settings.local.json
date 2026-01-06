@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run tauri:*)",
+      "Bash(timeout /t 10)",
+      "Bash(copy srcApp-backup.vue srcApp.vue)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 15)",
+      "Bash(ping:*)"
+    ]
+  }
+}
