@@ -122,13 +122,14 @@ watch(renderedHtml, async () => {
 
 .preview-header {
   height: 48px;
-  padding: var(--spacing-md);
+  padding-left: var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border);
   background-color: var(--color-bg-secondary);
 }
 
 .preview-title {
   font-size: var(--font-size-md);
+  line-height: 48px;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }

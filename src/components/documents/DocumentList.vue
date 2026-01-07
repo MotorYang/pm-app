@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { FileText, FolderOpen, Plus, Delete, Edit } from '@icon-park/vue-next'
+import { FolderOpen, Plus, Delete, Edit } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import { useDocumentsStore } from '@/stores/documents'
-import { useConfirm } from "@/composables/useConfirm.js";
+import { useConfirm } from '@/composables/useConfirm.js'
 
 const documentsStore = useDocumentsStore()
 const confirmDialog = useConfirm()
@@ -143,7 +143,6 @@ const handleCloseRenameModal = () => {
               :class="{ active: doc.id === documentsStore.activeDocumentId }"
               @click="handleDocumentClick(doc)"
             >
-              <FileText :size="14" theme="outline" />
               <span class="document-name">{{ doc.title }}.md</span>
               <span
                 v-if="documentsStore.hasUnsavedChanges && doc.id === documentsStore.activeDocumentId"

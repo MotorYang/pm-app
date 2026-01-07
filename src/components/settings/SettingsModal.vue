@@ -98,13 +98,6 @@ const handleClose = () => {
               浏览
             </CartoonButton>
           </div>
-
-          <p class="form-hint hint-example">
-            常用编辑器路径示例：<br>
-            VS Code: <code>C:\Program Files\Microsoft VS Code\Code.exe</code><br>
-            Notepad++: <code>C:\Program Files\Notepad++\notepad++.exe</code><br>
-            Sublime Text: <code>C:\Program Files\Sublime Text\sublime_text.exe</code>
-          </p>
         </div>
       </div>
 
@@ -165,22 +158,6 @@ const handleClose = () => {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
-}
-
-.form-hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.hint-example code {
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: var(--font-size-xs);
-  background-color: var(--color-bg-tertiary);
-  padding: 2px 4px;
-  border-radius: var(--border-radius-sm);
-  color: var(--color-accent);
 }
 
 .input-with-button {

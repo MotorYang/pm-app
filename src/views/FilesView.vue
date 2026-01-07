@@ -34,15 +34,15 @@ const analyzeCurrentProject = async () => {
 <template>
   <div class="files-view">
     <div class="files-header">
-      <CartoonButton
-        v-if="projectsStore.activeProject"
-        variant="primary"
-        @click="analyzeCurrentProject"
-        :loading="filesStore.loading"
-        :disabled="filesStore.loading"
+      <button
+          v-if="projectsStore.activeProject"
+          class="header-button"
+          @click="analyzeCurrentProject"
+          :disabled="filesStore.loading"
+          :title="filesStore.loading ? '刷新中...' : '刷新'"
       >
-        <Refresh :size="16" theme="outline" />
-      </CartoonButton>
+        <Refresh :size="18" theme="outline" :class="{ spinning: filesStore.loading }" />
+      </button>
     </div>
 
     <div v-if="!projectsStore.activeProject" class="files-empty">
@@ -128,6 +128,53 @@ const analyzeCurrentProject = async () => {
   color: var(--color-text-tertiary);
   margin: 0;
 }
+
+.header-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.header-button:hover:not(:disabled) {
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.header-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.header-button .badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
 
 .files-content {
   flex: 1;

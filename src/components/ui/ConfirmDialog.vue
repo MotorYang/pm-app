@@ -179,6 +179,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
 .danger-btn {
   background-color: var(--color-danger);
+  color: white;
   border: none;
 }
 .danger-btn:hover:not(:disabled) {

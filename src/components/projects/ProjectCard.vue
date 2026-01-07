@@ -144,7 +144,7 @@ const handleDelete = (e) => {
   border-radius: var(--border-radius-sm);
   background: transparent;
   border: none;
-  color: var(--color-text-tertiary);
+  color: white;
   cursor: pointer;
   opacity: 0;
   transition: opacity var(--transition-fast),
@@ -162,6 +162,5 @@ const handleDelete = (e) => {
 
 .project-delete-btn:hover {
   background-color: var(--color-danger);
-  color: var(--color-text-inverse);
 }
 </style>

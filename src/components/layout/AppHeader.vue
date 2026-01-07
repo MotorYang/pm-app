@@ -53,16 +53,16 @@ const handleHomeClick = (id) => {
       <div class="vertical-divider"></div>
       <!-- 菜单工具栏 -->
       <div class="menu-tools">
-        <button @click="handleHomeClick('menu-home')">
+        <button @click="handleHomeClick('menu-home')" title="主页">
           <Home :size="20" theme="outline" />
         </button>
-        <button @click="handleHomeClick('menu-terminal')">
+        <button @click="handleHomeClick('menu-terminal')" title="终端">
           <Terminal :size="20" theme="outline" />
         </button>
-        <button @click="handleHomeClick('menu-folder')">
+        <button @click="handleHomeClick('menu-folder')" title="资源管理器">
           <FolderOpen :size="20" theme="outline" />
         </button>
-        <button @click="handleHomeClick('menu-setting')">
+        <button @click="handleHomeClick('menu-setting')" title="设置">
           <Setting :size="20" theme="outline" />
         </button>
       </div>

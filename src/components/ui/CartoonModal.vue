@@ -33,6 +33,7 @@ const handleClose = () => {
   emit('close')
 }
 
+/* 点击遮罩关闭弹窗 */
 const handleBackdropClick = () => {
   if (props.closeOnClickOutside) {
     handleClose()
@@ -66,7 +67,7 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="open" class="modal-backdrop" @click="handleBackdropClick">
+      <div v-if="open" class="modal-backdrop">
         <Transition name="modal-slide">
           <div
             v-if="open"

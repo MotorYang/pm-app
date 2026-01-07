@@ -57,13 +57,13 @@ const handleInitialized = async () => {
 <template>
   <div class="vault-view">
     <div class="vault-header">
-      <CartoonButton
-        v-if="vaultStore.isUnlocked"
-        variant="danger"
-        @click="handleLock"
+      <button
+          v-if="vaultStore.isUnlocked"
+          class="header-button"
+          @click="handleLock"
       >
-        <Lock :size="16" theme="outline" />
-      </CartoonButton>
+        <Lock :size="18" theme="outline" />
+      </button>
     </div>
 
     <div v-if="!projectsStore.activeProject" class="vault-empty">
@@ -138,6 +138,52 @@ const handleInitialized = async () => {
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+.header-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-bg-primary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.header-button:hover:not(:disabled) {
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.header-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.header-button .badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: badge-pulse 2s ease-in-out infinite;
 }
 
 @keyframes spin {

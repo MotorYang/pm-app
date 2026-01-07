@@ -83,7 +83,7 @@ watch(() => props.show, (newVal) => {
 }
 
 .modal-container {
-  background-color: var(--color-bg-primary);
+  background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
   max-width: 600px;

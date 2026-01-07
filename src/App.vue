@@ -1,13 +1,22 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import CartoonCard from '@/components/ui/CartoonCard.vue'
 import ProjectView from '@/views/ProjectView.vue'
+import ShortcutCard from '@/components/shortcuts/ShortcutCard.vue'
+import ShortcutDialog from '@/components/shortcuts/ShortcutDialog.vue'
 import { useProjectsStore } from '@/stores/projects'
-import { FolderPlus, FileText, Github, SolidStateDisk, Lock } from '@icon-park/vue-next'
+import { useShortcutsStore } from '@/stores/shortcuts'
+import { useConfirm } from '@/composables/useConfirm'
+import { FolderPlus, FileText, Github, SolidStateDisk, Lock, Plus } from '@icon-park/vue-next'
+import CartoonButton from '@/components/ui/CartoonButton.vue'
 
 const projectsStore = useProjectsStore()
+const shortcutsStore = useShortcutsStore()
+const confirmDialog = useConfirm()
+
+const showShortcutDialog = ref(false)
+const editingShortcut = ref(null)
 
 const features = [
   {
@@ -38,6 +47,47 @@ const features = [
 ]
 
 const hasActiveProject = computed(() => projectsStore.activeProject !== null)
+
+// 快捷方式处理
+const handleAddShortcut = () => {
+  editingShortcut.value = null
+  showShortcutDialog.value = true
+}
+
+const handleEditShortcut = (shortcut) => {
+  editingShortcut.value = shortcut
+  showShortcutDialog.value = true
+}
+
+const handleDeleteShortcut = async (id) => {
+  const confirm = await confirmDialog(
+      {
+        title: '删除快捷方式',
+        message: '该操作不可撤销，是否继续？',
+        danger: true,
+        confirmText: '删除',
+        cancelText: '取消'
+      }
+  )
+
+  if (confirm) {
+    try {
+      await shortcutsStore.deleteShortcut(id);
+    } catch (e) {
+      alert('删除失败: ' + (e.message || '未知错误'))
+    }
+  }
+}
+
+const handleSaveShortcut = (data) => {
+  if (data.id) {
+    // 编辑模式
+    shortcutsStore.updateShortcut(data.id, data)
+  } else {
+    // 新建模式
+    shortcutsStore.addShortcut(data)
+  }
+}
 </script>
 
 <template>
@@ -53,32 +103,57 @@ const hasActiveProject = computed(() => projectsStore.activeProject !== null)
           功能丰富的本地项目管理应用
         </p>
 
-        <div class="features-grid">
-          <CartoonCard
-            v-for="(feature, index) in features"
-            :key="index"
-            hoverable
-            shadow="md"
-            class="feature-card animate-bounce-in"
-            :style="{ animationDelay: `${index * 0.1}s` }"
-          >
-            <div class="feature-content">
-              <component
-                :is="feature.icon"
-                :size="48"
-                :theme="'outline'"
-                :fill="'var(--color-primary)'"
-                class="feature-icon"
-              />
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <p class="feature-description">{{ feature.description }}</p>
-            </div>
-          </CartoonCard>
+        <!-- 快捷方式区域 -->
+        <div class="shortcuts-section">
+          <div class="section-header">
+            <h2 class="section-title">快捷方式</h2>
+            <CartoonButton @click="handleAddShortcut">
+              <Plus :size="16" theme="outline" />
+              添加
+            </CartoonButton>
+          </div>
+
+          <div v-if="shortcutsStore.shortcuts.length > 0" class="shortcuts-grid">
+            <ShortcutCard
+              v-for="shortcut in shortcutsStore.shortcuts"
+              :key="shortcut.id"
+              :shortcut="shortcut"
+              @edit="handleEditShortcut"
+              @delete="handleDeleteShortcut"
+            />
+          </div>
+
+          <div v-else class="no-shortcuts">
+            <p>暂无快捷方式，点击右上角按钮添加</p>
+          </div>
         </div>
+
+<!--        <div class="features-grid">-->
+<!--          <CartoonCard-->
+<!--            v-for="(feature, index) in features"-->
+<!--            :key="index"-->
+<!--            hoverable-->
+<!--            shadow="md"-->
+<!--            class="feature-card animate-bounce-in"-->
+<!--            :style="{ animationDelay: `${index * 0.1}s` }"-->
+<!--          >-->
+<!--            <div class="feature-content">-->
+<!--              <component-->
+<!--                :is="feature.icon"-->
+<!--                :size="48"-->
+<!--                :theme="'outline'"-->
+<!--                :fill="'var(&#45;&#45;color-primary)'"-->
+<!--                class="feature-icon"-->
+<!--              />-->
+<!--              <h3 class="feature-title">{{ feature.title }}</h3>-->
+<!--              <p class="feature-description">{{ feature.description }}</p>-->
+<!--            </div>-->
+<!--          </CartoonCard>-->
+<!--        </div>-->
 
         <div class="info-section">
           <p class="info-text">
-            阶段2: 数据库与后端已完成！左侧点击"添加"按钮开始添加项目。
+            左侧点击"添加"按钮开始添加项目。
           </p>
         </div>
       </div>
@@ -86,6 +161,13 @@ const hasActiveProject = computed(() => projectsStore.activeProject !== null)
       <!-- Project view when a project is selected -->
       <ProjectView v-else />
     </AppLayout>
+
+    <!-- 快捷方式对话框 -->
+    <ShortcutDialog
+      v-model:show="showShortcutDialog"
+      :edit-data="editingShortcut"
+      @save="handleSaveShortcut"
+    />
   </div>
 </template>
 
@@ -117,6 +199,41 @@ const hasActiveProject = computed(() => projectsStore.activeProject !== null)
   color: var(--color-text-secondary);
   text-align: center;
   margin-bottom: var(--spacing-2xl);
+}
+
+.shortcuts-section {
+  margin-bottom: var(--spacing-2xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-lg);
+  border: var(--border-width) solid var(--color-border);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.no-shortcuts {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
 }
 
 .features-grid {

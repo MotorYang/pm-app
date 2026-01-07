@@ -6,7 +6,7 @@
   --color-secondary: #FFA94D;        /* Warm orange */
   --color-accent: #4ECDC4;           /* Teal */
   --color-success: #95E1D3;          /* Mint green */
-  --color-danger: #FF4757;           /* Bright red */
+  --color-danger: #E52222;           /* Bright red */
   --color-warning: #FFD93D;          /* Sunny yellow */
   --color-info: #3498DB;             /* Sky blue */
 
@@ -81,7 +81,7 @@
   --color-secondary: #FF9800;
   --color-accent: #00BCD4;
   --color-success: #4CAF50;
-  --color-danger: #F44336;
+  --color-danger: #E52222;
   --color-warning: #FFC107;
   --color-info: #2196F3;
 

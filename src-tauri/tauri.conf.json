@@ -12,8 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "PM-App",
-        "width": 1200,
+        "title": "项目管理",
+        "width": 1250,
         "height": 800,
         "decorations": false,
         "resizable": true,
