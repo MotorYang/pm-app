@@ -87,6 +87,7 @@ pub fn run() {
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone()) // 使用默认图标或指定路径图标
                 .menu(&menu)
+                .tooltip("项目管理")
                 .show_menu_on_left_click(false) // 点击左键是否直接弹出菜单
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => {

@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, watch, ref } from 'vue'
-import { useProjectsStore } from '@/stores/projects'
-import { useVaultStore } from '@/stores/vault'
-import { Refresh, Lock, Unlock } from '@icon-park/vue-next'
+import {onMounted, watch, ref} from 'vue'
+import {useProjectsStore} from '@/stores/projects'
+import {useVaultStore} from '@/stores/vault'
+import {Refresh, Lock, Unlock} from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import VaultUnlock from '@/components/vault/VaultUnlock.vue'
 import VaultList from '@/components/vault/VaultList.vue'
@@ -62,7 +62,7 @@ const handleInitialized = async () => {
           class="header-button"
           @click="handleLock"
       >
-        <Lock :size="18" theme="outline" />
+        <Lock :size="18" theme="outline"/>
       </button>
     </div>
 
@@ -78,14 +78,14 @@ const handleInitialized = async () => {
     <div v-else class="vault-content">
       <!-- Unlock/Initialize Component -->
       <VaultUnlock
-        v-if="!vaultStore.isUnlocked"
-        :is-initialized="isInitialized"
-        @unlocked="handleUnlocked"
-        @initialized="handleInitialized"
+          v-if="!vaultStore.isUnlocked"
+          :is-initialized="isInitialized"
+          @unlocked="handleUnlocked"
+          @initialized="handleInitialized"
       />
 
       <!-- Vault List (when unlocked) -->
-      <VaultList v-else />
+      <VaultList v-else/>
     </div>
   </div>
 </template>

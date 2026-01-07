@@ -7,7 +7,6 @@ use argon2::{
     Argon2,
 };
 use base64::{engine::general_purpose, Engine as _};
-use rand::RngCore as _;
 use zeroize::Zeroize;
 
 /// Hash a password using Argon2id

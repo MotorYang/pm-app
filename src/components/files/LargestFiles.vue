@@ -1,8 +1,8 @@
 <script setup>
 import { FileText, FolderOpen } from '@icon-park/vue-next'
 import { useFilesStore } from '@/stores/files'
-import * as Opener from '@tauri-apps/plugin-opener'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
+import { useTauri } from '@/composables/useTauri.js'
 
 const props = defineProps({
   files: {
@@ -12,13 +12,16 @@ const props = defineProps({
 })
 
 const filesStore = useFilesStore()
+const tauri = useTauri()
 
 // 打开文件所在文件夹
 async function openFileLocation(file) {
   try {
     // 获取文件所在目录
     const dirPath = file.fullPath.substring(0, file.fullPath.lastIndexOf('\\'))
-    await Opener.open(dirPath)
+    await tauri.invokeCommand('open_in_file_explorer', {
+      path: dirPath
+    })
   } catch (e) {
     console.error('Failed to open file location:', e)
   }

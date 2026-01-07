@@ -46,12 +46,13 @@ const handleRefresh = async () => {
 <template>
   <div class="git-view">
     <div class="git-header">
-      <GitBranchSelect v-if="projectsStore.activeProject && gitStore.currentBranch" />
-
+      <div>
+        <GitBranchSelect v-if="projectsStore.activeProject && gitStore.currentBranch && !gitStore.error"  />
+      </div>
       <div class="header-actions">
         <!-- 工作区更改按钮 -->
         <button
-          v-if="projectsStore.activeProject"
+          v-if="projectsStore.activeProject && !gitStore.error"
           class="header-button"
           @click="showChangesModal = true"
           :title="changesCount > 0 ? `${changesCount} 个更改` : '工作区更改'"

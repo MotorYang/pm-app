@@ -1,9 +1,8 @@
 use crate::crypto::{decrypt_data, encrypt_data, hash_password, verify_password};
 use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
-use tauri::State;
-use tauri_plugin_sql::{Migration, MigrationKind};
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultEntry {
     pub id: i64,
@@ -20,6 +19,7 @@ pub struct VaultEntry {
     pub updated_at: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateVaultEntryInput {
     pub project_id: i64,
@@ -31,6 +31,7 @@ pub struct CreateVaultEntryInput {
     pub category: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DecryptedVaultEntry {
     pub id: i64,
@@ -63,7 +64,6 @@ pub fn vault_hash_password(password: String) -> Result<(String, String), String>
 /// Verify master password for a project
 #[tauri::command]
 pub async fn vault_verify_master(
-    project_id: i64,
     master_password: String,
     password_hash: String,
 ) -> Result<bool, String> {

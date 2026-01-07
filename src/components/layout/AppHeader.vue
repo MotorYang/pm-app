@@ -46,9 +46,13 @@ const handleHomeClick = (id) => {
   if (id === 'menu-home') {
     projectsStore.setActiveProject(null)
   } else if (id === 'menu-terminal') {
-    tauri.invokeCommand("open_terminal", null)
+    tauri.invokeCommand("open_terminal", {
+      dir: projectsStore.activeProject?.path
+    })
   } else if (id === 'menu-folder') {
-    tauri.invokeCommand("open_in_file_explorer", null)
+    tauri.invokeCommand("open_in_file_explorer", {
+      path: projectsStore.activeProject?.path
+    })
   } else if (id === 'menu-setting') {
     showSettings.value = true
   }
