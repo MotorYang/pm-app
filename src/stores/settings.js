@@ -5,6 +5,7 @@ import Database from '@tauri-apps/plugin-sql'
 export const useSettingsStore = defineStore('settings', () => {
   const db = ref(null)
   const editorPath = ref('')
+  const closeButtonBehavior = ref('hide') // 'hide' or 'quit'
   const loading = ref(false)
   const error = ref(null)
 
@@ -24,12 +25,23 @@ export const useSettingsStore = defineStore('settings', () => {
       await initDB()
 
       // Load editor path
-      const result = await db.value.select(
+      const editorResult = await db.value.select(
         "SELECT value FROM app_settings WHERE key = 'editor_path'"
       )
 
-      if (result.length > 0) {
-        editorPath.value = result[0].value
+      if (editorResult.length > 0) {
+        editorPath.value = editorResult[0].value
+      }
+
+      // Load close button behavior
+      const closeResult = await db.value.select(
+        "SELECT value FROM app_settings WHERE key = 'close_button_behavior'"
+      )
+
+      if (closeResult.length > 0) {
+        closeButtonBehavior.value = closeResult[0].value
+      } else {
+        closeButtonBehavior.value = 'hide' // default
       }
     } catch (err) {
       error.value = err.message
@@ -75,14 +87,52 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  // Save close button behavior
+  const saveCloseButtonBehavior = async (behavior) => {
+    try {
+      loading.value = true
+      error.value = null
+
+      await initDB()
+
+      // Check if setting exists
+      const result = await db.value.select(
+        "SELECT value FROM app_settings WHERE key = 'close_button_behavior'"
+      )
+
+      if (result.length > 0) {
+        // Update existing setting
+        await db.value.execute(
+          "UPDATE app_settings SET value = $1 WHERE key = 'close_button_behavior'",
+          [behavior]
+        )
+      } else {
+        // Insert new setting
+        await db.value.execute(
+          "INSERT INTO app_settings (key, value) VALUES ('close_button_behavior', $1)",
+          [behavior]
+        )
+      }
+
+      closeButtonBehavior.value = behavior
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     editorPath,
+    closeButtonBehavior,
     loading,
     error,
 
     // Actions
     loadSettings,
-    saveEditorPath
+    saveEditorPath,
+    saveCloseButtonBehavior
   }
 })

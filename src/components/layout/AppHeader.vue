@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { exit } from '@tauri-apps/plugin-process'
 import { Minus, FullScreenOne, Close, Home, Terminal, Setting, FolderOpen } from '@icon-park/vue-next'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import SettingsModal from '@/components/settings/SettingsModal.vue'
 import { useProjectsStore } from '@/stores/projects.js'
+import { useSettingsStore } from '@/stores/settings.js'
 import { useTauri } from '@/composables/useTauri'
 import Logo from '@/assets/logo.png'
 
@@ -12,10 +14,12 @@ const appWindow = getCurrentWindow()
 const isMaximized = ref(false)
 const showSettings = ref(false)
 const projectsStore = useProjectsStore()
+const settingsStore = useSettingsStore()
 const tauri = useTauri()
 
 onMounted(async () => {
   isMaximized.value = await appWindow.isMaximized()
+  await settingsStore.loadSettings()
 })
 
 const handleMinimize = async () => {
@@ -28,7 +32,14 @@ const handleMaximize = async () => {
 }
 
 const handleClose = async () => {
-  await appWindow.hide()
+  // Check user's preference for close button behavior
+  if (settingsStore.closeButtonBehavior === 'quit') {
+    // Exit application
+    await exit(0)
+  } else {
+    // Hide to tray (default)
+    await appWindow.hide()
+  }
 }
 
 const handleHomeClick = (id) => {

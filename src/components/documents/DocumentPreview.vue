@@ -5,6 +5,8 @@ import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import { useDocumentsStore } from '@/stores/documents'
+import { invoke } from '@tauri-apps/api/core'
+import { convertFileSrc } from '@tauri-apps/api/core'
 
 const documentsStore = useDocumentsStore()
 
@@ -34,6 +36,23 @@ renderer.code = function(code, language) {
       <pre><code class="hljs language-${validLanguage}">${highlighted}</code></pre>
     </div>
   `
+}
+
+// Store for converting image paths
+const imagePathCache = new Map()
+
+// Custom image renderer to handle local image paths
+renderer.image = function(href, title, text) {
+  // If it's a relative path starting with 'images/', convert it to absolute path
+  if (href.startsWith('images/') && documentsStore.activeDocumentId) {
+    // We'll need to get the document directory path
+    // For now, mark it for later processing
+    const imageKey = `${documentsStore.activeDocumentId}_${href}`
+
+    return `<img src="${href}" alt="${text}" title="${title || ''}" data-local-image="${imageKey}" />`
+  }
+
+  return `<img src="${href}" alt="${text}" title="${title || ''}" />`
 }
 
 // Configure marked
@@ -79,13 +98,51 @@ const handleCopyClick = (event) => {
   })
 }
 
-// 监听内容变化，绑定复制事件
+// Convert local image paths to Tauri accessible URLs
+const convertLocalImages = async () => {
+  await nextTick()
+  const previewContent = document.querySelector('.preview-content')
+  if (!previewContent || !documentsStore.activeDocumentId) return
+
+  const images = previewContent.querySelectorAll('img[data-local-image]')
+
+  for (const img of images) {
+    const href = img.getAttribute('src')
+    if (href && href.startsWith('images/')) {
+      try {
+        // Get the document's images directory path
+        const imagesPath = await invoke('get_document_images_path', {
+          docId: documentsStore.activeDocumentId
+        })
+
+        // Build full path to image
+        const filename = href.substring(7) // Remove 'images/' prefix
+        let fullPath = `${imagesPath}\\${filename}`
+
+        console.log('Original path:', fullPath)
+
+        // Convert to Tauri accessible URL
+        const assetUrl = convertFileSrc(fullPath)
+        console.log('Converted URL:', assetUrl)
+
+        img.src = assetUrl
+      } catch (error) {
+        console.error('Failed to convert image path:', error)
+      }
+    }
+  }
+}
+
+// 监听内容变化，绑定复制事件和转换图片路径
 watch(renderedHtml, async () => {
   await nextTick()
   const previewContent = document.querySelector('.preview-content')
   if (previewContent) {
     previewContent.addEventListener('click', handleCopyClick)
   }
+
+  // Convert local image paths
+  await convertLocalImages()
 }, { immediate: true })
 </script>
 

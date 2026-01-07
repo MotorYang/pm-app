@@ -99,8 +99,8 @@ pub fn delete_document_folder(app: tauri::AppHandle, doc_id: i64) -> Result<(), 
 pub fn save_document_image(
     app: tauri::AppHandle,
     doc_id: i64,
-    image_data: Vec<u8>,
     filename: String,
+    image_data: Vec<u8>,
 ) -> Result<String, String> {
     let doc_dir = get_document_dir(&app, doc_id)?;
     let images_dir = doc_dir.join("images");
