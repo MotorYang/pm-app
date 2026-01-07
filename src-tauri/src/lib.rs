@@ -22,6 +22,12 @@ pub fn run() {
             description: "add vault tables",
             sql: include_str!("../migrations/003_add_vault.sql"),
             kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 4,
+            description: "remove document content field",
+            sql: include_str!("../migrations/004_remove_document_content.sql"),
+            kind: MigrationKind::Up,
         }
     ];
 
@@ -47,6 +53,12 @@ pub fn run() {
             commands::vault::vault_decrypt_entry,
             commands::vault::vault_generate_password,
             commands::editor::open_in_editor,
+            commands::documents::create_document_folder,
+            commands::documents::read_document_content,
+            commands::documents::write_document_content,
+            commands::documents::delete_document_folder,
+            commands::documents::save_document_image,
+            commands::documents::get_document_images_path,
             ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

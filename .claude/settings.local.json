@@ -10,7 +10,9 @@
       "Bash(taskkill:*)",
       "Bash(timeout /t 15)",
       "Bash(ping:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm run:*)",
+      "Bash(cmd //c taskkill //F //PID 25900)"
     ]
   }
 }

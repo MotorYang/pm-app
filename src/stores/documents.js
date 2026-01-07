@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import Database from '@tauri-apps/plugin-sql'
+import { invoke } from '@tauri-apps/api/core'
 import { useProjectsStore } from './projects'
 
 export const useDocumentsStore = defineStore('documents', () => {
@@ -81,9 +82,22 @@ export const useDocumentsStore = defineStore('documents', () => {
       return
     }
 
-    activeDocumentId.value = documentId
-    activeDocumentContent.value = doc.content || ''
-    hasUnsavedChanges.value = false
+    loading.value = true
+    error.value = null
+
+    try {
+      // Read document content from file system
+      const content = await invoke('read_document_content', { docId: documentId })
+      activeDocumentId.value = documentId
+      activeDocumentContent.value = content || ''
+      hasUnsavedChanges.value = false
+    } catch (e) {
+      error.value = e.message || 'Failed to open document'
+      console.error('Failed to open document:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
   }
 
   async function saveDocument() {
@@ -95,16 +109,22 @@ export const useDocumentsStore = defineStore('documents', () => {
     error.value = null
 
     try {
+      // Write document content to file system
+      await invoke('write_document_content', {
+        docId: activeDocumentId.value,
+        content: activeDocumentContent.value
+      })
+
+      // Update document timestamp in database
       const database = await getDb()
       await database.execute(
-        'UPDATE documents SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [activeDocumentContent.value, activeDocumentId.value]
+        'UPDATE documents SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [activeDocumentId.value]
       )
 
       // Update local document
       const doc = documents.value.find(d => d.id === activeDocumentId.value)
       if (doc) {
-        doc.content = activeDocumentContent.value
         doc.updated_at = new Date().toISOString()
       }
 
@@ -145,26 +165,31 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     try {
       const database = await getDb()
+      // Create document record in database (without content)
       const result = await database.execute(
-        'INSERT INTO documents (project_id, title, content, folder) VALUES (?, ?, ?, ?)',
-        [projectId, cleanTitle, '# ' + cleanTitle + '\n\n开始编写...', folder]
+        'INSERT INTO documents (project_id, title, folder) VALUES (?, ?, ?)',
+        [projectId, cleanTitle, folder]
       )
+
+      const docId = result.lastInsertId
+
+      // Create document folder structure in file system
+      await invoke('create_document_folder', { docId })
+
+      // Write initial content to file
+      const initialContent = '# ' + cleanTitle + '\n\n开始编写...'
+      await invoke('write_document_content', { docId, content: initialContent })
 
       // Reload documents
       await loadDocuments(projectId)
 
       // Open the newly created document
-      const newDoc = documents.value.find(d =>
-        d.project_id === projectId &&
-        d.title === cleanTitle &&
-        d.folder === folder
-      )
-
+      const newDoc = documents.value.find(d => d.id === docId)
       if (newDoc) {
         await openDocument(newDoc.id)
       }
 
-      return result.lastInsertId
+      return docId
     } catch (e) {
       if (e.message && e.message.includes('UNIQUE constraint failed')) {
         error.value = '该文件夹下已存在同名文档'
@@ -187,6 +212,10 @@ export const useDocumentsStore = defineStore('documents', () => {
     error.value = null
 
     try {
+      // Delete document folder from file system
+      await invoke('delete_document_folder', { docId: documentId })
+
+      // Delete document record from database
       const database = await getDb()
       await database.execute('DELETE FROM documents WHERE id = ?', [documentId])
 

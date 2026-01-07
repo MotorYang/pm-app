@@ -5,3 +5,4 @@ pub mod folder;
 pub mod git;
 pub mod vault;
 pub mod editor;
+pub mod documents;
