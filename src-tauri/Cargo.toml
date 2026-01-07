@@ -31,6 +31,7 @@ chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 dirs = "4.0"
 git2 = "0.18"
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
 
 # Encryption dependencies
 aes-gcm = "0.10"

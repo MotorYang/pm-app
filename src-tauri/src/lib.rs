@@ -62,6 +62,7 @@ pub fn run() {
             commands::documents::delete_document_folder,
             commands::documents::save_document_image,
             commands::documents::get_document_images_path,
+            commands::handover::export_project_handover,
             ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { FileText, Github, SolidStateDisk, Lock } from '@icon-park/vue-next'
+import { FileText, Github, SolidStateDisk, Lock, Hold } from '@icon-park/vue-next'
 import CartoonTabs from '@/components/ui/CartoonTabs.vue'
 import CartoonTab from '@/components/ui/CartoonTab.vue'
 import DocumentsView from './DocumentsView.vue'
@@ -8,6 +8,7 @@ import FilesView from './FilesView.vue'
 import GitView from './GitView.vue'
 import VaultView from './VaultView.vue'
 import { useProjectsStore } from '@/stores/projects.js'
+import HandoverView from '@/views/HandoverView.vue'
 
 const activeTab = ref('documents')
 const projectsStore = useProjectsStore()
@@ -17,6 +18,9 @@ const projectsStore = useProjectsStore()
 <template>
   <div class="project-view">
     <CartoonTabs v-model="activeTab" :title="projectsStore.activeProjectName">
+      <CartoonTab name="handover" label="项目交接" :icon="Hold">
+        <HandoverView />
+      </CartoonTab>
       <CartoonTab name="vault" label="保险箱" :icon="Lock">
         <VaultView />
       </CartoonTab>
@@ -29,7 +33,6 @@ const projectsStore = useProjectsStore()
       <CartoonTab name="documents" label="文档库" :icon="FileText">
         <DocumentsView />
       </CartoonTab>
-
     </CartoonTabs>
   </div>
 </template>
