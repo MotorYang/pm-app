@@ -394,30 +394,12 @@ const handleFileClick = async (filename) => {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
   flex: 1;
   min-width: 0;
-}
-
-/* 自定义滚动条样式 */
-.file-name::-webkit-scrollbar {
-  height: 4px;
-}
-
-.file-name::-webkit-scrollbar-track {
-  background: var(--color-bg-tertiary);
-  border-radius: 2px;
-}
-
-.file-name::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 2px;
-}
-
-.file-name::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-tertiary);
 }
 
 .file-name.clickable {

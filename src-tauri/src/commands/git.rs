@@ -1,4 +1,4 @@
-use git2::{BranchType, Repository, Oid, Commit, DiffOptions};
+use git2::{BranchType, Repository, Oid, Commit, DiffOptions, StatusOptions};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -286,7 +286,12 @@ pub fn git_checkout_branch(path: String, branch_name: String) -> Result<(), Stri
     let repo = Repository::open(&path).map_err(|e| e.message().to_string())?;
 
     // 检查工作区是否干净
-    let statuses = repo.statuses(None).map_err(|e| e.message().to_string())?;
+    let mut opts = StatusOptions::new();
+    opts.include_untracked(true)
+        .recurse_untracked_dirs(true)
+        .exclude_submodules(true);
+
+    let statuses = repo.statuses(Some(&mut opts)).map_err(|e| e.message().to_string())?;
     if !statuses.is_empty() {
         return Err("有未提交的更改，请先提交或暂存".to_string());
     }
@@ -317,7 +322,13 @@ pub fn git_get_status(path: String) -> Result<GitStatus, String> {
     let head = repo.head().map_err(|e| e.message().to_string())?;
     let branch = head.shorthand().unwrap_or("HEAD").to_string();
 
-    let statuses = repo.statuses(None).map_err(|e| e.message().to_string())?;
+    // 配置状态选项，排除被忽略的文件
+    let mut opts = StatusOptions::new();
+    opts.include_untracked(true)  // 包含未跟踪的文件
+        .recurse_untracked_dirs(true)  // 递归查找未跟踪的目录
+        .exclude_submodules(true);  // 排除子模块
+
+    let statuses = repo.statuses(Some(&mut opts)).map_err(|e| e.message().to_string())?;
     let mut files = Vec::new();
 
     for entry in statuses.iter() {
@@ -378,4 +389,87 @@ pub fn git_get_remotes(path: String) -> Result<Vec<GitRemote>, String> {
     }
 
     Ok(remote_list)
+}
+
+// 暂存文件
+#[tauri::command]
+pub fn git_stage_files(path: String, files: Vec<String>) -> Result<(), String> {
+    let repo = Repository::open(&path).map_err(|e| e.message().to_string())?;
+    let mut index = repo.index().map_err(|e| e.message().to_string())?;
+
+    for file_path in files {
+        index.add_path(std::path::Path::new(&file_path))
+            .map_err(|e| e.message().to_string())?;
+    }
+
+    index.write().map_err(|e| e.message().to_string())?;
+
+    Ok(())
+}
+
+// 取消暂存文件
+#[tauri::command]
+pub fn git_unstage_files(path: String, files: Vec<String>) -> Result<(), String> {
+    let repo = Repository::open(&path).map_err(|e| e.message().to_string())?;
+
+    let head_commit = repo.head()
+        .map_err(|e| e.message().to_string())?
+        .peel_to_commit()
+        .map_err(|e| e.message().to_string())?;
+
+    for file_path in files {
+        let path_obj = std::path::Path::new(&file_path);
+
+        // 使用 reset 将文件恢复到 HEAD 状态
+        repo.reset_default(Some(&head_commit.as_object()), [path_obj])
+            .map_err(|e| e.message().to_string())?;
+    }
+
+    Ok(())
+}
+
+// 提交更改
+#[tauri::command]
+pub fn git_commit(path: String, message: String) -> Result<String, String> {
+    let repo = Repository::open(&path).map_err(|e| e.message().to_string())?;
+
+    // 获取索引
+    let mut index = repo.index().map_err(|e| e.message().to_string())?;
+    let tree_id = index.write_tree().map_err(|e| e.message().to_string())?;
+    let tree = repo.find_tree(tree_id).map_err(|e| e.message().to_string())?;
+
+    // 获取签名
+    let signature = repo.signature().map_err(|e| e.message().to_string())?;
+
+    // 获取父提交
+    let parent_commit = match repo.head() {
+        Ok(head) => {
+            let commit = head.peel_to_commit().map_err(|e| e.message().to_string())?;
+            Some(commit)
+        },
+        Err(_) => None, // 首次提交没有父提交
+    };
+
+    // 创建提交
+    let commit_id = if let Some(parent) = parent_commit {
+        repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            &message,
+            &tree,
+            &[&parent],
+        ).map_err(|e| e.message().to_string())?
+    } else {
+        repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            &message,
+            &tree,
+            &[],
+        ).map_err(|e| e.message().to_string())?
+    };
+
+    Ok(commit_id.to_string())
 }

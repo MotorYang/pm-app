@@ -209,6 +209,80 @@ export const useGitStore = defineStore('git', () => {
     projectPath.value = ''
   }
 
+  // 暂存文件
+  async function stageFiles(files) {
+    if (!projectPath.value) {
+      throw new Error('No project path set')
+    }
+
+    try {
+      await invoke('git_stage_files', {
+        path: projectPath.value,
+        files
+      })
+
+      // 刷新状态
+      await getStatus()
+      return true
+    } catch (e) {
+      console.error('Failed to stage files:', e)
+      throw e
+    }
+  }
+
+  // 取消暂存文件
+  async function unstageFiles(files) {
+    if (!projectPath.value) {
+      throw new Error('No project path set')
+    }
+
+    try {
+      await invoke('git_unstage_files', {
+        path: projectPath.value,
+        files
+      })
+
+      // 刷新状态
+      await getStatus()
+      return true
+    } catch (e) {
+      console.error('Failed to unstage files:', e)
+      throw e
+    }
+  }
+
+  // 提交更改
+  async function commit(message) {
+    if (!projectPath.value) {
+      throw new Error('No project path set')
+    }
+
+    if (!message || message.trim() === '') {
+      throw new Error('Commit message is required')
+    }
+
+    loading.value = true
+    try {
+      const commitId = await invoke('git_commit', {
+        path: projectPath.value,
+        message
+      })
+
+      // 刷新数据
+      await Promise.all([
+        getStatus(),
+        getCommitHistory()
+      ])
+
+      return commitId
+    } catch (e) {
+      console.error('Failed to commit:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 格式化日期
   function formatDate(timestamp) {
     const date = new Date(timestamp * 1000)
@@ -266,6 +340,9 @@ export const useGitStore = defineStore('git', () => {
     checkoutBranch,
     getStatus,
     getRemotes,
+    stageFiles,
+    unstageFiles,
+    commit,
     clearData,
     formatDate,
   }

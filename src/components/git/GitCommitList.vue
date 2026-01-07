@@ -29,7 +29,7 @@ const getCommitSubject = (message) => {
       <div class="commit-list">
         <div class="list-header">
           <h3 class="section-title">
-            <Fork :size="20" theme="outline"/>
+            <Fork :size="16" theme="outline"/>
             提交历史
           </h3>
           <span class="commit-count">{{ gitStore.commits.length }} 个提交</span>
@@ -69,11 +69,11 @@ const getCommitSubject = (message) => {
 
               <div class="commit-meta">
             <span class="author">
-              <User :size="14" theme="outline"/>
+              <User :size="12" theme="outline"/>
               {{ commit.author }}
             </span>
                 <span class="date">
-              <Time :size="14" theme="outline"/>
+              <Time :size="12" theme="outline"/>
               {{ gitStore.formatDate(commit.date) }}
             </span>
               </div>
@@ -108,7 +108,7 @@ const getCommitSubject = (message) => {
 }
 
 .commit-list {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -120,24 +120,24 @@ const getCommitSubject = (message) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .section-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .commit-count {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
 }
 
@@ -159,9 +159,9 @@ const getCommitSubject = (message) => {
 
 .commit-item {
   display: flex;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-md);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
@@ -180,14 +180,14 @@ const getCommitSubject = (message) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 20px;
+  width: 16px;
   flex-shrink: 0;
   position: relative;
 }
 
 .commit-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background-color: var(--color-primary);
   border: 2px solid var(--color-primary);
@@ -209,22 +209,22 @@ const getCommitSubject = (message) => {
   width: 2px;
   flex: 1;
   background-color: var(--color-border);
-  margin-top: 2px;
-  min-height: 30px;
+  margin-top: 1px;
+  min-height: 16px;
 }
 
 .commit-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 2px;
   min-width: 0;
 }
 
 .commit-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .commit-hash {
@@ -256,7 +256,7 @@ const getCommitSubject = (message) => {
 }
 
 .commit-message {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -271,7 +271,7 @@ const getCommitSubject = (message) => {
 .commit-meta {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
 }
