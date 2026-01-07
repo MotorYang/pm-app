@@ -6,6 +6,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import SettingsModal from '@/components/settings/SettingsModal.vue'
 import { useProjectsStore } from '@/stores/projects.js'
 import { useTauri } from '@/composables/useTauri'
+import Logo from '@/assets/logo.png'
 
 const appWindow = getCurrentWindow()
 const isMaximized = ref(false)
@@ -27,7 +28,7 @@ const handleMaximize = async () => {
 }
 
 const handleClose = async () => {
-  await appWindow.close()
+  await appWindow.hide()
 }
 
 const handleHomeClick = (id) => {
@@ -47,8 +48,8 @@ const handleHomeClick = (id) => {
   <header class="app-header" data-tauri-drag-region>
     <div class="app-header-left">
       <div class="app-logo">
-        <span class="app-logo-icon">📦</span>
-        <span class="app-title">PM-App</span>
+        <img :src="Logo" alt="Logo" class="app-logo-icon" />
+<!--        <span class="app-title"></span>-->
       </div>
       <div class="vertical-divider"></div>
       <!-- 菜单工具栏 -->
@@ -132,15 +133,16 @@ const handleHomeClick = (id) => {
 }
 
 .app-logo-icon {
+  width: 26px;
   font-size: 20px;
   line-height: 1;
 }
 
 .vertical-divider {
-  width: 1px;
+  width: 2px;
   height: 40px;
   background-color: var(--color-border);
-  margin: 0 5px;
+  margin: 0;
 }
 
 .menu-tools {

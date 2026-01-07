@@ -7,12 +7,14 @@ import { useProjectsStore } from '@/stores/projects'
 import { invoke } from '@tauri-apps/api/core'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
+import SettingsModal from '@/components/settings/SettingsModal.vue'
 
 const gitStore = useGitStore()
 const settingsStore = useSettingsStore()
 const projectsStore = useProjectsStore()
 
 const showEditorWarning = ref(false)
+const showSettings = ref(false)
 
 const commit = computed(() => gitStore.currentCommit)
 
@@ -79,6 +81,12 @@ const handleFileClick = async (filename) => {
     console.error('Failed to open file in editor:', err)
     alert('打开文件失败: ' + err)
   }
+}
+
+// Handle opening settings modal
+const handleOpenSettings = () => {
+  showEditorWarning.value = false
+  showSettings.value = true
 }
 </script>
 
@@ -176,7 +184,13 @@ const handleFileClick = async (filename) => {
       message="您还没有设置默认编辑器，请先在设置中配置编辑器路径。"
       confirm-text="去设置"
       cancel-text="取消"
-      @confirm="$router ? $router.push('/settings') : null"
+      :danger="true"
+      @confirm="handleOpenSettings"
+    />
+
+    <!-- Settings Modal -->
+    <SettingsModal
+      v-model:show="showSettings"
     />
   </CartoonCard>
 </template>

@@ -215,6 +215,8 @@ pub fn git_get_commit_detail(path: String, hash: String) -> Result<GitCommitDeta
 
 // 获取提交的文件变更
 fn get_commit_files(repo: &Repository, commit: &Commit) -> Result<Vec<GitFileChange>, String> {
+    use std::collections::HashMap;
+
     let mut files = Vec::new();
 
     let tree = commit.tree().map_err(|e| e.message().to_string())?;
@@ -264,17 +266,30 @@ fn get_commit_files(repo: &Repository, commit: &Commit) -> Result<Vec<GitFileCha
     ).map_err(|e| e.message().to_string())?;
 
     // 获取每个文件的增删行数
-    let stats = diff.stats().map_err(|e| e.message().to_string())?;
+    // 使用 HashMap 来存储每个文件的统计信息
+    let mut file_stats: HashMap<String, (usize, usize)> = HashMap::new();
 
-    // 注意: git2 的 stats API 只提供总的增删行数
-    // 这里我们简单地将总数平均分配（实际应该逐文件统计）
-    let total_insertions = stats.insertions();
-    let total_deletions = stats.deletions();
-    let file_count = files.len().max(1);
+    diff.print(git2::DiffFormat::Patch, |delta, _hunk, line| {
+        if let Some(path) = delta.new_file().path() {
+            if let Some(path_str) = path.to_str() {
+                let entry = file_stats.entry(path_str.to_string()).or_insert((0, 0));
 
+                match line.origin() {
+                    '+' => entry.0 += 1,  // additions
+                    '-' => entry.1 += 1,  // deletions
+                    _ => {}
+                }
+            }
+        }
+        true
+    }).map_err(|e| e.message().to_string())?;
+
+    // 将统计信息应用到文件列表
     for file in &mut files {
-        file.additions = total_insertions / file_count;
-        file.deletions = total_deletions / file_count;
+        if let Some((additions, deletions)) = file_stats.get(&file.filename) {
+            file.additions = *additions;
+            file.deletions = *deletions;
+        }
     }
 
     Ok(files)

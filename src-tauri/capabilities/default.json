@@ -5,6 +5,10 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:tray:default",
+    "core:menu:default",
+    "core:window:allow-hide",
+    "core:window:default",
     "opener:default",
     "shell:allow-execute",
     "shell:allow-open",
