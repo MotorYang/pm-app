@@ -8,8 +8,8 @@ import ShortcutDialog from '@/components/shortcuts/ShortcutDialog.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useShortcutsStore } from '@/stores/shortcuts'
 import { useConfirm } from '@/composables/useConfirm'
-import { FolderPlus, FileText, Github, SolidStateDisk, Lock, Plus } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
+import Logo from '@/assets/logo.png'
 
 const projectsStore = useProjectsStore()
 const shortcutsStore = useShortcutsStore()
@@ -17,34 +17,6 @@ const confirmDialog = useConfirm()
 
 const showShortcutDialog = ref(false)
 const editingShortcut = ref(null)
-
-const features = [
-  {
-    icon: FolderPlus,
-    title: '项目管理',
-    description: '从本地加载和管理多个项目'
-  },
-  {
-    icon: FileText,
-    title: 'Markdown文档库',
-    description: '支持分栏预览的Markdown编辑器'
-  },
-  {
-    icon: Github,
-    title: 'Git集成',
-    description: '查看项目的Git状态和提交历史'
-  },
-  {
-    icon: SolidStateDisk,
-    title: '文件统计',
-    description: '分析和可视化项目文件占用情况'
-  },
-  {
-    icon: Lock,
-    title: '安全保险箱',
-    description: '加密存储账号密码等敏感信息'
-  }
-]
 
 const hasActiveProject = computed(() => projectsStore.activeProject !== null)
 
@@ -97,7 +69,7 @@ const handleSaveShortcut = (data) => {
       <!-- Welcome screen when no project is selected -->
       <div v-if="!hasActiveProject" class="welcome-section animate-fade-in">
         <h1 class="welcome-title">
-          欢迎使用 PM-App
+          <img :src="Logo" alt="logo" width="50px">
         </h1>
         <p class="welcome-subtitle">
           功能丰富的本地项目管理应用
@@ -127,29 +99,6 @@ const handleSaveShortcut = (data) => {
             <p>暂无快捷方式，点击右上角按钮添加</p>
           </div>
         </div>
-
-<!--        <div class="features-grid">-->
-<!--          <CartoonCard-->
-<!--            v-for="(feature, index) in features"-->
-<!--            :key="index"-->
-<!--            hoverable-->
-<!--            shadow="md"-->
-<!--            class="feature-card animate-bounce-in"-->
-<!--            :style="{ animationDelay: `${index * 0.1}s` }"-->
-<!--          >-->
-<!--            <div class="feature-content">-->
-<!--              <component-->
-<!--                :is="feature.icon"-->
-<!--                :size="48"-->
-<!--                :theme="'outline'"-->
-<!--                :fill="'var(&#45;&#45;color-primary)'"-->
-<!--                class="feature-icon"-->
-<!--              />-->
-<!--              <h3 class="feature-title">{{ feature.title }}</h3>-->
-<!--              <p class="feature-description">{{ feature.description }}</p>-->
-<!--            </div>-->
-<!--          </CartoonCard>-->
-<!--        </div>-->
 
         <div class="info-section">
           <p class="info-text">
@@ -192,6 +141,11 @@ const handleSaveShortcut = (data) => {
   color: var(--color-primary);
   text-align: center;
   margin-bottom: var(--spacing-sm);
+}
+
+.welcome-title img {
+  width: 60px;
+  margin: 10px auto;
 }
 
 .welcome-subtitle {

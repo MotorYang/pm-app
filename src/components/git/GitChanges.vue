@@ -1,18 +1,20 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { FileTxt, CheckOne, CloseOne, SendOne } from '@icon-park/vue-next'
+import { CheckOne, CloseOne, SendOne } from '@icon-park/vue-next'
 import { invoke } from '@tauri-apps/api/core'
 import { useGitStore } from '@/stores/git'
 import { useProjectsStore } from '@/stores/projects'
 import { useSettingsStore } from '@/stores/settings'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
 const gitStore = useGitStore()
 const projectsStore = useProjectsStore()
 const settingsStore = useSettingsStore()
 const commitMessage = ref('')
 const committing = ref(false)
+const showEditorWarning = ref(false)
 
 // 已暂存的文件
 const stagedFiles = computed(() => {
@@ -119,6 +121,11 @@ const handleCommit = async () => {
 
 // 在编辑器中打开文件
 const handleOpenFile = async (filename) => {
+  if (!settingsStore.editorPath) {
+    showEditorWarning.value = true
+    return
+  }
+
   const projectPath = projectsStore.activeProject?.path
   if (!projectPath) {
     console.error('No active project')
@@ -242,6 +249,18 @@ const handleOpenFile = async (filename) => {
         提交更改
       </CartoonButton>
     </div>
+
+    <!-- Editor Warning Dialog -->
+    <ConfirmDialog
+        v-model:open="showEditorWarning"
+        title="未设置编辑器"
+        message="您还没有设置默认编辑器，请先在设置中配置编辑器路径。"
+        confirm-text="确认"
+        cancel-text="取消"
+        :danger="true"
+        @confirm="showEditorWarning = false"
+    />
+
   </CartoonCard>
 </template>
 

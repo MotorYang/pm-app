@@ -85,10 +85,6 @@ const handleClose = () => {
     <div class="settings-content">
       <!-- Editor Settings -->
       <div class="settings-section">
-        <h3 class="section-title">
-          <Setting :size="20" theme="outline" />
-          编辑器设置
-        </h3>
 
         <div class="form-group">
           <label class="form-label">默认编辑器路径</label>
@@ -165,6 +161,7 @@ const handleClose = () => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  z-index: 9999;
 }
 
 .settings-section {
