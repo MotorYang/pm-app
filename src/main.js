@@ -18,3 +18,8 @@ app.mount("#app")
 import { useThemeStore } from "./stores/theme"
 const themeStore = useThemeStore()
 themeStore.initTheme()
+
+// 禁用右键菜单
+window.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+});
