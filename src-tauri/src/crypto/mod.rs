@@ -1,3 +1,3 @@
 pub mod encryption;
 
-pub use encryption::{encrypt_data, decrypt_data, hash_password, verify_password};
+pub use encryption::{decrypt_data, encrypt_data, hash_password, verify_password};

@@ -1,9 +1,9 @@
 // Commands module
 // pub mod projects;
-pub mod terminal;
+pub mod documents;
+pub mod editor;
 pub mod folder;
 pub mod git;
-pub mod vault;
-pub mod editor;
-pub mod documents;
 pub mod handover;
+pub mod terminal;
+pub mod vault;

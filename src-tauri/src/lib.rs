@@ -1,7 +1,7 @@
+use tauri::Manager;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri_plugin_sql::{Migration, MigrationKind};
-use tauri::Manager;
 
 mod commands;
 mod crypto;
@@ -32,7 +32,7 @@ pub fn run() {
             description: "remove document content field",
             sql: include_str!("../migrations/004_remove_document_content.sql"),
             kind: MigrationKind::Up,
-        }
+        },
     ];
 
     tauri::Builder::default()
@@ -63,7 +63,7 @@ pub fn run() {
             commands::documents::save_document_image,
             commands::documents::get_document_images_path,
             commands::handover::export_project_handover,
-            ])
+        ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())

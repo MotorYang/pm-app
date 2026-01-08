@@ -1,12 +1,14 @@
 use aes_gcm::{
-    aead::{Aead, KeyInit, OsRng},
     Aes256Gcm, Nonce,
+    aead::{Aead, KeyInit, OsRng},
 };
 use argon2::{
-    password_hash::{rand_core::RngCore, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
+    password_hash::{
+        PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::RngCore,
+    },
 };
-use base64::{engine::general_purpose, Engine as _};
+use base64::{Engine as _, engine::general_purpose};
 use zeroize::Zeroize;
 
 /// Hash a password using Argon2id
@@ -39,7 +41,9 @@ pub fn verify_password(password: &str, password_hash: &str) -> Result<bool, Stri
         .map_err(|e| format!("Failed to parse password hash: {}", e))?;
 
     let argon2 = Argon2::default();
-    let result = argon2.verify_password(&password_bytes, &parsed_hash).is_ok();
+    let result = argon2
+        .verify_password(&password_bytes, &parsed_hash)
+        .is_ok();
 
     // Zeroize password from memory
     password_bytes.zeroize();
@@ -67,15 +71,19 @@ fn derive_key(password: &str, salt: &str) -> Result<[u8; 32], String> {
 
 /// Encrypt data using AES-256-GCM
 /// Returns (encrypted_data_base64, nonce_base64)
-pub fn encrypt_data(plaintext: &str, password: &str, salt: &str) -> Result<(String, String), String> {
+pub fn encrypt_data(
+    plaintext: &str,
+    password: &str,
+    salt: &str,
+) -> Result<(String, String), String> {
     let mut plaintext_bytes = plaintext.as_bytes().to_vec();
 
     // Derive key from password
     let key = derive_key(password, salt)?;
 
     // Create cipher
-    let cipher = Aes256Gcm::new_from_slice(&key)
-        .map_err(|e| format!("Failed to create cipher: {}", e))?;
+    let cipher =
+        Aes256Gcm::new_from_slice(&key).map_err(|e| format!("Failed to create cipher: {}", e))?;
 
     // Generate a random nonce
     let mut nonce_bytes = [0u8; 12];
@@ -119,8 +127,8 @@ pub fn decrypt_data(
     let key = derive_key(password, salt)?;
 
     // Create cipher
-    let cipher = Aes256Gcm::new_from_slice(&key)
-        .map_err(|e| format!("Failed to create cipher: {}", e))?;
+    let cipher =
+        Aes256Gcm::new_from_slice(&key).map_err(|e| format!("Failed to create cipher: {}", e))?;
 
     // Decrypt
     let plaintext_bytes = cipher

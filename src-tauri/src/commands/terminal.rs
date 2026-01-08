@@ -1,5 +1,5 @@
-use std::process::Command as SysCommand;
 use std::path::PathBuf;
+use std::process::Command as SysCommand;
 
 #[tauri::command]
 pub fn open_terminal(dir: Option<String>) -> Result<(), String> {

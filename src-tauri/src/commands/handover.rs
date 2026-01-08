@@ -1,9 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
-use zip::{ZipWriter, write::FileOptions};
-use serde::{Deserialize, Serialize};
 use tauri::Manager;
+use zip::{ZipWriter, write::FileOptions};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ExportOptions {
@@ -44,16 +44,12 @@ pub async fn export_project_handover(
     output_path: String,
     options: ExportOptions,
 ) -> Result<(), String> {
-    let file = fs::File::create(&output_path)
-        .map_err(|e| e.to_string())?;
+    let file = fs::File::create(&output_path).map_err(|e| e.to_string())?;
 
     let mut zip = ZipWriter::new(file);
     let zip_options = FileOptions::default();
 
-    let app_data_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?;
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
 
     /* ---------- project ---------- */
     if options.include_project {
@@ -64,7 +60,7 @@ pub async fn export_project_handover(
             zip.write_all(
                 serde_json::to_string_pretty(&project)
                     .map_err(|e| e.to_string())?
-                    .as_bytes()
+                    .as_bytes(),
             )
             .map_err(|e| e.to_string())?;
         }
@@ -79,8 +75,7 @@ pub async fn export_project_handover(
 
             let index_md = doc_dir.join("index.md");
             if index_md.exists() {
-                let content = fs::read_to_string(&index_md)
-                    .map_err(|e| e.to_string())?;
+                let content = fs::read_to_string(&index_md).map_err(|e| e.to_string())?;
 
                 let zip_path = if doc.folder == "/" {
                     format!("documents/{}.md", doc.title)
@@ -121,7 +116,7 @@ pub async fn export_project_handover(
         zip.write_all(
             serde_json::to_string_pretty(&vault_json)
                 .map_err(|e| e.to_string())?
-                .as_bytes()
+                .as_bytes(),
         )
         .map_err(|e| e.to_string())?;
     }
@@ -154,8 +149,7 @@ fn add_directory_to_zip(
             zip.start_file(&zip_path, options)
                 .map_err(|e| e.to_string())?;
 
-            zip.write_all(&content)
-                .map_err(|e| e.to_string())?;
+            zip.write_all(&content).map_err(|e| e.to_string())?;
         }
     }
     Ok(())

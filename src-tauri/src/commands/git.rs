@@ -1,4 +1,4 @@
-use git2::{BranchType, Repository, Oid, Commit, DiffOptions, StatusOptions};
+use git2::{BranchType, Commit, DiffOptions, Oid, Repository, StatusOptions};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -91,18 +91,17 @@ pub fn git_get_branches(path: String) -> Result<Vec<GitBranch>, String> {
     let mut branches = Vec::new();
 
     // 本地分支
-    let local_branches = repo.branches(Some(BranchType::Local))
+    let local_branches = repo
+        .branches(Some(BranchType::Local))
         .map_err(|e| e.message().to_string())?;
 
     for branch_result in local_branches {
         let (branch, _) = branch_result.map_err(|e| e.message().to_string())?;
         if let Some(name) = branch.name().map_err(|e| e.message().to_string())? {
             let upstream = match branch.upstream() {
-                Ok(upstream_branch) => {
-                    match upstream_branch.name() {
-                        Ok(Some(upstream_name)) => Some(upstream_name.to_string()),
-                        _ => None,
-                    }
+                Ok(upstream_branch) => match upstream_branch.name() {
+                    Ok(Some(upstream_name)) => Some(upstream_name.to_string()),
+                    _ => None,
                 },
                 Err(_) => None,
             };
@@ -117,7 +116,8 @@ pub fn git_get_branches(path: String) -> Result<Vec<GitBranch>, String> {
     }
 
     // 远程分支
-    let remote_branches = repo.branches(Some(BranchType::Remote))
+    let remote_branches = repo
+        .branches(Some(BranchType::Remote))
         .map_err(|e| e.message().to_string())?;
 
     for branch_result in remote_branches {
@@ -143,7 +143,9 @@ pub fn git_get_commits(path: String, limit: usize) -> Result<Vec<GitCommit>, Str
 
     // 推送所有引用
     revwalk.push_head().map_err(|e| e.message().to_string())?;
-    revwalk.set_sorting(git2::Sort::TIME).map_err(|e| e.message().to_string())?;
+    revwalk
+        .set_sorting(git2::Sort::TIME)
+        .map_err(|e| e.message().to_string())?;
 
     let mut commits = Vec::new();
 
@@ -155,9 +157,7 @@ pub fn git_get_commits(path: String, limit: usize) -> Result<Vec<GitCommit>, Str
         let oid = oid_result.map_err(|e| e.message().to_string())?;
         let commit = repo.find_commit(oid).map_err(|e| e.message().to_string())?;
 
-        let parents: Vec<String> = commit.parent_ids()
-            .map(|id| id.to_string())
-            .collect();
+        let parents: Vec<String> = commit.parent_ids().map(|id| id.to_string()).collect();
 
         commits.push(GitCommit {
             hash: commit.id().to_string(),
@@ -192,9 +192,7 @@ pub fn git_get_commit_detail(path: String, hash: String) -> Result<GitCommitDeta
     let subject = lines.next().unwrap_or("").to_string();
     let body = lines.collect::<Vec<&str>>().join("\n").trim().to_string();
 
-    let parents: Vec<String> = commit.parent_ids()
-        .map(|id| id.to_string())
-        .collect();
+    let parents: Vec<String> = commit.parent_ids().map(|id| id.to_string()).collect();
 
     // 获取文件变更
     let files = get_commit_files(&repo, &commit)?;
@@ -221,20 +219,21 @@ fn get_commit_files(repo: &Repository, commit: &Commit) -> Result<Vec<GitFileCha
 
     let tree = commit.tree().map_err(|e| e.message().to_string())?;
     let parent_tree = if commit.parent_count() > 0 {
-        Some(commit.parent(0)
-            .map_err(|e| e.message().to_string())?
-            .tree()
-            .map_err(|e| e.message().to_string())?)
+        Some(
+            commit
+                .parent(0)
+                .map_err(|e| e.message().to_string())?
+                .tree()
+                .map_err(|e| e.message().to_string())?,
+        )
     } else {
         None
     };
 
     let mut diff_opts = DiffOptions::new();
-    let diff = repo.diff_tree_to_tree(
-        parent_tree.as_ref(),
-        Some(&tree),
-        Some(&mut diff_opts)
-    ).map_err(|e| e.message().to_string())?;
+    let diff = repo
+        .diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), Some(&mut diff_opts))
+        .map_err(|e| e.message().to_string())?;
 
     diff.foreach(
         &mut |delta, _| {
@@ -263,7 +262,8 @@ fn get_commit_files(repo: &Repository, commit: &Commit) -> Result<Vec<GitFileCha
         None,
         None,
         None,
-    ).map_err(|e| e.message().to_string())?;
+    )
+    .map_err(|e| e.message().to_string())?;
 
     // 获取每个文件的增删行数
     // 使用 HashMap 来存储每个文件的统计信息
@@ -275,14 +275,15 @@ fn get_commit_files(repo: &Repository, commit: &Commit) -> Result<Vec<GitFileCha
                 let entry = file_stats.entry(path_str.to_string()).or_insert((0, 0));
 
                 match line.origin() {
-                    '+' => entry.0 += 1,  // additions
-                    '-' => entry.1 += 1,  // deletions
+                    '+' => entry.0 += 1, // additions
+                    '-' => entry.1 += 1, // deletions
                     _ => {}
                 }
             }
         }
         true
-    }).map_err(|e| e.message().to_string())?;
+    })
+    .map_err(|e| e.message().to_string())?;
 
     // 将统计信息应用到文件列表
     for file in &mut files {
@@ -306,16 +307,20 @@ pub fn git_checkout_branch(path: String, branch_name: String) -> Result<(), Stri
         .recurse_untracked_dirs(true)
         .exclude_submodules(true);
 
-    let statuses = repo.statuses(Some(&mut opts)).map_err(|e| e.message().to_string())?;
+    let statuses = repo
+        .statuses(Some(&mut opts))
+        .map_err(|e| e.message().to_string())?;
     if !statuses.is_empty() {
         return Err("有未提交的更改，请先提交或暂存".to_string());
     }
 
     // 查找分支
-    let branch = repo.find_branch(&branch_name, BranchType::Local)
+    let branch = repo
+        .find_branch(&branch_name, BranchType::Local)
         .map_err(|e| e.message().to_string())?;
 
-    let tree = branch.get()
+    let tree = branch
+        .get()
         .peel_to_tree()
         .map_err(|e| e.message().to_string())?;
 
@@ -339,11 +344,13 @@ pub fn git_get_status(path: String) -> Result<GitStatus, String> {
 
     // 配置状态选项，排除被忽略的文件
     let mut opts = StatusOptions::new();
-    opts.include_untracked(true)  // 包含未跟踪的文件
-        .recurse_untracked_dirs(true)  // 递归查找未跟踪的目录
-        .exclude_submodules(true);  // 排除子模块
+    opts.include_untracked(true) // 包含未跟踪的文件
+        .recurse_untracked_dirs(true) // 递归查找未跟踪的目录
+        .exclude_submodules(true); // 排除子模块
 
-    let statuses = repo.statuses(Some(&mut opts)).map_err(|e| e.message().to_string())?;
+    let statuses = repo
+        .statuses(Some(&mut opts))
+        .map_err(|e| e.message().to_string())?;
     let mut files = Vec::new();
 
     for entry in statuses.iter() {
@@ -369,7 +376,9 @@ pub fn git_get_status(path: String) -> Result<GitStatus, String> {
         files.push(GitStatusFile {
             path,
             status: status_str.to_string(),
-            staged: status.is_index_new() || status.is_index_modified() || status.is_index_deleted(),
+            staged: status.is_index_new()
+                || status.is_index_modified()
+                || status.is_index_deleted(),
         });
     }
 
@@ -413,7 +422,8 @@ pub fn git_stage_files(path: String, files: Vec<String>) -> Result<(), String> {
     let mut index = repo.index().map_err(|e| e.message().to_string())?;
 
     for file_path in files {
-        index.add_path(std::path::Path::new(&file_path))
+        index
+            .add_path(std::path::Path::new(&file_path))
             .map_err(|e| e.message().to_string())?;
     }
 
@@ -427,7 +437,8 @@ pub fn git_stage_files(path: String, files: Vec<String>) -> Result<(), String> {
 pub fn git_unstage_files(path: String, files: Vec<String>) -> Result<(), String> {
     let repo = Repository::open(&path).map_err(|e| e.message().to_string())?;
 
-    let head_commit = repo.head()
+    let head_commit = repo
+        .head()
         .map_err(|e| e.message().to_string())?
         .peel_to_commit()
         .map_err(|e| e.message().to_string())?;
@@ -451,7 +462,9 @@ pub fn git_commit(path: String, message: String) -> Result<String, String> {
     // 获取索引
     let mut index = repo.index().map_err(|e| e.message().to_string())?;
     let tree_id = index.write_tree().map_err(|e| e.message().to_string())?;
-    let tree = repo.find_tree(tree_id).map_err(|e| e.message().to_string())?;
+    let tree = repo
+        .find_tree(tree_id)
+        .map_err(|e| e.message().to_string())?;
 
     // 获取签名
     let signature = repo.signature().map_err(|e| e.message().to_string())?;
@@ -461,7 +474,7 @@ pub fn git_commit(path: String, message: String) -> Result<String, String> {
         Ok(head) => {
             let commit = head.peel_to_commit().map_err(|e| e.message().to_string())?;
             Some(commit)
-        },
+        }
         Err(_) => None, // 首次提交没有父提交
     };
 
@@ -474,16 +487,11 @@ pub fn git_commit(path: String, message: String) -> Result<String, String> {
             &message,
             &tree,
             &[&parent],
-        ).map_err(|e| e.message().to_string())?
+        )
+        .map_err(|e| e.message().to_string())?
     } else {
-        repo.commit(
-            Some("HEAD"),
-            &signature,
-            &signature,
-            &message,
-            &tree,
-            &[],
-        ).map_err(|e| e.message().to_string())?
+        repo.commit(Some("HEAD"), &signature, &signature, &message, &tree, &[])
+            .map_err(|e| e.message().to_string())?
     };
 
     Ok(commit_id.to_string())

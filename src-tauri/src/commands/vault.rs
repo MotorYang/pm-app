@@ -1,5 +1,5 @@
 use crate::crypto::{decrypt_data, encrypt_data, hash_password, verify_password};
-use rand::{distributions::Alphanumeric, Rng};
+use rand::{Rng, distributions::Alphanumeric};
 use serde::{Deserialize, Serialize};
 
 #[allow(dead_code)]
@@ -128,7 +128,12 @@ pub async fn vault_decrypt_entry(
     let notes = if let Some(enc_notes) = encrypted_notes {
         if nonce_parts.len() > 1 {
             let notes_nonce = nonce_parts[1];
-            Some(decrypt_data(&enc_notes, notes_nonce, &master_password, &salt)?)
+            Some(decrypt_data(
+                &enc_notes,
+                notes_nonce,
+                &master_password,
+                &salt,
+            )?)
         } else {
             None
         }

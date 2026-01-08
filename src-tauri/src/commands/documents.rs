@@ -5,7 +5,8 @@ use tauri::Manager;
 
 /// Get the base directory for all documents
 fn get_documents_base_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    let app_data_dir = app.path()
+    let app_data_dir = app
+        .path()
         .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;
 
@@ -42,8 +43,7 @@ pub fn create_document_folder(app: tauri::AppHandle, doc_id: i64) -> Result<(), 
 
     // Create empty index.md file
     let index_path = doc_dir.join("index.md");
-    fs::write(&index_path, "")
-        .map_err(|e| format!("Failed to create index.md: {}", e))?;
+    fs::write(&index_path, "").map_err(|e| format!("Failed to create index.md: {}", e))?;
 
     Ok(())
 }
@@ -58,8 +58,7 @@ pub fn read_document_content(app: tauri::AppHandle, doc_id: i64) -> Result<Strin
         return Err(format!("Document file does not exist: doc-{}", doc_id));
     }
 
-    fs::read_to_string(&index_path)
-        .map_err(|e| format!("Failed to read document content: {}", e))
+    fs::read_to_string(&index_path).map_err(|e| format!("Failed to read document content: {}", e))
 }
 
 /// Write document content to index.md
@@ -77,8 +76,7 @@ pub fn write_document_content(
         create_document_folder(app.clone(), doc_id)?;
     }
 
-    fs::write(&index_path, content)
-        .map_err(|e| format!("Failed to write document content: {}", e))
+    fs::write(&index_path, content).map_err(|e| format!("Failed to write document content: {}", e))
 }
 
 /// Delete document folder and all its contents
@@ -113,8 +111,7 @@ pub fn save_document_image(
 
     let image_path = images_dir.join(&filename);
 
-    fs::write(&image_path, image_data)
-        .map_err(|e| format!("Failed to save image: {}", e))?;
+    fs::write(&image_path, image_data).map_err(|e| format!("Failed to save image: {}", e))?;
 
     // Return relative path for markdown reference
     Ok(format!("images/{}", filename))
