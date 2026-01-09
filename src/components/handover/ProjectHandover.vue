@@ -1,15 +1,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useProjectsStore } from '@/stores/projects'
-import { invoke } from '@tauri-apps/api/core'
+import { useTauri } from '@/composables/useTauri.js'
 import { save } from '@tauri-apps/plugin-dialog'
 import { FolderClose, Lock, FileText, CheckOne } from '@icon-park/vue-next'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import HandoverProgress from './HandoverProgress.vue'
+import { useDocumentsStore } from '@/stores/documents.js'
 
 const projectsStore = useProjectsStore()
+const documentsStore = useDocumentsStore()
+const tauri = useTauri()
 
 const selectedItems = ref({
   project: true,
@@ -30,7 +33,7 @@ const checkVaultData = async () => {
   if (!projectsStore.activeProject) return
 
   try {
-    const result = await invoke('check_vault_has_data', {
+    const result = await tauri.invokeCommand('check_vault_has_data', {
       projectId: projectsStore.activeProject.id
     })
     hasVaultData.value = result
@@ -94,26 +97,20 @@ const handleExport = async () => {
     exportProgress.value = 0
     exportMessage.value = '准备导出...'
 
-    // Call backend to export
-    await invoke('export_project_handover', {
-      projectId: projectsStore.activeProject.id,
+    /*
+    * 调用Rust后端来导出项目
+    */
+    await tauri.invokeCommand('export_project_handover', {
+      project: projectsStore.activeProject,
       outputPath: filePath,
-      includeProject: selectedItems.value.project,
-      includeDocuments: selectedItems.value.documents,
-      includeVault: selectedItems.value.vault,
-      vaultPassword: selectedItems.value.vault ? vaultPassword.value : null
+      documents: selectedItems.value.documents ? documentsStore.documents: [],
+      vaultEntries: selectedItems.value.vault ? [] : [],
+      vaultMasters: selectedItems.value.vault ? null : null
+    }).finally(() => {
+      exportProgress.value = 100
+      exportMessage.value = '导出完成！'
+      // Reset after a delay
     })
-
-    exportProgress.value = 100
-    exportMessage.value = '导出完成！'
-
-    // Reset after a delay
-    setTimeout(() => {
-      isExporting.value = false
-      exportProgress.value = 0
-      exportMessage.value = ''
-      vaultPassword.value = ''
-    }, 2000)
 
   } catch (error) {
     console.error('Export failed:', error)
@@ -235,6 +232,7 @@ const handleExport = async () => {
       v-if="isExporting"
       :progress="exportProgress"
       :message="exportMessage"
+      @close="isExporting = false"
     />
   </div>
 </template>

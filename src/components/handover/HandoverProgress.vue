@@ -13,6 +13,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['close'])
+
 const progressPercentage = computed(() => {
   return Math.min(Math.max(props.progress, 0), 100)
 })
@@ -20,10 +22,17 @@ const progressPercentage = computed(() => {
 const isComplete = computed(() => {
   return progressPercentage.value >= 100
 })
+
+const handleClose = (e) => {
+  e.preventDefault()
+  if (isComplete.value) {
+    emit('close')
+  }
+}
 </script>
 
 <template>
-  <div class="handover-progress-overlay">
+  <div class="handover-progress-overlay" @click.self="handleClose">
     <div class="progress-container">
       <div class="progress-icon">
         <Loading

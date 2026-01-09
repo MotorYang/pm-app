@@ -1,128 +1,70 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tauri::Manager;
 use zip::{ZipWriter, write::FileOptions};
+use chrono::{DateTime, Utc};
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ExportOptions {
-    pub include_project: bool,
-    pub include_documents: bool,
-    pub include_vault: bool,
-}
+// ---------------- Structs ----------------
 
+// 项目信息Struct
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ProjectInfo {
-    pub id: i64,
+pub struct Project {
     pub name: String,
     pub path: String,
     pub description: Option<String>,
     pub created_at: String,
+    pub last_accessed: DateTime<Utc>,
+    pub settings: Option<String>,
 }
 
+// 文档信息Struct
 #[derive(Debug, Deserialize, Serialize)]
-pub struct DocumentInfo {
+pub struct Document {
     pub id: i64,
+    pub project_id: i64,
     pub title: String,
     pub folder: String,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
+// 保险箱Struct
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VaultEntry {
-    pub key: String,
-    pub encrypted_key: String,
+    pub project_id: i64,
+    pub title: String,
+    pub username: String,
+    pub encrypted_password: String,
+    pub encrypted_notes: String,
+    pub url: String,
     pub category: String,
+    pub salt: String,
+    pub nonce: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
-#[tauri::command]
-pub async fn export_project_handover(
-    app: tauri::AppHandle,
-    project: Option<ProjectInfo>,
-    documents: Vec<DocumentInfo>,
-    vault_entries: Vec<VaultEntry>,
-    output_path: String,
-    options: ExportOptions,
-) -> Result<(), String> {
-    let file = fs::File::create(&output_path).map_err(|e| e.to_string())?;
+// 保险箱管理密码Struct
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VaultMaster {
+    pub project_id: i64,
+    pub password_hash: String,
+    pub salt: String,
+    pub created_at: DateTime<Utc>,
+}
 
-    let mut zip = ZipWriter::new(file);
-    let zip_options = FileOptions::default();
+// ---------------- Helper Functions ----------------
 
-    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
-
-    /* ---------- project ---------- */
-    if options.include_project {
-        if let Some(project) = project {
-            zip.start_file("project/info.json", zip_options)
-                .map_err(|e| e.to_string())?;
-
-            zip.write_all(
-                serde_json::to_string_pretty(&project)
-                    .map_err(|e| e.to_string())?
-                    .as_bytes(),
-            )
-            .map_err(|e| e.to_string())?;
-        }
+/// 安全转换文件名/文件夹名，替换特殊字符
+fn sanitize_filename(name: &str) -> String {
+    let forbidden_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', ' '];
+    let mut sanitized = name.to_string();
+    for c in forbidden_chars {
+        sanitized = sanitized.replace(c, "_");
     }
-
-    /* ---------- documents ---------- */
-    if options.include_documents {
-        for doc in documents {
-            let doc_dir = app_data_dir
-                .join("data/documents")
-                .join(format!("doc-{}", doc.id));
-
-            let index_md = doc_dir.join("index.md");
-            if index_md.exists() {
-                let content = fs::read_to_string(&index_md).map_err(|e| e.to_string())?;
-
-                let zip_path = if doc.folder == "/" {
-                    format!("documents/{}.md", doc.title)
-                } else {
-                    format!("documents{}/{}.md", doc.folder, doc.title)
-                };
-
-                zip.start_file(&zip_path, zip_options)
-                    .map_err(|e| e.to_string())?;
-
-                zip.write_all(content.as_bytes())
-                    .map_err(|e| e.to_string())?;
-            }
-
-            // 复制 images 文件夹
-            let images_dir = doc_dir.join("images");
-            if images_dir.exists() {
-                add_directory_to_zip(
-                    &mut zip,
-                    &images_dir,
-                    &format!("documents/{}/images", doc.title),
-                    zip_options,
-                )?;
-            }
-        }
-    }
-
-    /* ---------- vault ---------- */
-    if options.include_vault {
-        let vault_json = serde_json::json!({
-            "entries": vault_entries,
-            "exported_at": chrono::Utc::now().to_rfc3339(),
-        });
-
-        zip.start_file("vault/entries.json", zip_options)
-            .map_err(|e| e.to_string())?;
-
-        zip.write_all(
-            serde_json::to_string_pretty(&vault_json)
-                .map_err(|e| e.to_string())?
-                .as_bytes(),
-        )
-        .map_err(|e| e.to_string())?;
-    }
-
-    zip.finish().map_err(|e| e.to_string())?;
-    Ok(())
+    sanitized
 }
 
 /// 递归把目录添加到 ZIP
@@ -138,19 +80,119 @@ fn add_directory_to_zip(
         let name = entry.file_name();
         let name = name.to_string_lossy();
 
-        let zip_path = format!("{}/{}", zip_base, name);
+        // 构造 ZIP 内路径，保证干净整齐
+        let zip_path = format!("{}/{}", zip_base.trim_end_matches('/'), name);
 
         if path.is_dir() {
             // 递归子目录
             add_directory_to_zip(zip, &path, &zip_path, options)?;
         } else {
             let content = fs::read(&path).map_err(|e| e.to_string())?;
-
-            zip.start_file(&zip_path, options)
-                .map_err(|e| e.to_string())?;
-
+            zip.start_file(&zip_path, options).map_err(|e| e.to_string())?;
             zip.write_all(&content).map_err(|e| e.to_string())?;
         }
     }
+    Ok(())
+}
+
+// ---------------- Export Function ----------------
+
+#[tauri::command]
+pub async fn export_project_handover(
+    app: tauri::AppHandle,
+    project: Project,
+    documents: Option<Vec<Document>>,
+    vault_entries: Option<Vec<VaultEntry>>,
+    vault_masters: Option<VaultMaster>,
+    output_path: String,
+) -> Result<(), String> {
+    // 创建 ZIP 文件
+    let file = fs::File::create(&output_path).map_err(|e| e.to_string())?;
+    let mut zip = ZipWriter::new(file);
+    let zip_options = FileOptions::default();
+
+    // 获取应用数据目录
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+
+    // ---------------- 导出项目 ----------------
+    zip.start_file("project/info.json", zip_options)
+        .map_err(|e| e.to_string())?;
+    zip.write_all(
+        serde_json::to_string_pretty(&project)
+            .map_err(|e| e.to_string())?
+            .as_bytes(),
+    )
+        .map_err(|e| e.to_string())?;
+
+    // ---------------- 导出文档 ----------------
+    if let Some(documents) = documents {
+        for doc in documents {
+            let doc_dir = app_data_dir
+                .join("data/documents")
+                .join(format!("doc-{}", doc.id));
+
+            // index.md
+            let index_md = doc_dir.join("index.md");
+            if index_md.exists() {
+                let content = fs::read_to_string(&index_md).map_err(|e| e.to_string())?;
+
+                // 安全化 folder 和 title
+                let safe_folder = if doc.folder == "/" {
+                    "".to_string()
+                } else {
+                    sanitize_filename(&doc.folder)
+                };
+                let safe_title = sanitize_filename(&doc.title);
+
+                // 构造 zip 中文档路径
+                let zip_path = if safe_folder.is_empty() {
+                    format!("documents/{}/{}.md", safe_title, safe_title)
+                } else {
+                    format!("documents/{}/{}.md", safe_folder, safe_title)
+                };
+
+                zip.start_file(&zip_path, zip_options)
+                    .map_err(|e| e.to_string())?;
+                zip.write_all(content.as_bytes())
+                    .map_err(|e| e.to_string())?;
+            }
+
+            // images 文件夹
+            let images_dir = doc_dir.join("images");
+            if images_dir.exists() {
+                let safe_folder = if doc.folder == "/" {
+                    "".to_string()
+                } else {
+                    sanitize_filename(&doc.folder)
+                };
+                let safe_title = sanitize_filename(&doc.title);
+                let zip_images_path = if safe_folder.is_empty() {
+                    format!("documents/{}/images", safe_title)
+                } else {
+                    format!("documents/{}/{}/images", safe_folder, safe_title)
+                };
+                add_directory_to_zip(&mut zip, &images_dir, &zip_images_path, zip_options)?;
+            }
+        }
+    }
+
+    // ---------------- 导出保险箱 ----------------
+    let vault_json = serde_json::json!({
+        "entries": vault_entries,
+        "masters": vault_masters,
+        "exported_at": chrono::Utc::now().to_rfc3339(),
+    });
+
+    zip.start_file("vault/entries.json", zip_options)
+        .map_err(|e| e.to_string())?;
+    zip.write_all(
+        serde_json::to_string_pretty(&vault_json)
+            .map_err(|e| e.to_string())?
+            .as_bytes(),
+    )
+        .map_err(|e| e.to_string())?;
+
+    // 完成 ZIP
+    zip.finish().map_err(|e| e.to_string())?;
     Ok(())
 }
