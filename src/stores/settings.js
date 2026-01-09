@@ -6,6 +6,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const db = ref(null)
   const editorPath = ref('')
   const closeButtonBehavior = ref('hide') // 'hide' or 'quit'
+  const exportProjectBehavior = ref('ignore-plugin-directory') // 'ignore-plugin-directory' | 'all-directory'
   const loading = ref(false)
   const error = ref(null)
 
@@ -21,28 +22,28 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       loading.value = true
       error.value = null
-
       await initDB()
 
-      // Load editor path
+      // editorPath
       const editorResult = await db.value.select(
-        "SELECT value FROM app_settings WHERE key = 'editor_path'"
+          "SELECT value FROM app_settings WHERE key = 'editor_path'"
       )
+      if (editorResult.length > 0) editorPath.value = editorResult[0].value
 
-      if (editorResult.length > 0) {
-        editorPath.value = editorResult[0].value
-      }
-
-      // Load close button behavior
+      // closeButtonBehavior
       const closeResult = await db.value.select(
-        "SELECT value FROM app_settings WHERE key = 'close_button_behavior'"
+          "SELECT value FROM app_settings WHERE key = 'close_button_behavior'"
       )
+      closeButtonBehavior.value = closeResult.length > 0 ? closeResult[0].value : 'hide'
 
-      if (closeResult.length > 0) {
-        closeButtonBehavior.value = closeResult[0].value
-      } else {
-        closeButtonBehavior.value = 'hide' // default
-      }
+      // exportProjectBehavior
+      const exportResult = await db.value.select(
+          "SELECT value FROM app_settings WHERE key = 'export_project_behavior'"
+      )
+      exportProjectBehavior.value = exportResult.length > 0
+          ? exportResult[0].value
+          : 'ignore-plugin-directory'
+
     } catch (err) {
       error.value = err.message
       console.error('Failed to load settings:', err)
@@ -51,33 +52,23 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  // Save editor path
+  // Save generic setting
+  const saveSetting = async (key, value) => {
+    await initDB()
+    const result = await db.value.select("SELECT value FROM app_settings WHERE key = $1", [key])
+    if (result.length > 0) {
+      await db.value.execute("UPDATE app_settings SET value = $1 WHERE key = $2", [value, key])
+    } else {
+      await db.value.execute("INSERT INTO app_settings (key, value) VALUES ($1, $2)", [key, value])
+    }
+  }
+
+  // Save editorPath
   const saveEditorPath = async (path) => {
     try {
       loading.value = true
       error.value = null
-
-      await initDB()
-
-      // Check if setting exists
-      const result = await db.value.select(
-        "SELECT value FROM app_settings WHERE key = 'editor_path'"
-      )
-
-      if (result.length > 0) {
-        // Update existing setting
-        await db.value.execute(
-          "UPDATE app_settings SET value = $1 WHERE key = 'editor_path'",
-          [path]
-        )
-      } else {
-        // Insert new setting
-        await db.value.execute(
-          "INSERT INTO app_settings (key, value) VALUES ('editor_path', $1)",
-          [path]
-        )
-      }
-
+      await saveSetting('editor_path', path)
       editorPath.value = path
     } catch (err) {
       error.value = err.message
@@ -87,34 +78,28 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  // Save close button behavior
+  // Save closeButtonBehavior
   const saveCloseButtonBehavior = async (behavior) => {
     try {
       loading.value = true
       error.value = null
-
-      await initDB()
-
-      // Check if setting exists
-      const result = await db.value.select(
-        "SELECT value FROM app_settings WHERE key = 'close_button_behavior'"
-      )
-
-      if (result.length > 0) {
-        // Update existing setting
-        await db.value.execute(
-          "UPDATE app_settings SET value = $1 WHERE key = 'close_button_behavior'",
-          [behavior]
-        )
-      } else {
-        // Insert new setting
-        await db.value.execute(
-          "INSERT INTO app_settings (key, value) VALUES ('close_button_behavior', $1)",
-          [behavior]
-        )
-      }
-
+      await saveSetting('close_button_behavior', behavior)
       closeButtonBehavior.value = behavior
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Save exportProjectBehavior
+  const saveExportProjectBehavior = async (behavior) => {
+    try {
+      loading.value = true
+      error.value = null
+      await saveSetting('export_project_behavior', behavior)
+      exportProjectBehavior.value = behavior
     } catch (err) {
       error.value = err.message
       throw err
@@ -127,12 +112,14 @@ export const useSettingsStore = defineStore('settings', () => {
     // State
     editorPath,
     closeButtonBehavior,
+    exportProjectBehavior,
     loading,
     error,
 
     // Actions
     loadSettings,
     saveEditorPath,
-    saveCloseButtonBehavior
+    saveCloseButtonBehavior,
+    saveExportProjectBehavior
   }
 })

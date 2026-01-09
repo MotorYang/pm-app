@@ -55,6 +55,14 @@ pub struct VaultMaster {
     pub created_at: DateTime<Utc>,
 }
 
+// 导出选项
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ExportOptions {
+    pub ignore_plugin: String,
+    pub zip_encryption: bool,
+    pub zip_password: Option<String>,
+}
+
 // ---------------- Helper Functions ----------------
 
 /// 安全转换文件名/文件夹名，替换特殊字符
@@ -73,25 +81,48 @@ fn add_directory_to_zip(
     dir: &Path,
     zip_base: &str,
     options: FileOptions,
+    ignore: bool, // 是否忽略平台插件目录，如IGNORE_DIRS
 ) -> Result<(), String> {
+    const IGNORE_DIRS: &[&str] = &[
+        ".git",
+        "target",
+        "node_modules",
+        ".idea",
+        ".vscode",
+        ".DS_Store",
+    ];
+
     for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let path = entry.path();
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
+        let file_name = entry.file_name();
+        let name = file_name.to_string_lossy();
 
-        // 构造 ZIP 内路径，保证干净整齐
+        // 忽略黑名单目录/文件
+        if ignore {
+            if IGNORE_DIRS.iter().any(|i| *i == name) {
+                continue;
+            }
+        }
+
+        let file_type = entry.file_type().map_err(|e| e.to_string())?;
+
+        // 跳过符号链接（macOS / Linux）
+        if file_type.is_symlink() {
+            continue;
+        }
+
         let zip_path = format!("{}/{}", zip_base.trim_end_matches('/'), name);
 
-        if path.is_dir() {
-            // 递归子目录
-            add_directory_to_zip(zip, &path, &zip_path, options)?;
-        } else {
+        if file_type.is_dir() {
+            add_directory_to_zip(zip, &path, &zip_path, options, ignore)?;
+        } else if file_type.is_file() {
             let content = fs::read(&path).map_err(|e| e.to_string())?;
             zip.start_file(&zip_path, options).map_err(|e| e.to_string())?;
             zip.write_all(&content).map_err(|e| e.to_string())?;
         }
     }
+
     Ok(())
 }
 
@@ -105,6 +136,7 @@ pub async fn export_project_handover(
     vault_entries: Option<Vec<VaultEntry>>,
     vault_masters: Option<VaultMaster>,
     output_path: String,
+    export_options: ExportOptions,
 ) -> Result<(), String> {
     // 创建 ZIP 文件
     let file = fs::File::create(&output_path).map_err(|e| e.to_string())?;
@@ -123,6 +155,25 @@ pub async fn export_project_handover(
             .as_bytes(),
     )
         .map_err(|e| e.to_string())?;
+
+    let project_root = PathBuf::from(&project.path);
+    if project_root.exists() && project_root.is_dir() {
+        let project_folder_name = sanitize_filename(
+            project_root
+                .file_name()
+                .ok_or("Invalid project path")?
+                .to_string_lossy()
+                .as_ref()
+        );
+        let zip_project_path = format!("project/{}", project_folder_name);
+        add_directory_to_zip(
+            &mut zip,
+            &project_root,
+            &zip_project_path,
+            zip_options,
+            export_options.ignore_plugin.eq("ignore-plugin-directory")
+        )?;
+    }
 
     // ---------------- 导出文档 ----------------
     if let Some(documents) = documents {
@@ -171,7 +222,7 @@ pub async fn export_project_handover(
                 } else {
                     format!("documents/{}/{}/images", safe_folder, safe_title)
                 };
-                add_directory_to_zip(&mut zip, &images_dir, &zip_images_path, zip_options)?;
+                add_directory_to_zip(&mut zip, &images_dir, &zip_images_path, zip_options, false)?;
             }
         }
     }

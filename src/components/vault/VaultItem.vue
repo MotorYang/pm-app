@@ -100,22 +100,22 @@ const handleDelete = () => {
       <div class="item-info">
         <div v-if="entry.username" class="info-row">
           <User :size="16" theme="outline" />
-          <span class="info-label">用户名:</span>
+          <span class="info-label">键:</span>
           <span class="info-value">{{ entry.username }}</span>
-          <button class="copy-btn" @click="handleCopyUsername" title="复制用户名">
+          <button class="copy-btn" @click="handleCopyUsername" title="复制键">
             <Copy :size="14" theme="outline" />
           </button>
         </div>
 
         <div class="info-row">
           <Lock :size="16" theme="outline" />
-          <span class="info-label">密码:</span>
+          <span class="info-label">值:</span>
           <span v-if="loading" class="info-value">加载中...</span>
           <span v-else-if="showPassword && decryptedData" class="info-value password">
             {{ decryptedData.password }}
           </span>
           <span v-else class="info-value">••••••••</span>
-          <button class="copy-btn" @click="handleCopyPassword" title="复制密码">
+          <button class="copy-btn" @click="handleCopyPassword" title="复制值">
             <Copy :size="14" theme="outline" />
           </button>
           <button class="view-btn" @click="togglePasswordVisibility" :title="showPassword ? '隐藏密码' : '显示密码'">

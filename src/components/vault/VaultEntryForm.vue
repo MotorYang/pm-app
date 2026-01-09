@@ -144,21 +144,21 @@ const handleClose = () => {
 
       <!-- Username -->
       <div class="form-group">
-        <label class="form-label">用户名</label>
+        <label class="form-label">键（可选）</label>
         <CartoonInput
           v-model="formData.username"
-          placeholder="用户名或邮箱"
+          placeholder="用户名称，参数名称，Api名称等"
         />
       </div>
 
       <!-- Password with Generator -->
       <div class="form-group">
-        <label class="form-label">密码 *</label>
+        <label class="form-label">值 *</label>
         <div class="password-input-group">
           <CartoonInput
             v-model="formData.password"
             type="text"
-            placeholder="输入或生成密码"
+            placeholder="输入或生成值"
           />
           <CartoonButton variant="secondary" @click="handleGeneratePassword">
             <Refresh :size="16" theme="outline" />
