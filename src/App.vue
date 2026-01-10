@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import ProjectView from '@/views/ProjectView.vue'
 import ShortcutCard from '@/components/shortcuts/ShortcutCard.vue'
 import ShortcutDialog from '@/components/shortcuts/ShortcutDialog.vue'
+import ContextMenu from '@/components/ui/ContextMenu.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useShortcutsStore } from '@/stores/shortcuts'
 import { useConfirm } from '@/composables/useConfirm'
@@ -117,6 +118,9 @@ const handleSaveShortcut = (data) => {
       :edit-data="editingShortcut"
       @save="handleSaveShortcut"
     />
+
+    <!-- 全局右键菜单 -->
+    <ContextMenu />
   </div>
 </template>
 

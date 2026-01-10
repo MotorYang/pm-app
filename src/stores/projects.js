@@ -87,6 +87,53 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
 
+  async function updateProject(id, projectData) {
+    loading.value = true
+    error.value = null
+    try {
+      const database = await getDb()
+      const fields = []
+      const values = []
+
+      if (projectData.name !== undefined) {
+        fields.push('name = ?')
+        values.push(projectData.name)
+      }
+      if (projectData.path !== undefined) {
+        fields.push('path = ?')
+        values.push(projectData.path)
+      }
+      if (projectData.description !== undefined) {
+        fields.push('description = ?')
+        values.push(projectData.description)
+      }
+      if (projectData.color !== undefined) {
+        fields.push('color = ?')
+        values.push(projectData.color)
+      }
+
+      if (fields.length > 0) {
+        values.push(id)
+        await database.execute(
+          `UPDATE projects SET ${fields.join(', ')} WHERE id = ?`,
+          values
+        )
+
+        // 更新本地数据
+        const project = projects.value.find(p => p.id === id)
+        if (project) {
+          Object.assign(project, projectData)
+        }
+      }
+    } catch (e) {
+      error.value = e.message || 'Failed to update project'
+      console.error('Failed to update project:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function setActiveProject(id) {
     activeProjectId.value = id
     if (id) {
@@ -127,6 +174,7 @@ export const useProjectsStore = defineStore('projects', () => {
     loadProjects,
     addProject,
     deleteProject,
+    updateProject,
     setActiveProject,
     clearError
   }

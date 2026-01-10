@@ -54,6 +54,7 @@ export const useDocumentsStore = defineStore('documents', () => {
   async function loadDocuments(projectId) {
     if (!projectId) {
       documents.value = []
+      closeDocument()
       return
     }
 
@@ -67,6 +68,13 @@ export const useDocumentsStore = defineStore('documents', () => {
         [projectId]
       )
       documents.value = result
+
+      // 自动打开第一个文档
+      if (result.length > 0) {
+        await openDocument(result[0].id)
+      } else {
+        closeDocument()
+      }
     } catch (e) {
       error.value = e.message || 'Failed to load documents'
       console.error('Failed to load documents:', e)
