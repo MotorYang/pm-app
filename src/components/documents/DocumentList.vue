@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { FolderOpen, Plus, Delete, Edit } from '@icon-park/vue-next'
+import {FolderOpen, Plus, Delete, Edit, Text} from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import { useDocumentsStore } from '@/stores/documents'
 import { useConfirm } from '@/composables/useConfirm.js'
+import { useContextMenu } from '@/composables/useContextMenu'
 
 const documentsStore = useDocumentsStore()
+const contextMenu = useContextMenu()
 const confirmDialog = useConfirm()
 const emit = defineEmits(['create'])
 
@@ -41,6 +43,24 @@ const handleDocumentClick = (doc) => {
 
 const handleCreate = () => {
   emit('create')
+}
+
+const handleContextMenu = (doc, event) => {
+  const menuItems = [
+    {
+      label: '重命名',
+      icon: Text,
+      action: () => handleRename(doc, event)
+    },
+    { divider: true },
+    {
+      label: '删除文档',
+      icon: Delete,
+      danger: true,
+      action: () => handleDelete(doc, event)
+    }
+  ]
+  contextMenu.show(event, menuItems)
 }
 
 const handleDelete = async (doc, event) => {
@@ -142,6 +162,7 @@ const handleCloseRenameModal = () => {
               class="document-item"
               :class="{ active: doc.id === documentsStore.activeDocumentId }"
               @click="handleDocumentClick(doc)"
+              @contextmenu="handleContextMenu(doc, $event)"
             >
               <span class="document-name">{{ doc.title }}.md</span>
               <span
@@ -150,22 +171,6 @@ const handleCloseRenameModal = () => {
               >
                 ●
               </span>
-              <div class="document-actions">
-                <button
-                  class="action-btn"
-                  title="重命名"
-                  @click="handleRename(doc, $event)"
-                >
-                  <Edit :size="14" theme="outline" />
-                </button>
-                <button
-                  class="action-btn danger"
-                  title="删除"
-                  @click="handleDelete(doc, $event)"
-                >
-                  <Delete :size="14" theme="outline" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -304,7 +309,6 @@ const handleCloseRenameModal = () => {
 
 .document-item:hover {
   background-color: var(--color-bg-tertiary);
-  transform: translateX(2px);
 }
 
 .document-item.active {
