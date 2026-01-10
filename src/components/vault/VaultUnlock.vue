@@ -94,8 +94,8 @@ const handleKeyPress = (event) => {
       <div class="unlock-content">
         <!-- Lock Icon -->
         <div class="lock-icon">
-          <Lock v-if="isInitialized" :size="64" theme="outline" />
-          <Key v-else :size="64" theme="outline" />
+          <Lock v-if="isInitialized" :size="48" theme="outline" />
+          <Key v-else :size="48" theme="outline" />
         </div>
 
         <!-- Title -->
@@ -148,13 +148,12 @@ const handleKeyPress = (event) => {
         <!-- Unlock/Initialize Button -->
         <CartoonButton
           variant="primary"
-          size="lg"
           @click="isInitialized ? handleUnlock() : handleInitialize()"
           :loading="loading"
           :disabled="loading"
           class="unlock-button"
         >
-          <Unlock :size="20" theme="outline" />
+          <Unlock :size="16" theme="outline" />
           {{ isInitialized ? '解锁' : '创建保险箱' }}
         </CartoonButton>
       </div>
@@ -167,12 +166,12 @@ const handleKeyPress = (event) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  padding: var(--spacing-xl);
+  min-height: 300px;
+  padding: var(--spacing-md);
 }
 
 .unlock-card {
-  max-width: 500px;
+  max-width: 400px;
   width: 100%;
 }
 
@@ -180,16 +179,15 @@ const handleKeyPress = (event) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .lock-icon {
   color: var(--color-primary);
-  margin-bottom: var(--spacing-md);
 }
 
 .unlock-title {
-  font-size: var(--font-size-xxl);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
@@ -197,7 +195,7 @@ const handleKeyPress = (event) => {
 }
 
 .unlock-description {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   text-align: center;
   margin: 0;
@@ -207,29 +205,29 @@ const handleKeyPress = (event) => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .input-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
 }
 
 .error-message {
   width: 100%;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background-color: rgba(255, 71, 87, 0.1);
   border: var(--border-width) solid var(--color-danger);
   border-radius: var(--border-radius-md);
   color: var(--color-danger);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   text-align: center;
 }
 
 .warning-box {
   width: 100%;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background-color: rgba(255, 217, 61, 0.1);
   border: var(--border-width) solid var(--color-warning);
   border-radius: var(--border-radius-md);
@@ -238,17 +236,17 @@ const handleKeyPress = (event) => {
 
 .warning-box p {
   margin: 0;
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
 }
 
 .warning-box p:first-child {
   font-weight: var(--font-weight-bold);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: 2px;
 }
 
 .unlock-button {
   width: 100%;
-  margin-top: var(--spacing-md);
+  margin-top: var(--spacing-xs);
 }
 </style>

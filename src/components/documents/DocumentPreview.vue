@@ -119,11 +119,8 @@ const convertLocalImages = async () => {
         const filename = href.substring(7) // Remove 'images/' prefix
         let fullPath = `${imagesPath}\\${filename}`
 
-        console.log('Original path:', fullPath)
-
         // Convert to Tauri accessible URL
         const assetUrl = convertFileSrc(fullPath)
-        console.log('Converted URL:', assetUrl)
 
         img.src = assetUrl
       } catch (error) {

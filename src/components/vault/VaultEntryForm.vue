@@ -20,8 +20,8 @@ const vaultStore = useVaultStore()
 
 const formData = ref({
   title: '',
-  username: '',
-  password: '',
+  paramKey: '',
+  paramValue: '',
   notes: '',
   url: '',
   category: 'general'
@@ -49,10 +49,11 @@ onMounted(async () => {
     // Load and decrypt existing entry
     try {
       const decrypted = await vaultStore.decryptEntry(props.entry)
+      console.log(decrypted)
       formData.value = {
         title: decrypted.title,
-        username: decrypted.username || '',
-        password: decrypted.password,
+        paramKey: decrypted.paramKey || '',
+        paramValue: decrypted.paramValue,
         notes: decrypted.notes || '',
         url: decrypted.url || '',
         category: decrypted.category
@@ -72,9 +73,9 @@ const handleGeneratePassword = async () => {
       includeNumbers: includeNumbers.value,
       includeSymbols: includeSymbols.value
     })
-    formData.value.password = password
+    formData.value.paramValue = password
   } catch (err) {
-    errorMessage.value = '生成密码失败: ' + err.message
+    errorMessage.value = '生成值失败: ' + err.message
   }
 }
 
@@ -85,8 +86,8 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!formData.value.password) {
-    errorMessage.value = '请输入或生成密码'
+  if (!formData.value.paramValue) {
+    errorMessage.value = '请输入或生成值'
     return
   }
 
@@ -128,7 +129,7 @@ const handleClose = () => {
         <label class="form-label">标题 *</label>
         <CartoonInput
           v-model="formData.title"
-          placeholder="例如: GitHub账号, 数据库密码"
+          placeholder="例如: GitHub账号, 数据库连接"
         />
       </div>
 
@@ -146,8 +147,8 @@ const handleClose = () => {
       <div class="form-group">
         <label class="form-label">键（可选）</label>
         <CartoonInput
-          v-model="formData.username"
-          placeholder="用户名称，参数名称，Api名称等"
+          v-model="formData.paramKey"
+          placeholder="键名称，如: username, api_key 等"
         />
       </div>
 
@@ -156,12 +157,12 @@ const handleClose = () => {
         <label class="form-label">值 *</label>
         <div class="password-input-group">
           <CartoonInput
-            v-model="formData.password"
+            v-model="formData.paramValue"
             type="text"
             placeholder="输入或生成值"
           />
           <CartoonButton variant="secondary" @click="handleGeneratePassword">
-            <Refresh :size="16" theme="outline" />
+            <Refresh :size="14" theme="outline" />
             生成
           </CartoonButton>
         </div>
@@ -231,11 +232,11 @@ const handleClose = () => {
       <!-- Actions -->
       <div class="form-actions">
         <CartoonButton variant="secondary" @click="handleClose">
-          <Close :size="16" theme="outline" />
+          <Close :size="14" theme="outline" />
           取消
         </CartoonButton>
         <CartoonButton variant="primary" @click="handleSubmit" :loading="loading" :disabled="loading">
-          <Check :size="16" theme="outline" />
+          <Check :size="14" theme="outline" />
           {{ entry ? '更新' : '创建' }}
         </CartoonButton>
       </div>
@@ -247,28 +248,28 @@ const handleClose = () => {
 .entry-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .form-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
 }
 
 .category-select {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
   background-color: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius-md);
   color: var(--color-text-primary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-family: inherit;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -281,70 +282,73 @@ const handleClose = () => {
 
 .password-input-group {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .generator-options {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background-color: var(--color-bg-tertiary);
   border-radius: var(--border-radius-md);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .option-row {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .option-label {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-sm);
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .length-input {
-  width: 60px;
-  padding: 4px var(--spacing-sm);
+  width: 50px;
+  padding: 2px var(--spacing-xs);
   background-color: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius-sm);
   color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
+  gap: 4px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .checkbox-label input[type="checkbox"] {
   cursor: pointer;
+  width: 12px;
+  height: 12px;
 }
 
 .error-message {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background-color: rgba(255, 71, 87, 0.1);
   border: var(--border-width) solid var(--color-danger);
   border-radius: var(--border-radius-md);
   color: var(--color-danger);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   text-align: center;
 }
 
 .form-actions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   justify-content: flex-end;
-  padding-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
   border-top: var(--border-width) solid var(--color-border);
 }
 </style>

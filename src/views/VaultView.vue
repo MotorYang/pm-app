@@ -20,11 +20,12 @@ onMounted(async () => {
 })
 
 watch(() => projectsStore.activeProject, async (newProject) => {
+  // 切换项目时先锁定保险箱，重置状态
+  vaultStore.lockVault()
+  isInitialized.value = false
+
   if (newProject) {
     await checkVaultStatus()
-  } else {
-    vaultStore.lockVault()
-    isInitialized.value = false
   }
 })
 

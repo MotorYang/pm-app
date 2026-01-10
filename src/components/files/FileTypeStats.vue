@@ -50,10 +50,7 @@ const topStats = computed(() => {
               :style="{ backgroundColor: getColor(index) }"
             ></div>
             <span class="stat-type">{{ stat.type }}</span>
-            <span class="stat-count">({{ stat.count }} 个文件)</span>
-          </div>
-          <div class="stat-size">
-            {{ filesStore.formatSize(stat.size) }}
+            <span class="stat-count">({{ stat.count }})</span>
           </div>
         </div>
 
@@ -67,9 +64,8 @@ const topStats = computed(() => {
           ></div>
         </div>
 
-        <div class="stat-percentage">
-          {{ stat.percentage }}%
-        </div>
+        <div class="stat-size">{{ filesStore.formatSize(stat.size) }}</div>
+        <div class="stat-percentage">{{ stat.percentage }}%</div>
       </div>
 
       <div v-if="stats.length > 10" class="more-types">
@@ -81,76 +77,77 @@ const topStats = computed(() => {
 
 <style scoped>
 .file-type-stats {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
 }
 
 .section-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .no-data {
   text-align: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .stats-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
 .stat-item {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .stat-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
+  min-width: 140px;
 }
 
 .stat-info {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  flex: 1;
-  min-width: 0;
+  gap: var(--spacing-xs);
 }
 
 .stat-color {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .stat-type {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }
 
 .stat-count {
-  font-size: var(--font-size-sm);
+  font-size: 10px;
   color: var(--color-text-tertiary);
 }
 
 .stat-size {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   flex-shrink: 0;
+  min-width: 60px;
+  text-align: right;
 }
 
 .stat-bar {
-  height: 8px;
+  flex: 1;
+  height: 6px;
   background-color: var(--color-bg-tertiary);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
@@ -163,15 +160,17 @@ const topStats = computed(() => {
 }
 
 .stat-percentage {
-  font-size: var(--font-size-sm);
+  font-size: 10px;
   color: var(--color-text-tertiary);
+  min-width: 32px;
   text-align: right;
 }
 
 .more-types {
   text-align: center;
-  padding: var(--spacing-md);
-  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) 0 0 0;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
   border-top: 1px dashed var(--color-border);
 }

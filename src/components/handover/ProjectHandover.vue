@@ -10,10 +10,13 @@ import CartoonInput from '@/components/ui/CartoonInput.vue'
 import HandoverProgress from './HandoverProgress.vue'
 import { useDocumentsStore } from '@/stores/documents.js'
 import { useSettingsStore } from '@/stores/settings.js'
+import { useVaultStore } from '@/stores/vault.js'
+import Database from '@tauri-apps/plugin-sql'
 
 const projectsStore = useProjectsStore()
 const documentsStore = useDocumentsStore()
 const settingsStore = useSettingsStore()
+const vaultStore = useVaultStore()
 const tauri = useTauri()
 
 const selectedItems = ref({
@@ -35,10 +38,12 @@ const checkVaultData = async () => {
   if (!projectsStore.activeProject) return
 
   try {
-    const result = await tauri.invokeCommand('check_vault_has_data', {
-      projectId: projectsStore.activeProject.id
-    })
-    hasVaultData.value = result
+    const db = await Database.load('sqlite:pm-app.db')
+    const result = await db.select(
+      'SELECT COUNT(*) as count FROM vault_entries WHERE project_id = $1',
+      [projectsStore.activeProject.id]
+    )
+    hasVaultData.value = result[0].count > 0
   } catch (error) {
     console.error('Failed to check vault data:', error)
     hasVaultData.value = false
@@ -99,6 +104,23 @@ const handleExport = async () => {
     exportProgress.value = 0
     exportMessage.value = '准备导出...'
 
+    // 如果选择了保险箱，需要先验证密码并加载数据
+    let vaultEntriesToExport = []
+    if (selectedItems.value.vault) {
+      exportMessage.value = '验证保险箱密码...'
+      try {
+        // 先解锁保险箱（会验证密码并加载数据）
+        await vaultStore.unlockVault(projectsStore.activeProject.id, vaultPassword.value)
+        vaultEntriesToExport = vaultStore.entries
+      } catch (err) {
+        errorMessage.value = '保险箱密码验证失败: ' + err.message
+        isExporting.value = false
+        return
+      }
+    }
+
+    exportMessage.value = '正在导出...'
+
     /*
     * 调用Rust后端来导出项目
     */
@@ -106,8 +128,8 @@ const handleExport = async () => {
       project: projectsStore.activeProject,
       outputPath: filePath,
       documents: selectedItems.value.documents ? documentsStore.documents: [],
-      vaultEntries: selectedItems.value.vault ? [] : [],
-      vaultMasters: selectedItems.value.vault ? null : null,
+      vaultEntries: vaultEntriesToExport,
+      vaultMasters: selectedItems.value.vault ? vaultPassword.value : null,
       exportOptions: {
         ignore_plugin: settingsStore.exportProjectBehavior,
         zip_encryption: false,
@@ -157,7 +179,7 @@ const handleExport = async () => {
               />
               <div class="checkbox-content">
                 <div class="checkbox-header">
-                  <FolderClose :size="20" theme="outline" />
+                  <FolderClose :size="16" theme="outline" />
                   <span class="checkbox-label">项目文件</span>
                 </div>
                 <p class="checkbox-description">包含项目的基本信息和配置</p>
@@ -171,47 +193,47 @@ const handleExport = async () => {
               />
               <div class="checkbox-content">
                 <div class="checkbox-header">
-                  <FileText :size="20" theme="outline" />
+                  <FileText :size="16" theme="outline" />
                   <span class="checkbox-label">文档库</span>
                 </div>
                 <p class="checkbox-description">包含所有文档和图片资源</p>
               </div>
             </label>
 
-            <label
-              class="checkbox-item"
-              :class="{ disabled: !hasVaultData }"
+            <div
+              class="checkbox-item vault-item"
+              :class="{ disabled: !hasVaultData, selected: selectedItems.vault }"
             >
-              <input
-                type="checkbox"
-                v-model="selectedItems.vault"
-                :disabled="!hasVaultData"
-                @change="handleVaultChange"
-              />
-              <div class="checkbox-content">
-                <div class="checkbox-header">
-                  <Lock :size="20" theme="outline" />
-                  <span class="checkbox-label">保险箱</span>
-                  <span v-if="!hasVaultData" class="badge-empty">无数据</span>
+              <label class="checkbox-main">
+                <input
+                  type="checkbox"
+                  v-model="selectedItems.vault"
+                  :disabled="!hasVaultData"
+                  @change="handleVaultChange"
+                />
+                <div class="checkbox-content">
+                  <div class="checkbox-header">
+                    <Lock :size="16" theme="outline" />
+                    <span class="checkbox-label">保险箱</span>
+                    <span v-if="!hasVaultData" class="badge-empty">无数据</span>
+                  </div>
+                  <p class="checkbox-description">包含加密存储的敏感信息</p>
                 </div>
-                <p class="checkbox-description">包含加密存储的敏感信息</p>
-              </div>
-            </label>
-          </div>
+              </label>
 
-          <!-- Vault password input -->
-          <div v-if="showPasswordInput" class="password-section">
-            <label class="password-label">
-              <Lock :size="16" theme="outline" />
-              保险箱密码
-            </label>
-            <CartoonInput
-              v-model="vaultPassword"
-              type="password"
-              placeholder="请输入保险箱密码以验证身份"
-              required
-            />
-            <p class="password-hint">导出时需要验证密码以确保安全</p>
+              <!-- Vault password input (inline) -->
+              <Transition name="expand">
+                <div v-if="showPasswordInput" class="password-inline" @click.stop>
+                  <CartoonInput
+                    v-model="vaultPassword"
+                    type="password"
+                    placeholder="请输入保险箱密码"
+                    required
+                  />
+                  <p class="password-hint">导出时需要验证密码以确保安全</p>
+                </div>
+              </Transition>
+            </div>
           </div>
         </div>
 
@@ -222,11 +244,10 @@ const handleExport = async () => {
         <div class="actions">
           <CartoonButton
             variant="primary"
-            size="lg"
             @click="handleExport"
             :disabled="!canExport || isExporting"
           >
-            <CheckOne :size="18" theme="outline" />
+            <CheckOne :size="16" theme="outline" />
             开始导出
           </CartoonButton>
         </div>
@@ -260,70 +281,63 @@ const handleExport = async () => {
 }
 
 .handover-content {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
 .handover-card {
-  padding: var(--spacing-xl);
-}
-
-.page-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
+  padding: var(--spacing-lg);
 }
 
 .page-description {
   color: var(--color-text-secondary);
-  margin: 0 0 var(--spacing-xl) 0;
-  line-height: 1.6;
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
 }
 
 .project-info {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-bg-tertiary);
   border-radius: var(--border-radius-md);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
 }
 
 .info-label {
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
 .info-value {
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
-  font-size: var(--font-size-lg);
 }
 
 .selection-section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
 }
 
 .section-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-md) 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .checkbox-group {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .checkbox-item {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius-md);
   cursor: pointer;
@@ -340,12 +354,31 @@ const handleExport = async () => {
   cursor: not-allowed;
 }
 
+.checkbox-item.vault-item {
+  flex-direction: column;
+  gap: 0;
+}
+
+.checkbox-item.vault-item.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+.checkbox-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  width: 100%;
+}
+
 .checkbox-item input[type="checkbox"] {
-  margin-top: 2px;
-  width: 18px;
-  height: 18px;
+  margin-top: 1px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   accent-color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .checkbox-item.disabled input[type="checkbox"] {
@@ -356,71 +389,90 @@ const handleExport = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 2px;
 }
 
 .checkbox-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
+}
+
+.checkbox-header .i-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .checkbox-label {
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }
 
 .badge-empty {
-  padding: 2px var(--spacing-xs);
+  padding: 1px 6px;
   background-color: var(--color-warning);
   color: white;
   border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   font-weight: var(--font-weight-medium);
 }
 
 .checkbox-description {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
-.password-section {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--border-radius-md);
-  border-left: 3px solid var(--color-primary);
-}
-
-.password-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-sm);
+.password-inline {
+  width: 100%;
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  padding-left: calc(16px + var(--spacing-sm));
+  border-top: 1px dashed var(--color-border);
 }
 
 .password-hint {
-  font-size: var(--font-size-xs);
+  font-size: 11px;
   color: var(--color-text-tertiary);
-  margin: var(--spacing-xs) 0 0 0;
+  margin: 4px 0 0 0;
+}
+
+/* Expand transition */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.25s ease-out;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 100px;
 }
 
 .error-message {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
   background-color: rgba(255, 71, 87, 0.1);
   border: var(--border-width) solid var(--color-danger);
   border-radius: var(--border-radius-md);
   color: var(--color-danger);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--spacing-md);
 }
 
 .actions {
   display: flex;
   justify-content: center;
+  margin-top: var(--spacing-sm);
 }
 </style>

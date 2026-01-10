@@ -68,7 +68,7 @@ function getFileColor(extension) {
         <div class="file-rank">{{ index + 1 }}</div>
 
         <div class="file-icon" :style="{ color: getFileColor(file.extension) }">
-          <FileText :size="20" theme="outline" />
+          <FileText :size="14" theme="outline" />
         </div>
 
         <div class="file-info">
@@ -82,7 +82,7 @@ function getFileColor(extension) {
         </div>
 
         <button class="file-action" title="在文件管理器中打开">
-          <FolderOpen :size="16" theme="outline" />
+          <FolderOpen :size="14" theme="outline" />
         </button>
       </div>
     </div>
@@ -91,50 +91,48 @@ function getFileColor(extension) {
 
 <style scoped>
 .largest-files {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
 }
 
 .section-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-lg) 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .no-data {
   text-align: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .files-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 2px;
 }
 
 .file-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-md);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
-  border: 1px solid transparent;
 }
 
 .file-item:hover {
   background-color: var(--color-bg-tertiary);
-  border-color: var(--color-border);
-  transform: translateX(2px);
 }
 
 .file-rank {
-  font-size: var(--font-size-sm);
+  font-size: 10px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text-tertiary);
-  min-width: 24px;
+  min-width: 18px;
   text-align: center;
 }
 
@@ -162,11 +160,11 @@ function getFileColor(extension) {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 1px;
 }
 
 .file-name {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -175,7 +173,7 @@ function getFileColor(extension) {
 }
 
 .file-path {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
@@ -184,24 +182,25 @@ function getFileColor(extension) {
 
 .file-meta {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--spacing-xs);
   flex-shrink: 0;
 }
 
 .file-type {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   color: var(--color-text-secondary);
   background-color: var(--color-bg-tertiary);
-  padding: 2px var(--spacing-xs);
+  padding: 1px 4px;
   border-radius: var(--border-radius-sm);
 }
 
 .file-size {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
+  min-width: 50px;
+  text-align: right;
 }
 
 .file-action {
@@ -209,8 +208,8 @@ function getFileColor(extension) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--border-radius-sm);
   background: transparent;
   border: none;

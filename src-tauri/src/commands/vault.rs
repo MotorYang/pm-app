@@ -8,8 +8,8 @@ pub struct VaultEntry {
     pub id: i64,
     pub project_id: i64,
     pub title: String,
-    pub username: Option<String>,
-    pub encrypted_password: String,
+    pub param_key: Option<String>,
+    pub encrypted_value: String,
     pub encrypted_notes: Option<String>,
     pub url: Option<String>,
     pub category: String,
@@ -24,8 +24,8 @@ pub struct VaultEntry {
 pub struct CreateVaultEntryInput {
     pub project_id: i64,
     pub title: String,
-    pub username: Option<String>,
-    pub password: String,
+    pub param_key: Option<String>,
+    pub param_value: String,
     pub notes: Option<String>,
     pub url: Option<String>,
     pub category: Option<String>,
@@ -37,8 +37,8 @@ pub struct DecryptedVaultEntry {
     pub id: i64,
     pub project_id: i64,
     pub title: String,
-    pub username: Option<String>,
-    pub password: String,
+    pub param_key: Option<String>,
+    pub param_value: String,
     pub notes: Option<String>,
     pub url: Option<String>,
     pub category: String,
@@ -73,15 +73,15 @@ pub async fn vault_verify_master(
 /// Encrypt and prepare vault entry data
 #[tauri::command]
 pub async fn vault_encrypt_entry(
-    password: String,
+    param_value: String,
     notes: Option<String>,
     master_password: String,
 ) -> Result<(String, String, Option<String>, Option<String>, String), String> {
     // Generate a unique salt for this entry
     let salt = generate_salt();
 
-    // Encrypt password
-    let (encrypted_password, password_nonce) = encrypt_data(&password, &master_password, &salt)?;
+    // Encrypt param_value
+    let (encrypted_value, value_nonce) = encrypt_data(&param_value, &master_password, &salt)?;
 
     // Encrypt notes if provided
     let (encrypted_notes, notes_nonce) = if let Some(notes_text) = notes {
@@ -94,13 +94,13 @@ pub async fn vault_encrypt_entry(
     // For simplicity, we'll use the same nonce field for both
     // In production, you might want separate nonce fields
     let combined_nonce = if let Some(nn) = notes_nonce {
-        format!("{}|{}", password_nonce, nn)
+        format!("{}|{}", value_nonce, nn)
     } else {
-        password_nonce
+        value_nonce
     };
 
     Ok((
-        encrypted_password,
+        encrypted_value,
         combined_nonce,
         encrypted_notes,
         None, // notes_nonce is combined
@@ -111,18 +111,18 @@ pub async fn vault_encrypt_entry(
 /// Decrypt vault entry data
 #[tauri::command]
 pub async fn vault_decrypt_entry(
-    encrypted_password: String,
+    encrypted_value: String,
     nonce: String,
     encrypted_notes: Option<String>,
     salt: String,
     master_password: String,
 ) -> Result<(String, Option<String>), String> {
-    // Split nonce if it contains both password and notes nonce
+    // Split nonce if it contains both value and notes nonce
     let nonce_parts: Vec<&str> = nonce.split('|').collect();
-    let password_nonce = nonce_parts[0];
+    let value_nonce = nonce_parts[0];
 
-    // Decrypt password
-    let password = decrypt_data(&encrypted_password, password_nonce, &master_password, &salt)?;
+    // Decrypt param_value
+    let param_value = decrypt_data(&encrypted_value, value_nonce, &master_password, &salt)?;
 
     // Decrypt notes if provided
     let notes = if let Some(enc_notes) = encrypted_notes {
@@ -141,7 +141,7 @@ pub async fn vault_decrypt_entry(
         None
     };
 
-    Ok((password, notes))
+    Ok((param_value, notes))
 }
 
 /// Generate a random password

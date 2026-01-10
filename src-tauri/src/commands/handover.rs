@@ -33,17 +33,18 @@ pub struct Document {
 // 保险箱Struct
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VaultEntry {
+    pub id: i64,
     pub project_id: i64,
     pub title: String,
-    pub username: String,
-    pub encrypted_password: String,
-    pub encrypted_notes: String,
-    pub url: String,
+    pub param_key: Option<String>,
+    pub encrypted_value: String,
+    pub encrypted_notes: Option<String>,
+    pub url: Option<String>,
     pub category: String,
     pub salt: String,
     pub nonce: String,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 // 保险箱管理密码Struct
@@ -52,7 +53,7 @@ pub struct VaultMaster {
     pub project_id: i64,
     pub password_hash: String,
     pub salt: String,
-    pub created_at: DateTime<Utc>,
+    pub created_at: String,
 }
 
 // 导出选项
@@ -134,7 +135,7 @@ pub async fn export_project_handover(
     project: Project,
     documents: Option<Vec<Document>>,
     vault_entries: Option<Vec<VaultEntry>>,
-    vault_masters: Option<VaultMaster>,
+    vault_masters: Option<String>,
     output_path: String,
     export_options: ExportOptions,
 ) -> Result<(), String> {
@@ -227,6 +228,7 @@ pub async fn export_project_handover(
         }
     }
 
+    dbg!(&vault_entries);
     // ---------------- 导出保险箱 ----------------
     let vault_json = serde_json::json!({
         "entries": vault_entries,

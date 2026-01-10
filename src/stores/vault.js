@@ -99,7 +99,6 @@ export const useVaultStore = defineStore('vault', () => {
       masterPassword.value = password
       currentProjectId.value = projectId
       isUnlocked.value = true
-
       // Load entries
       await loadEntries(projectId)
 
@@ -130,13 +129,13 @@ export const useVaultStore = defineStore('vault', () => {
       await initDB()
 
       const result = await db.value.select(
-        `SELECT id, project_id, title, username, encrypted_password, encrypted_notes,
+        `SELECT id, project_id, title, param_key, encrypted_value, encrypted_notes,
          url, category, salt, nonce, created_at, updated_at
          FROM vault_entries WHERE project_id = $1 ORDER BY created_at DESC`,
         [projectId]
       )
 
-      entries.value = result
+      entries.value = result;
     } catch (err) {
       error.value = err.message
       throw err
@@ -157,11 +156,11 @@ export const useVaultStore = defineStore('vault', () => {
 
       await initDB()
 
-      // Encrypt password and notes using Rust command
-      const [encryptedPassword, nonce, encryptedNotes, , salt] = await invoke(
+      // Encrypt paramValue and notes using Rust command
+      const [encryptedValue, nonce, encryptedNotes, , salt] = await invoke(
         'vault_encrypt_entry',
         {
-          password: entryData.password,
+          paramValue: entryData.paramValue,
           notes: entryData.notes || null,
           masterPassword: masterPassword.value
         }
@@ -170,13 +169,13 @@ export const useVaultStore = defineStore('vault', () => {
       // Insert into database
       await db.value.execute(
         `INSERT INTO vault_entries
-         (project_id, title, username, encrypted_password, encrypted_notes, url, category, salt, nonce)
+         (project_id, title, param_key, encrypted_value, encrypted_notes, url, category, salt, nonce)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           currentProjectId.value,
           entryData.title,
-          entryData.username || null,
-          encryptedPassword,
+          entryData.paramKey || null,
+          encryptedValue,
           encryptedNotes || null,
           entryData.url || null,
           entryData.category || 'general',
@@ -209,11 +208,11 @@ export const useVaultStore = defineStore('vault', () => {
 
       await initDB()
 
-      // Encrypt password and notes using Rust command
-      const [encryptedPassword, nonce, encryptedNotes, , salt] = await invoke(
+      // Encrypt paramValue and notes using Rust command
+      const [encryptedValue, nonce, encryptedNotes, , salt] = await invoke(
         'vault_encrypt_entry',
         {
-          password: entryData.password,
+          paramValue: entryData.paramValue,
           notes: entryData.notes || null,
           masterPassword: masterPassword.value
         }
@@ -222,13 +221,13 @@ export const useVaultStore = defineStore('vault', () => {
       // Update in database
       await db.value.execute(
         `UPDATE vault_entries
-         SET title = $1, username = $2, encrypted_password = $3, encrypted_notes = $4,
+         SET title = $1, param_key = $2, encrypted_value = $3, encrypted_notes = $4,
              url = $5, category = $6, salt = $7, nonce = $8, updated_at = CURRENT_TIMESTAMP
          WHERE id = $9`,
         [
           entryData.title,
-          entryData.username || null,
-          encryptedPassword,
+          entryData.paramKey || null,
+          encryptedValue,
           encryptedNotes || null,
           entryData.url || null,
           entryData.category || 'general',
@@ -280,8 +279,8 @@ export const useVaultStore = defineStore('vault', () => {
       }
 
       // Decrypt using Rust command
-      const [password, notes] = await invoke('vault_decrypt_entry', {
-        encryptedPassword: entry.encrypted_password,
+      const [decryptedValue, notes] = await invoke('vault_decrypt_entry', {
+        encryptedValue: entry.encrypted_value,
         nonce: entry.nonce,
         encryptedNotes: entry.encrypted_notes || null,
         salt: entry.salt,
@@ -292,8 +291,8 @@ export const useVaultStore = defineStore('vault', () => {
         id: entry.id,
         project_id: entry.project_id,
         title: entry.title,
-        username: entry.username,
-        password,
+        paramKey: entry.param_key,
+        paramValue: decryptedValue,
         notes,
         url: entry.url,
         category: entry.category,

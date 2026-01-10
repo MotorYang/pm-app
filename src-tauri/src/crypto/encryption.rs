@@ -154,6 +154,23 @@ mod tests {
         assert!(verify_password(password, &hash).unwrap());
         assert!(!verify_password("wrong_password", &hash).unwrap());
     }
+    #[test]
+    fn test_decrypt_vault_entry_from_json() {
+        let encrypted_password = "EWCVvQ41DUmIN6FfOxCHF1je2LTmofJA7BROgBwyYdI=";
+        let nonce_b64 = "oTJl+L0SnCC3uWP2";
+        let salt = "2beELqYsEaVYzc8eWsQ0xBT2HBMjMYqf";
+
+        let master_password = "745700123"; // 保险箱主密码
+        match decrypt_data(encrypted_password, nonce_b64, master_password, salt) {
+            Ok(decrypted) => {
+                println!("Decrypted password: {}", decrypted);
+            }
+            Err(e) => {
+                println!("Failed to decrypt: {}", e);
+            }
+        }
+    }
+
 
     #[test]
     fn test_encryption_decryption() {

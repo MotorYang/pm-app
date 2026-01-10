@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue'
 import { useVaultStore } from '@/stores/vault'
 import { Plus, Search } from '@icon-park/vue-next'
-import CartoonCard from '@/components/ui/CartoonCard.vue'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import VaultItem from '@/components/vault/VaultItem.vue'
@@ -36,7 +35,7 @@ const filteredEntries = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(entry =>
       entry.title.toLowerCase().includes(query) ||
-      (entry.username && entry.username.toLowerCase().includes(query)) ||
+      (entry.param_key && entry.param_key.toLowerCase().includes(query)) ||
       (entry.url && entry.url.toLowerCase().includes(query))
     )
   }
@@ -80,7 +79,7 @@ const handleFormSaved = () => {
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="search-box">
-        <Search :size="18" theme="outline" />
+        <Search :size="14" theme="outline" />
         <CartoonInput
           v-model="searchQuery"
           placeholder="搜索条目..."
@@ -101,8 +100,8 @@ const handleFormSaved = () => {
       </div>
 
       <CartoonButton variant="primary" @click="handleAddNew">
-        <Plus :size="18" theme="outline" />
-        添加条目
+        <Plus :size="14" theme="outline" />
+        添加
       </CartoonButton>
     </div>
 
@@ -140,23 +139,23 @@ const handleFormSaved = () => {
 .vault-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-sm);
 }
 
 .toolbar {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
 .search-box {
   flex: 1;
-  min-width: 200px;
+  min-width: 150px;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
   background-color: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius-md);
@@ -173,20 +172,21 @@ const handleFormSaved = () => {
   border: none;
   background: transparent;
   padding: 0;
+  font-size: var(--font-size-sm);
 }
 
 .category-filters {
   display: flex;
-  gap: var(--spacing-xs);
+  gap: 4px;
 }
 
 .category-btn {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
   background-color: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-sm);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -204,14 +204,15 @@ const handleFormSaved = () => {
 }
 
 .no-entries {
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   text-align: center;
   color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .entries-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--spacing-sm);
 }
 </style>

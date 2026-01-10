@@ -46,22 +46,21 @@ const handleCopyPassword = async () => {
   await loadDecryptedData()
   if (decryptedData.value) {
     try {
-      await navigator.clipboard.writeText(decryptedData.value.password)
-      // You could add a toast notification here
-      alert('密码已复制到剪贴板')
+      await navigator.clipboard.writeText(decryptedData.value.paramValue)
+      alert('值已复制到剪贴板')
     } catch (err) {
-      console.error('Failed to copy password:', err)
+      console.error('Failed to copy value:', err)
     }
   }
 }
 
-const handleCopyUsername = async () => {
-  if (props.entry.username) {
+const handleCopyKey = async () => {
+  if (props.entry.param_key) {
     try {
-      await navigator.clipboard.writeText(props.entry.username)
-      alert('用户名已复制到剪贴板')
+      await navigator.clipboard.writeText(props.entry.param_key)
+      alert('键已复制到剪贴板')
     } catch (err) {
-      console.error('Failed to copy username:', err)
+      console.error('Failed to copy key:', err)
     }
   }
 }
@@ -88,7 +87,7 @@ const handleDelete = () => {
       <!-- Header -->
       <div class="item-header">
         <div class="item-title">
-          <Lock :size="20" theme="outline" :style="{ color: categoryInfo.color }" />
+          <Lock :size="14" theme="outline" :style="{ color: categoryInfo.color }" />
           <h3>{{ entry.title }}</h3>
         </div>
         <span class="category-badge" :style="{ backgroundColor: categoryInfo.color }">
@@ -98,34 +97,34 @@ const handleDelete = () => {
 
       <!-- Info -->
       <div class="item-info">
-        <div v-if="entry.username" class="info-row">
-          <User :size="16" theme="outline" />
+        <div v-if="entry.param_key" class="info-row">
+          <User :size="12" theme="outline" />
           <span class="info-label">键:</span>
-          <span class="info-value">{{ entry.username }}</span>
-          <button class="copy-btn" @click="handleCopyUsername" title="复制键">
-            <Copy :size="14" theme="outline" />
+          <span class="info-value">{{ entry.param_key }}</span>
+          <button class="copy-btn" @click="handleCopyKey" title="复制键">
+            <Copy :size="12" theme="outline" />
           </button>
         </div>
 
         <div class="info-row">
-          <Lock :size="16" theme="outline" />
+          <Lock :size="12" theme="outline" />
           <span class="info-label">值:</span>
           <span v-if="loading" class="info-value">加载中...</span>
-          <span v-else-if="showPassword && decryptedData" class="info-value password">
-            {{ decryptedData.password }}
+          <span v-else-if="showPassword && decryptedData" class="info-value param-value">
+            {{ decryptedData.paramValue }}
           </span>
           <span v-else class="info-value">••••••••</span>
           <button class="copy-btn" @click="handleCopyPassword" title="复制值">
-            <Copy :size="14" theme="outline" />
+            <Copy :size="12" theme="outline" />
           </button>
-          <button class="view-btn" @click="togglePasswordVisibility" :title="showPassword ? '隐藏密码' : '显示密码'">
-            <PreviewOpen v-if="!showPassword" :size="14" theme="outline" />
-            <PreviewClose v-else :size="14" theme="outline" />
+          <button class="view-btn" @click="togglePasswordVisibility" :title="showPassword ? '隐藏值' : '显示值'">
+            <PreviewOpen v-if="!showPassword" :size="12" theme="outline" />
+            <PreviewClose v-else :size="12" theme="outline" />
           </button>
         </div>
 
         <div v-if="entry.url" class="info-row">
-          <Link :size="16" theme="outline" />
+          <Link :size="12" theme="outline" />
           <span class="info-label">网址:</span>
           <a :href="entry.url" target="_blank" class="info-value link">
             {{ entry.url }}
@@ -142,11 +141,11 @@ const handleDelete = () => {
       <!-- Actions -->
       <div class="item-actions">
         <button class="action-btn edit-btn" @click="handleEdit">
-          <Edit :size="16" theme="outline" />
+          <Edit :size="12" theme="outline" />
           编辑
         </button>
         <button class="action-btn delete-btn" @click="handleDelete">
-          <Delete :size="16" theme="outline" />
+          <Delete :size="12" theme="outline" />
           删除
         </button>
       </div>
@@ -162,27 +161,27 @@ const handleDelete = () => {
 .item-content {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .item-title {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   flex: 1;
   min-width: 0;
 }
 
 .item-title h3 {
   margin: 0;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   overflow: hidden;
@@ -191,10 +190,10 @@ const handleDelete = () => {
 }
 
 .category-badge {
-  padding: 2px var(--spacing-sm);
+  padding: 1px 6px;
   border-radius: var(--border-radius-sm);
   color: white;
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   font-weight: var(--font-weight-medium);
   white-space: nowrap;
 }
@@ -202,19 +201,19 @@ const handleDelete = () => {
 .item-info {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .info-row {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-sm);
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .info-label {
-  min-width: 60px;
+  min-width: 28px;
   font-weight: var(--font-weight-medium);
 }
 
@@ -226,7 +225,7 @@ const handleDelete = () => {
   white-space: nowrap;
 }
 
-.info-value.password {
+.info-value.param-value {
   font-family: 'Consolas', 'Monaco', monospace;
 }
 
@@ -241,7 +240,7 @@ const handleDelete = () => {
 
 .copy-btn,
 .view-btn {
-  padding: 4px;
+  padding: 2px;
   background: transparent;
   border: none;
   color: var(--color-text-tertiary);
@@ -257,14 +256,14 @@ const handleDelete = () => {
 }
 
 .notes-preview {
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs);
   background-color: var(--color-bg-tertiary);
-  border-radius: var(--border-radius-md);
-  font-size: var(--font-size-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
 }
 
 .notes-label {
-  margin: 0 0 var(--spacing-xs) 0;
+  margin: 0 0 2px 0;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
 }
@@ -272,42 +271,41 @@ const handleDelete = () => {
 .notes-text {
   margin: 0;
   color: var(--color-text-primary);
-  line-height: 1.5;
-  max-height: 60px;
+  line-height: 1.4;
+  max-height: 42px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
 .item-actions {
   display: flex;
-  gap: var(--spacing-sm);
-  padding-top: var(--spacing-sm);
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-xs);
   border-top: var(--border-width) solid var(--color-border);
 }
 
 .action-btn {
   flex: 1;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-sm);
   background-color: var(--color-bg-secondary);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xs);
+  gap: 4px;
   transition: all var(--transition-fast);
 }
 
 .action-btn:hover {
   background-color: var(--color-bg-tertiary);
-  transform: translateY(-1px);
 }
 
 .edit-btn:hover {
