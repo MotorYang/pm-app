@@ -87,6 +87,21 @@ const handleExport = async () => {
   try {
     errorMessage.value = ''
 
+    // 如果选择了保险箱，需要先验证密码并加载数据
+    let vaultEntriesToExport = []
+    if (selectedItems.value.vault) {
+      exportMessage.value = '验证保险箱密码...'
+      try {
+        // 先解锁保险箱（会验证密码并加载数据）
+        await vaultStore.unlockVault(projectsStore.activeProject.id, vaultPassword.value)
+        vaultEntriesToExport = vaultStore.entries
+      } catch (err) {
+        errorMessage.value = '保险箱密码验证失败: ' + err.message
+        isExporting.value = false
+        return
+      }
+    }
+
     // Get save path
     const defaultFileName = `${projectsStore.activeProject.name}_交接包.zip`
     const filePath = await save({
@@ -102,22 +117,6 @@ const handleExport = async () => {
 
     isExporting.value = true
     exportProgress.value = 0
-    exportMessage.value = '准备导出...'
-
-    // 如果选择了保险箱，需要先验证密码并加载数据
-    let vaultEntriesToExport = []
-    if (selectedItems.value.vault) {
-      exportMessage.value = '验证保险箱密码...'
-      try {
-        // 先解锁保险箱（会验证密码并加载数据）
-        await vaultStore.unlockVault(projectsStore.activeProject.id, vaultPassword.value)
-        vaultEntriesToExport = vaultStore.entries
-      } catch (err) {
-        errorMessage.value = '保险箱密码验证失败: ' + err.message
-        isExporting.value = false
-        return
-      }
-    }
 
     exportMessage.value = '正在导出...'
 
