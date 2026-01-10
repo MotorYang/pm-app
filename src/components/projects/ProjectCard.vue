@@ -118,14 +118,6 @@ const handleCloseRenameModal = () => {
         <h4 class="project-name">{{ project.name }}</h4>
         <p class="project-path">{{ project.path }}</p>
       </div>
-      <button
-          v-if="!collapsed"
-          class="project-delete-btn"
-          @click.stop="handleDelete"
-          title="删除项目"
-      >
-        <Delete :size="16" theme="outline" />
-      </button>
     </div>
   </CartoonCard>
 
