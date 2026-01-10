@@ -2,11 +2,22 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import Database from '@tauri-apps/plugin-sql'
 
+// 预设主题色
+export const THEME_COLORS = [
+  { id: 'pink', label: '樱花粉', color: '#FF6B9D' },
+  { id: 'blue', label: '天空蓝', color: '#3498DB' },
+  { id: 'teal', label: '薄荷青', color: '#4ECDC4' },
+  { id: 'orange', label: '暖阳橙', color: '#FFA94D' },
+  { id: 'purple', label: '梦幻紫', color: '#9B59B6' },
+  { id: 'green', label: '森林绿', color: '#27AE60' },
+]
+
 export const useSettingsStore = defineStore('settings', () => {
   const db = ref(null)
   const editorPath = ref('')
   const closeButtonBehavior = ref('hide') // 'hide' or 'quit'
   const exportProjectBehavior = ref('ignore-plugin-directory') // 'ignore-plugin-directory' | 'all-directory'
+  const themeColor = ref('pink') // 默认主题色
   const loading = ref(false)
   const error = ref(null)
 
@@ -43,6 +54,13 @@ export const useSettingsStore = defineStore('settings', () => {
       exportProjectBehavior.value = exportResult.length > 0
           ? exportResult[0].value
           : 'ignore-plugin-directory'
+
+      // themeColor
+      const themeResult = await db.value.select(
+          "SELECT value FROM app_settings WHERE key = 'theme_color'"
+      )
+      themeColor.value = themeResult.length > 0 ? themeResult[0].value : 'pink'
+      applyThemeColor(themeColor.value)
 
     } catch (err) {
       error.value = err.message
@@ -108,11 +126,36 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  // Apply theme color to CSS variables
+  const applyThemeColor = (colorId) => {
+    const theme = THEME_COLORS.find(t => t.id === colorId)
+    if (theme) {
+      document.documentElement.style.setProperty('--color-primary', theme.color)
+    }
+  }
+
+  // Save themeColor
+  const saveThemeColor = async (colorId) => {
+    try {
+      loading.value = true
+      error.value = null
+      await saveSetting('theme_color', colorId)
+      themeColor.value = colorId
+      applyThemeColor(colorId)
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     editorPath,
     closeButtonBehavior,
     exportProjectBehavior,
+    themeColor,
     loading,
     error,
 
@@ -120,6 +163,8 @@ export const useSettingsStore = defineStore('settings', () => {
     loadSettings,
     saveEditorPath,
     saveCloseButtonBehavior,
-    saveExportProjectBehavior
+    saveExportProjectBehavior,
+    saveThemeColor,
+    applyThemeColor
   }
 })

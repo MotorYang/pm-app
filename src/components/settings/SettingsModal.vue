@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue'
-import {useSettingsStore} from '@/stores/settings'
+import {useSettingsStore, THEME_COLORS} from '@/stores/settings'
 import {open} from '@tauri-apps/plugin-dialog'
 import {
   FolderOpen,
@@ -38,7 +38,8 @@ const errorMessage = ref('')
 const localSettings = ref({
   editorPath: '',
   closeButtonBehavior: 'hide',
-  exportProjectBehavior: 'ignore-plugin-directory'
+  exportProjectBehavior: 'ignore-plugin-directory',
+  themeColor: 'pink'
 })
 
 // Tab 配置
@@ -54,6 +55,7 @@ onMounted(async () => {
   localSettings.value.editorPath = settingsStore.editorPath
   localSettings.value.closeButtonBehavior = settingsStore.closeButtonBehavior
   localSettings.value.exportProjectBehavior = settingsStore.exportProjectBehavior
+  localSettings.value.themeColor = settingsStore.themeColor
 })
 
 /* ---------------- actions ---------------- */
@@ -78,7 +80,8 @@ const handleSave = async () => {
     await Promise.all([
       settingsStore.saveEditorPath(localSettings.value.editorPath),
       settingsStore.saveCloseButtonBehavior(localSettings.value.closeButtonBehavior),
-      settingsStore.saveExportProjectBehavior(localSettings.value.exportProjectBehavior)
+      settingsStore.saveExportProjectBehavior(localSettings.value.exportProjectBehavior),
+      settingsStore.saveThemeColor(localSettings.value.themeColor)
     ])
 
     // 模拟保存成功的微小延迟，增加“确切感”
@@ -166,7 +169,26 @@ const handleClose = () => {
                   <p>点击关闭按钮时，将完全结束进程</p>
                 </div>
               </div>
+            </div>
 
+            <div class="form-item">
+              <label class="item-label">主题色</label>
+              <div class="color-options">
+                <div
+                    v-for="theme in THEME_COLORS"
+                    :key="theme.id"
+                    class="color-option"
+                    :class="{ selected: localSettings.themeColor === theme.id }"
+                    :style="{ '--theme-color': theme.color }"
+                    @click="localSettings.themeColor = theme.id"
+                    :title="theme.label"
+                >
+                  <div class="color-circle" :style="{ backgroundColor: theme.color }">
+                    <Check v-if="localSettings.themeColor === theme.id" :size="14"/>
+                  </div>
+                  <span class="color-label">{{ theme.label }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -419,5 +441,61 @@ const handleClose = () => {
   height: 100%;
   color: var(--color-text-tertiary);
   gap: 16px;
+}
+
+/* 主题色选择器 */
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.color-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.color-option:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.color-option.selected {
+  border-color: var(--theme-color);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.color-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.color-option:hover .color-circle {
+  transform: scale(1.1);
+}
+
+.color-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.color-option.selected .color-label {
+  color: var(--theme-color);
+  font-weight: 700;
 }
 </style>

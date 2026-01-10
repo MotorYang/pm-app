@@ -19,6 +19,11 @@ import { useThemeStore } from "./stores/theme"
 const themeStore = useThemeStore()
 themeStore.initTheme()
 
+// Load settings (including theme color)
+import { useSettingsStore } from "./stores/settings"
+const settingsStore = useSettingsStore()
+settingsStore.loadSettings()
+
 // 禁用右键菜单
 window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
