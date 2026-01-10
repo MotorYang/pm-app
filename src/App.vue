@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import {Time, FileText, Plus, MoreFour} from '@icon-park/vue-next'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import ProjectView from '@/views/ProjectView.vue'
@@ -8,18 +9,59 @@ import ShortcutDialog from '@/components/shortcuts/ShortcutDialog.vue'
 import ContextMenu from '@/components/ui/ContextMenu.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useShortcutsStore } from '@/stores/shortcuts'
+import { useDocumentsStore } from '@/stores/documents'
 import { useConfirm } from '@/composables/useConfirm'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import Logo from '@/assets/logo.png'
 
 const projectsStore = useProjectsStore()
 const shortcutsStore = useShortcutsStore()
+const documentsStore = useDocumentsStore()
 const confirmDialog = useConfirm()
+
+const hasActiveProject = computed(() => projectsStore.activeProject !== null)
+
+onMounted(() => {
+  documentsStore.loadRecentDocuments()
+})
+
+// 返回欢迎页面时刷新最近文档列表
+watch(hasActiveProject, (hasProject) => {
+  if (!hasProject) {
+    documentsStore.loadRecentDocuments()
+  }
+})
+
+// 打开最近文档
+const handleOpenRecentDoc = async (doc) => {
+  // 先切换到对应项目
+  await projectsStore.setActiveProject(doc.project_id)
+  // 加载项目文档
+  await documentsStore.loadDocuments(doc.project_id)
+  // 打开文档
+  await documentsStore.openDocument(doc.id)
+}
+
+// 格式化时间
+const formatTime = (dateStr) => {
+  if (!dateStr) return ''
+  // SQLite CURRENT_TIMESTAMP 返回 UTC 时间，格式为 "YYYY-MM-DD HH:MM:SS"
+  // 需要添加 'Z' 后缀让 JS 正确解析为 UTC
+  const normalizedStr = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z'
+  const date = new Date(normalizedStr)
+  const now = new Date()
+  const diff = now - date
+
+  if (diff < 60000) return '刚刚'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
+  if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`
+
+  return date.toLocaleDateString('zh-CN')
+}
 
 const showShortcutDialog = ref(false)
 const editingShortcut = ref(null)
-
-const hasActiveProject = computed(() => projectsStore.activeProject !== null)
 
 // 快捷方式处理
 const handleAddShortcut = () => {
@@ -79,11 +121,13 @@ const handleSaveShortcut = (data) => {
         <!-- 快捷方式区域 -->
         <div class="shortcuts-section">
           <div class="section-header">
-            <h2 class="section-title">快捷方式</h2>
-            <CartoonButton @click="handleAddShortcut">
+            <h3 class="section-title">
+              <MoreFour :size="16" theme="outline" />
+              快捷方式
+            </h3>
+            <button @click="handleAddShortcut">
               <Plus :size="16" theme="outline" />
-              添加
-            </CartoonButton>
+            </button>
           </div>
 
           <div v-if="shortcutsStore.shortcuts.length > 0" class="shortcuts-grid">
@@ -101,10 +145,29 @@ const handleSaveShortcut = (data) => {
           </div>
         </div>
 
-        <div class="info-section">
-          <p class="info-text">
-            左侧点击"添加"按钮开始添加项目。
-          </p>
+        <div v-if="documentsStore.recentDocuments.length > 0" class="recent-section">
+          <h3 class="section-title">
+            <Time :size="16" theme="outline" />
+            最近文档
+          </h3>
+          <div class="recent-list">
+            <div
+              v-for="doc in documentsStore.recentDocuments"
+              :key="doc.id"
+              class="recent-item"
+              @click="handleOpenRecentDoc(doc)"
+            >
+              <FileText :size="14" theme="outline" class="recent-icon" />
+              <span class="recent-doc-name">{{ doc.title }}.md</span>
+              <span
+                class="recent-project-tag"
+                :style="{ backgroundColor: doc.project_color + '20', color: doc.project_color }"
+              >
+                {{ doc.project_name }}
+              </span>
+              <span class="recent-time">{{ formatTime(doc.updated_at) }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -137,6 +200,10 @@ const handleSaveShortcut = (data) => {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .welcome-title {
@@ -145,6 +212,7 @@ const handleSaveShortcut = (data) => {
   color: var(--color-primary);
   text-align: center;
   margin-bottom: var(--spacing-sm);
+  flex-shrink: 0;
 }
 
 .welcome-title img {
@@ -156,34 +224,44 @@ const handleSaveShortcut = (data) => {
   font-size: var(--font-size-lg);
   color: var(--color-text-secondary);
   text-align: center;
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-md);
+  flex-shrink: 0;
 }
 
 .shortcuts-section {
-  margin-bottom: var(--spacing-2xl);
-  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
   background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius-lg);
   border: var(--border-width) solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .section-title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0;
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+}
+
+.section-title :deep(svg) {
+  display: block;
+  margin-right: var(--spacing-xs);
 }
 
 .shortcuts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 180px));
   gap: var(--spacing-md);
 }
 
@@ -194,58 +272,75 @@ const handleSaveShortcut = (data) => {
   font-size: var(--font-size-sm);
 }
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.feature-card {
-  transition: all var(--transition-normal);
-}
-
-.feature-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--spacing-md);
-}
-
-.feature-icon {
-  transition: transform var(--transition-normal);
-}
-
-.feature-card:hover .feature-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.feature-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.feature-description {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-.info-section {
-  text-align: center;
-  margin-top: var(--spacing-2xl);
-  padding: var(--spacing-lg);
-  background-color: var(--color-bg-tertiary);
+.recent-section {
+  background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius-lg);
   border: var(--border-width) solid var(--color-border);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.info-text {
+.recent-title {
   font-size: var(--font-size-md);
-  color: var(--color-text-secondary);
-  margin: var(--spacing-sm) 0;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.recent-item:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.recent-icon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.recent-doc-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-project-tag {
+  font-size: var(--font-size-xs);
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+}
+
+.recent-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
 }
 </style>

@@ -1,9 +1,10 @@
 <script setup>
-import { computed } from 'vue'
-import { LinkOne, Application, FolderOpen, Edit, Delete } from '@icon-park/vue-next'
+import { computed, ref } from 'vue'
+import {LinkOne, Application, FolderOpen, Edit, Delete, Text} from '@icon-park/vue-next'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-shell'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
+import { useContextMenu } from '@/composables/useContextMenu.js'
 
 const props = defineProps({
   shortcut: {
@@ -14,7 +15,24 @@ const props = defineProps({
 
 const emit = defineEmits(['edit', 'delete'])
 
-// 获取图标组件
+const contextMenu = useContextMenu()
+const faviconError = ref(false)
+
+// 获取 URL 的 favicon
+const faviconUrl = computed(() => {
+  if (props.shortcut.type !== 'url' || faviconError.value) {
+    return null
+  }
+  try {
+    const url = new URL(props.shortcut.target)
+    // 使用 Google Favicon 服务
+    return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=64`
+  } catch {
+    return null
+  }
+})
+
+// 获取图标组件（备用）
 const iconComponent = computed(() => {
   switch (props.shortcut.type) {
     case 'url':
@@ -27,6 +45,30 @@ const iconComponent = computed(() => {
       return LinkOne
   }
 })
+
+// favicon 加载失败时使用默认图标
+const handleFaviconError = () => {
+  faviconError.value = true
+}
+
+// 右键菜单
+const handleContextMenu = (event) => {
+  const menuItems = [
+    {
+      label: '编辑',
+      icon: Text,
+      action: () => handleEdit()
+    },
+    { divider: true },
+    {
+      label: '删除',
+      icon: Delete,
+      danger: true,
+      action: () => handleDelete()
+    }
+  ]
+  contextMenu.show(event, menuItems)
+}
 
 // 获取类型标签
 const typeLabel = computed(() => {
@@ -65,13 +107,11 @@ const handleOpen = async () => {
   }
 }
 
-const handleEdit = (e) => {
-  e.stopPropagation()
+const handleEdit = () => {
   emit('edit', props.shortcut)
 }
 
-const handleDelete = (e) => {
-  e.stopPropagation()
+const handleDelete = () => {
   emit('delete', props.shortcut.id)
 }
 </script>
@@ -80,33 +120,24 @@ const handleDelete = (e) => {
   <CartoonCard
     class="shortcut-card"
     hoverable
+    padding="sm"
     @click="handleOpen"
+    @contextmenu="handleContextMenu"
   >
     <div class="shortcut-content">
       <div class="shortcut-icon">
-        <component :is="iconComponent" :size="32" theme="outline" />
+        <img
+          v-if="faviconUrl"
+          :src="faviconUrl"
+          class="favicon-img"
+          @error="handleFaviconError"
+        />
+        <component v-else :is="iconComponent" :size="32" theme="outline" />
       </div>
 
       <div class="shortcut-info">
         <h4 class="shortcut-title">{{ shortcut.name }}</h4>
         <span class="shortcut-type">{{ typeLabel }}</span>
-      </div>
-
-      <div class="shortcut-actions">
-        <button
-          class="action-btn"
-          @click="handleEdit"
-          title="编辑"
-        >
-          <Edit :size="16" theme="outline" />
-        </button>
-        <button
-          class="action-btn delete"
-          @click="handleDelete"
-          title="删除"
-        >
-          <Delete :size="16" theme="outline" />
-        </button>
       </div>
     </div>
   </CartoonCard>
@@ -116,26 +147,41 @@ const handleDelete = (e) => {
 .shortcut-card {
   cursor: pointer;
   transition: all var(--transition-fast);
+  padding-left: var(--spacing-xs) !important;
+  padding-right: var(--spacing-xs) !important;
 }
 
 .shortcut-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-sm);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
 }
 
 .shortcut-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   background-color: var(--color-bg-tertiary);
   border-radius: var(--border-radius-md);
   color: var(--color-primary);
   flex-shrink: 0;
   transition: all var(--transition-fast);
+  line-height: 0;
+}
+
+.shortcut-icon :deep(svg) {
+  display: block;
+}
+
+.favicon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--border-radius-sm);
 }
 
 .shortcut-card:hover .shortcut-icon {
@@ -145,59 +191,27 @@ const handleDelete = (e) => {
 }
 
 .shortcut-info {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
 }
 
 .shortcut-title {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
 }
 
 .shortcut-type {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-}
-
-.shortcut-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.shortcut-card:hover .shortcut-actions {
-  opacity: 1;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background-color: var(--color-bg-tertiary);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.action-btn:hover {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.action-btn.delete:hover {
-  background-color: var(--color-danger);
 }
 </style>

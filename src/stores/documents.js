@@ -99,6 +99,14 @@ export const useDocumentsStore = defineStore('documents', () => {
       activeDocumentId.value = documentId
       activeDocumentContent.value = content || ''
       hasUnsavedChanges.value = false
+
+      // 更新文档的访问时间
+      const database = await getDb()
+      await database.execute(
+        'UPDATE documents SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [documentId]
+      )
+      doc.updated_at = new Date().toISOString()
     } catch (e) {
       error.value = e.message || 'Failed to open document'
       console.error('Failed to open document:', e)
@@ -287,6 +295,28 @@ export const useDocumentsStore = defineStore('documents', () => {
     error.value = null
   }
 
+  // 获取最近打开的文档（跨项目）
+  const recentDocuments = ref([])
+
+  async function loadRecentDocuments(limit = 10) {
+    try {
+      const database = await getDb()
+      const result = await database.select(
+        `SELECT d.*, p.name as project_name, p.color as project_color
+         FROM documents d
+         LEFT JOIN projects p ON d.project_id = p.id
+         ORDER BY d.updated_at DESC
+         LIMIT ?`,
+        [limit]
+      )
+      recentDocuments.value = result
+      return result
+    } catch (e) {
+      console.error('Failed to load recent documents:', e)
+      return []
+    }
+  }
+
   return {
     // State
     documents,
@@ -296,6 +326,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     saving,
     error,
     hasUnsavedChanges,
+    recentDocuments,
 
     // Getters
     activeDocument,
@@ -310,6 +341,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     createDocument,
     deleteDocument,
     renameDocument,
+    loadRecentDocuments,
     clearError
   }
 })
