@@ -254,6 +254,10 @@ const handleSaveShortcut = (data) => {
   align-items: center;
 }
 
+.section-header > button {
+  color: var(--color-text-secondary);
+}
+
 .section-title :deep(svg) {
   display: block;
   margin-right: var(--spacing-xs);

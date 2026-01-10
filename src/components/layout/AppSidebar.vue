@@ -14,6 +14,10 @@ const showAddModal = ref(false)
 // Sidebar collapse state
 const isCollapsed = ref(false)
 
+// 拖拽状态
+const dragIndex = ref(null)
+const dragOverIndex = ref(null)
+
 // Load collapse state from localStorage
 onMounted(() => {
   const savedState = localStorage.getItem('sidebar-collapsed')
@@ -48,6 +52,70 @@ const handleDeleteProject = async (project) => {
     await projectsStore.deleteProject(project.id)
   }
 }
+
+// 拖拽排序 - 使用鼠标事件实现
+const isDragging = ref(false)
+const dragStartY = ref(0)
+const dragElement = ref(null)
+
+const handleMouseDown = (event, index) => {
+  // 只响应左键
+  if (event.button !== 0) return
+
+  dragIndex.value = index
+  dragStartY.value = event.clientY
+  isDragging.value = false
+  dragElement.value = event.currentTarget
+
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('mouseup', handleMouseUp)
+}
+
+const handleMouseMove = (event) => {
+  if (dragIndex.value === null) return
+
+  // 判断是否开始拖拽（移动超过5px）
+  if (!isDragging.value && Math.abs(event.clientY - dragStartY.value) > 5) {
+    isDragging.value = true
+  }
+
+  if (!isDragging.value) return
+
+  // 找到鼠标下的元素
+  const elements = document.querySelectorAll('.project-drag-wrapper')
+  elements.forEach((el, index) => {
+    const rect = el.getBoundingClientRect()
+    const midY = rect.top + rect.height / 2
+
+    if (event.clientY >= rect.top && event.clientY <= rect.bottom) {
+      if (event.clientY < midY) {
+        dragOverIndex.value = index
+      } else {
+        dragOverIndex.value = index + 1
+      }
+    }
+  })
+}
+
+const handleMouseUp = () => {
+  document.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('mouseup', handleMouseUp)
+
+  if (isDragging.value && dragIndex.value !== null && dragOverIndex.value !== null) {
+    let toIndex = dragOverIndex.value
+    if (toIndex > dragIndex.value) {
+      toIndex -= 1
+    }
+    if (toIndex !== dragIndex.value) {
+      projectsStore.reorderProjects(dragIndex.value, toIndex)
+    }
+  }
+
+  dragIndex.value = null
+  dragOverIndex.value = null
+  isDragging.value = false
+  dragElement.value = null
+}
 </script>
 
 <template>
@@ -80,15 +148,25 @@ const handleDeleteProject = async (project) => {
       </div>
 
       <div v-else class="projects-list">
-        <ProjectCard
-          v-for="project in projectsStore.projects"
+        <div
+          v-for="(project, index) in projectsStore.projects"
           :key="project.id"
-          :project="project"
-          :active="project.id === projectsStore.activeProjectId"
-          :collapsed="isCollapsed"
-          @click="handleProjectClick"
-          @delete="handleDeleteProject"
-        />
+          class="project-drag-wrapper"
+          :class="{
+            dragging: isDragging && dragIndex === index,
+            'drag-over-above': dragOverIndex === index && dragIndex !== index,
+            'drag-over-below': dragOverIndex === index + 1 && dragIndex !== index
+          }"
+          @mousedown="handleMouseDown($event, index)"
+        >
+          <ProjectCard
+            :project="project"
+            :active="project.id === projectsStore.activeProjectId"
+            :collapsed="isCollapsed"
+            @click="handleProjectClick"
+            @delete="handleDeleteProject"
+          />
+        </div>
       </div>
     </div>
 
@@ -200,5 +278,30 @@ const handleDeleteProject = async (project) => {
 
 .collapsed .projects-list {
   align-items: center;
+}
+
+.project-drag-wrapper {
+  position: relative;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+  border-radius: var(--border-radius-md);
+}
+
+.project-drag-wrapper.dragging {
+  opacity: 0.5;
+}
+
+.project-drag-wrapper.drag-over {
+  transform: translateY(4px);
+}
+
+.project-drag-wrapper.drag-over::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  border-radius: 1px;
 }
 </style>

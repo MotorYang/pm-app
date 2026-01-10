@@ -35,6 +35,26 @@ export const useProjectsStore = defineStore('projects', () => {
     try {
       const database = await getDb()
       const result = await database.select('SELECT * FROM projects ORDER BY last_accessed DESC')
+
+      // 应用自定义排序
+      const savedOrder = localStorage.getItem('pm-app-projects-order')
+      if (savedOrder) {
+        try {
+          const orderIds = JSON.parse(savedOrder)
+          // 按保存的顺序排序，未在列表中的放到最后
+          result.sort((a, b) => {
+            const indexA = orderIds.indexOf(a.id)
+            const indexB = orderIds.indexOf(b.id)
+            if (indexA === -1 && indexB === -1) return 0
+            if (indexA === -1) return 1
+            if (indexB === -1) return -1
+            return indexA - indexB
+          })
+        } catch {
+          // 忽略解析错误
+        }
+      }
+
       projects.value = result
     } catch (e) {
       error.value = e.message || 'Failed to load projects'
@@ -42,6 +62,20 @@ export const useProjectsStore = defineStore('projects', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  // 重新排序项目
+  function reorderProjects(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return
+
+    const items = [...projects.value]
+    const [movedItem] = items.splice(fromIndex, 1)
+    items.splice(toIndex, 0, movedItem)
+    projects.value = items
+
+    // 保存排序到 localStorage
+    const orderIds = items.map(p => p.id)
+    localStorage.setItem('pm-app-projects-order', JSON.stringify(orderIds))
   }
 
   async function addProject(projectData) {
@@ -175,6 +209,7 @@ export const useProjectsStore = defineStore('projects', () => {
     addProject,
     deleteProject,
     updateProject,
+    reorderProjects,
     setActiveProject,
     clearError
   }
