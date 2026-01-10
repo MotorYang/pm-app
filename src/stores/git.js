@@ -75,6 +75,12 @@ export const useGitStore = defineStore('git', () => {
         limit
       })
       commits.value = commitList
+
+      // 默认展开第一个commit的提交详情
+      if (commitList.length > 0) {
+        await getCommitDetail(commitList[0].hash)
+      }
+
       return commitList
     } catch (e) {
       console.error('Failed to get commit history:', e)

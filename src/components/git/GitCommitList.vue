@@ -1,11 +1,20 @@
 <script setup>
-import {ref, computed} from 'vue'
+import {ref, watch} from 'vue'
 import {Fork, User, Time} from '@icon-park/vue-next'
 import {useGitStore} from '@/stores/git'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
 
 const gitStore = useGitStore()
 const selectedHash = ref(null)
+
+// 自动选中第一个
+watch(() => gitStore.commits, (newCommits) => {
+  if (newCommits && newCommits.length > 0) {
+    selectedHash.value = newCommits[0].hash
+  } else {
+    selectedHash.value = null
+  }
+}, { immediate: true })
 
 const selectCommit = async (commit) => {
   selectedHash.value = commit.hash
