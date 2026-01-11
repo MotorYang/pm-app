@@ -154,8 +154,8 @@ const handleCheckUpdate = async () => {
     const remoteInfo = await response.json()
     const remoteVersion = remoteInfo.version
 
-    // 比较版本
-    if (remoteVersion && remoteVersion !== appVersion.value) {
+    // 比较版本（只有远程版本更高时才提示更新）
+    if (remoteVersion && compareVersions(remoteVersion, appVersion.value) > 0) {
       updateStatus.value = 'available'
       updateInfo.value = {
         version: remoteVersion,
@@ -174,6 +174,20 @@ const handleCheckUpdate = async () => {
       updateError.value = err.message || '检查更新失败'
     }
   }
+}
+
+// 比较版本号，v1 > v2 返回 1，v1 < v2 返回 -1，相等返回 0
+const compareVersions = (v1, v2) => {
+  const parts1 = v1.replace(/^v/, '').split('.').map(Number)
+  const parts2 = v2.replace(/^v/, '').split('.').map(Number)
+
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const p1 = parts1[i] || 0
+    const p2 = parts2[i] || 0
+    if (p1 > p2) return 1
+    if (p1 < p2) return -1
+  }
+  return 0
 }
 
 // 获取当前平台的 key

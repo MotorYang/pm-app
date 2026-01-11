@@ -23,40 +23,28 @@
     "sql:allow-execute",
     {
       "identifier": "fs:allow-read-dir",
-      "allow": [
-        {
-          "path": "**"
-        }
-      ]
+      "allow": [{ "path": "**" }]
     },
     {
       "identifier": "fs:allow-read-file",
-      "allow": [
-        {
-          "path": "**"
-        }
-      ]
+      "allow": [{ "path": "**" }]
     },
     {
       "identifier": "fs:allow-stat",
-      "allow": [
-        {
-          "path": "**"
-        }
-      ]
+      "allow": [{ "path": "**" }]
     },
     {
       "identifier": "fs:allow-exists",
-      "allow": [
-        {
-          "path": "**"
-        }
-      ]
+      "allow": [{ "path": "**" }]
     },
-    "fs:allow-write-text-file",
-    "fs:allow-write-file",
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "**" }]
+    },
     "process:allow-exit",
     "updater:default",
+    "updater:allow-check",
+    "updater:allow-install",
     "os:default"
   ]
 }

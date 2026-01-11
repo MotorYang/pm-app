@@ -2,11 +2,9 @@ import {ref} from 'vue'
 import {getVersion} from '@tauri-apps/api/app'
 import {check} from '@tauri-apps/plugin-updater'
 import {relaunch} from '@tauri-apps/plugin-process'
-import {openUrl} from '@tauri-apps/plugin-opener'
 
 const UPDATE_URL = 'https://motoryang.github.io/pm-app/update.json'
 const SKIP_VERSION_KEY = 'pm-app-skip-version'
-const UPDATE_LATER_KEY = 'pm-app-update-later'
 
 // 全局状态
 const showUpdateModal = ref(false)
@@ -17,6 +15,7 @@ const downloading = ref(false)
 const downloadProgress = ref(0)
 const downloaded = ref(false)
 const updateAvailable = ref(false)
+const updateError = ref('')
 
 // 存储 Update 对象以便后续下载
 let pendingUpdate = null
@@ -34,27 +33,6 @@ const isVersionSkipped = (version) => {
  */
 const skipVersion = (version) => {
   localStorage.setItem(SKIP_VERSION_KEY, version)
-}
-
-/**
- * 标记下次启动时更新
- */
-const setUpdateLater = (version) => {
-  localStorage.setItem(UPDATE_LATER_KEY, version)
-}
-
-/**
- * 获取待更新版本
- */
-const getUpdateLater = () => {
-  return localStorage.getItem(UPDATE_LATER_KEY)
-}
-
-/**
- * 清除待更新标记
- */
-const clearUpdateLater = () => {
-  localStorage.removeItem(UPDATE_LATER_KEY)
 }
 
 /**
@@ -91,11 +69,16 @@ const compareVersions = (v1, v2) => {
 
 /**
  * 检查更新
- * @param {boolean} silent - 是否静默检查（不显示弹窗，后台下载）
  * @param {boolean} force - 是否强制检查（忽略跳过的版本）
  */
-const checkForUpdate = async (silent = false, force = false) => {
+const checkForUpdate = async (force = false) => {
   try {
+    // 重置状态
+    updateError.value = ''
+    downloading.value = false
+    downloaded.value = false
+    downloadProgress.value = 0
+
     // 获取当前版本
     currentVersion.value = await getVersion()
 
@@ -125,18 +108,16 @@ const checkForUpdate = async (silent = false, force = false) => {
     // 尝试获取 Tauri updater 的 Update 对象
     try {
       pendingUpdate = await check()
+      console.log('Tauri updater 检查成功:', pendingUpdate)
     } catch (err) {
-      console.warn('Tauri updater 检查失败，将使用浏览器下载:', err)
+      console.error('Tauri updater 检查失败:', err)
+      // 保存错误信息以便显示
+      updateError.value = '更新检查失败: ' + (err.message || String(err))
       pendingUpdate = null
     }
 
-    if (silent) {
-      // 静默模式：直接后台下载
-      await downloadUpdate()
-    } else {
-      // 显示更新弹窗
-      showUpdateModal.value = true
-    }
+    // 显示更新弹窗
+    showUpdateModal.value = true
 
     return true
   } catch (err) {
@@ -150,14 +131,15 @@ const checkForUpdate = async (silent = false, force = false) => {
  */
 const downloadUpdate = async () => {
   if (!pendingUpdate) {
-    // 没有 Tauri Update 对象，打开浏览器下载
-    openUrl('https://github.com/motoryang/pm-app/releases/latest')
-    return
+    // 开发模式下无法使用自动更新，提示用户
+    updateError.value = '开发模式下无法自动更新，请手动下载安装包'
+    return false
   }
 
   try {
     downloading.value = true
     downloadProgress.value = 0
+    updateError.value = ''
 
     let totalSize = 0
     let downloadedSize = 0
@@ -176,14 +158,15 @@ const downloadUpdate = async () => {
         downloadProgress.value = 1
         downloaded.value = true
         downloading.value = false
-        clearUpdateLater()
       }
     })
+
+    return true
   } catch (err) {
     console.error('下载更新失败:', err)
     downloading.value = false
-    // 失败时打开浏览器下载
-    openUrl('https://github.com/motoryang/pm-app/releases/latest')
+    updateError.value = '下载失败: ' + (err.message || '未知错误')
+    return false
   }
 }
 
@@ -201,10 +184,9 @@ const updateNow = async () => {
 }
 
 /**
- * 下次启动时更新
+ * 稍后提醒（只关闭弹窗，下次启动时会再次提示）
  */
 const updateLater = () => {
-  setUpdateLater(newVersion.value)
   showUpdateModal.value = false
 }
 
@@ -222,15 +204,7 @@ const handleSkipVersion = () => {
 const initUpdater = async () => {
   // 延迟几秒后检查，避免影响启动体验
   setTimeout(async () => {
-    // 检查是否有待更新（上次选择了"下次启动时更新"）
-    const laterVersion = getUpdateLater()
-    if (laterVersion) {
-      // 静默下载更新
-      await checkForUpdate(true, true)
-    } else {
-      // 正常检查更新
-      await checkForUpdate(false, false)
-    }
+    await checkForUpdate(false)
   }, 3000)
 }
 
@@ -245,6 +219,7 @@ export function useUpdater() {
     downloadProgress,
     downloaded,
     updateAvailable,
+    updateError,
 
     // 方法
     checkForUpdate,

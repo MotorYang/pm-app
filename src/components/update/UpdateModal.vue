@@ -1,7 +1,6 @@
 <script setup>
-import {ref, computed} from 'vue'
-import {Refresh, Download, Close, CheckOne} from '@icon-park/vue-next'
-import CartoonButton from '@/components/ui/CartoonButton.vue'
+import {computed} from 'vue'
+import {Download, CheckOne} from '@icon-park/vue-next'
 import Logo from '@/assets/logo.png'
 
 const props = defineProps({
@@ -32,6 +31,10 @@ const props = defineProps({
   downloaded: {
     type: Boolean,
     default: false
+  },
+  error: {
+    type: String,
+    default: ''
   }
 })
 
@@ -69,19 +72,20 @@ const progressPercent = computed(() => {
             <!-- 头部 -->
             <div class="update-header">
               <img :src="Logo" alt="logo" class="update-logo"/>
-              <div class="update-title">发现新版本</div>
-              <div class="update-versions">
-                <span class="version-old">v{{ currentVersion }}</span>
-                <span class="version-arrow">→</span>
-                <span class="version-new">v{{ newVersion }}</span>
+              <div class="update-info">
+                <div class="update-title">发现新版本</div>
+                <div class="update-versions">
+                  <span class="version-old">v{{ currentVersion }}</span>
+                  <span class="version-arrow">→</span>
+                  <span class="version-new">v{{ newVersion }}</span>
+                </div>
               </div>
             </div>
 
             <!-- 内容 -->
-            <div class="update-body">
-              <div v-if="releaseNotes" class="release-notes">
-                <div class="notes-title">更新内容</div>
-                <div class="notes-content">{{ releaseNotes }}</div>
+            <div v-if="releaseNotes || downloading || downloaded || error" class="update-body">
+              <div v-if="releaseNotes && !downloading && !downloaded && !error" class="release-notes">
+                {{ releaseNotes }}
               </div>
 
               <!-- 下载进度 -->
@@ -89,39 +93,48 @@ const progressPercent = computed(() => {
                 <div class="progress-bar">
                   <div class="progress-fill" :style="{width: progressPercent + '%'}"></div>
                 </div>
-                <div class="progress-text">正在下载更新... {{ progressPercent }}%</div>
+                <div class="progress-text">正在下载... {{ progressPercent }}%</div>
               </div>
 
               <!-- 下载完成 -->
               <div v-if="downloaded" class="download-complete">
-                <CheckOne :size="20" theme="filled"/>
-                <span>下载完成，重启应用后生效</span>
+                <CheckOne :size="16" theme="filled"/>
+                <span>下载完成，重启后生效</span>
+              </div>
+
+              <!-- 错误信息 -->
+              <div v-if="error" class="download-error">
+                {{ error }}
               </div>
             </div>
 
             <!-- 底部按钮 -->
             <div class="update-footer">
-              <template v-if="!downloading && !downloaded">
-                <span class="skip-link" @click="handleSkipVersion">跳过此版本</span>
+              <!-- 正常状态：显示跳过、稍后、立即更新 -->
+              <template v-if="!downloading && !downloaded && !error">
+                <button class="btn-link" @click="handleSkipVersion">跳过</button>
                 <div class="footer-buttons">
-                  <CartoonButton variant="secondary" size="small" @click="handleUpdateLater">
-                    下次启动时更新
-                  </CartoonButton>
-                  <CartoonButton variant="primary" size="small" @click="handleUpdateNow">
-                    <Download :size="16"/>
+                  <button class="btn-secondary" @click="handleUpdateLater">稍后</button>
+                  <button class="btn-primary" @click="handleUpdateNow">
+                    <Download :size="14"/>
                     立即更新
-                  </CartoonButton>
+                  </button>
                 </div>
               </template>
 
+              <!-- 出错状态：显示关闭和重试 -->
+              <template v-else-if="error">
+                <div class="footer-buttons full">
+                  <button class="btn-secondary" @click="handleUpdateLater">关闭</button>
+                  <button class="btn-primary" @click="handleUpdateNow">重试</button>
+                </div>
+              </template>
+
+              <!-- 下载完成：显示稍后重启和立即重启 -->
               <template v-else-if="downloaded">
-                <div class="footer-buttons">
-                  <CartoonButton variant="secondary" size="small" @click="handleClose">
-                    稍后重启
-                  </CartoonButton>
-                  <CartoonButton variant="primary" size="small" @click="handleUpdateNow">
-                    立即重启
-                  </CartoonButton>
+                <div class="footer-buttons full">
+                  <button class="btn-secondary" @click="handleClose">稍后重启</button>
+                  <button class="btn-primary" @click="handleUpdateNow">立即重启</button>
                 </div>
               </template>
             </div>
@@ -148,40 +161,45 @@ const progressPercent = computed(() => {
 
 .update-dialog {
   background: var(--color-bg-primary);
-  border-radius: 16px;
-  border: 3px solid var(--color-border);
+  border-radius: 12px;
+  border: 2px solid var(--color-border);
   box-shadow: var(--shadow-xl);
-  width: 380px;
+  width: 320px;
   overflow: hidden;
 }
 
 .update-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 24px 24px 16px;
+  gap: 12px;
+  padding: 16px;
   background: var(--color-bg-secondary);
   border-bottom: 2px solid var(--color-border);
 }
 
 .update-logo {
-  width: 56px;
-  height: 56px;
-  margin-bottom: 12px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.update-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .update-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 
 .update-versions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 12px;
 }
 
 .version-old {
@@ -198,25 +216,14 @@ const progressPercent = computed(() => {
 }
 
 .update-body {
-  padding: 16px 24px;
-  min-height: 60px;
+  padding: 12px 16px;
 }
 
 .release-notes {
-  margin-bottom: 16px;
-}
-
-.notes-title {
-  font-size: 12px;
-  color: var(--color-text-tertiary);
-  margin-bottom: 6px;
-}
-
-.notes-content {
   font-size: 13px;
   color: var(--color-text-secondary);
   line-height: 1.5;
-  max-height: 100px;
+  max-height: 80px;
   overflow-y: auto;
 }
 
@@ -225,22 +232,22 @@ const progressPercent = computed(() => {
 }
 
 .progress-bar {
-  height: 6px;
+  height: 4px;
   background: var(--color-bg-tertiary);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .progress-fill {
   height: 100%;
   background: var(--color-primary);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 
 .progress-text {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 
@@ -248,35 +255,83 @@ const progressPercent = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   color: #16a34a;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.download-error {
+  font-size: 13px;
+  color: #dc2626;
+  text-align: center;
 }
 
 .update-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 12px 16px;
   background: var(--color-bg-secondary);
   border-top: 2px solid var(--color-border);
 }
 
-.skip-link {
+.btn-link {
+  background: none;
+  border: none;
   font-size: 12px;
   color: var(--color-text-tertiary);
   cursor: pointer;
+  padding: 0;
 }
 
-.skip-link:hover {
+.btn-link:hover {
   color: var(--color-text-secondary);
   text-decoration: underline;
 }
 
 .footer-buttons {
   display: flex;
-  gap: 10px;
-  margin-left: auto;
+  gap: 8px;
+}
+
+.footer-buttons.full {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.btn-secondary,
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-secondary {
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+}
+
+.btn-secondary:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
 }
 
 /* Transitions */
@@ -291,15 +346,15 @@ const progressPercent = computed(() => {
 }
 
 .modal-slide-enter-active {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
 }
 
 .modal-slide-leave-active {
-  transition: transform 0.2s, opacity 0.2s;
+  transition: transform 0.15s, opacity 0.15s;
 }
 
 .modal-slide-enter-from {
-  transform: translateY(-30px) scale(0.95);
+  transform: translateY(-20px) scale(0.96);
   opacity: 0;
 }
 

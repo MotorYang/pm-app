@@ -30,6 +30,7 @@ const {
   downloading,
   downloadProgress,
   downloaded,
+  updateError,
   updateNow,
   updateLater,
   handleSkipVersion,
@@ -213,6 +214,7 @@ const handleSaveShortcut = (data) => {
       :downloading="downloading"
       :download-progress="downloadProgress"
       :downloaded="downloaded"
+      :error="updateError"
       @update-now="updateNow"
       @update-later="updateLater"
       @skip-version="handleSkipVersion"
