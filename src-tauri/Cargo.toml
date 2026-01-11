@@ -28,7 +28,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset", "tray-icon"] }
+tauri = { version = "2", features = [ "tray-icon"] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
@@ -40,8 +40,15 @@ serde_json = "1"
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 dirs = "4.0"
-git2 = "0.18"
 zip = { version = "0.6", default-features = false, features = ["deflate"] }
+
+[target.'cfg(not(windows))'.dependencies]
+git2 = { version = "0.18", features = ["vendored-openssl", "vendored-libgit2"] }
+openssl = { version = "0.10", features = ["vendored"] }
+
+[target.'cfg(windows)'.dependencies]
+# Windows 下使用原生 Schannel，不再需要 OpenSSL 和 Perl
+git2 = { version = "0.18" }
 
 # Encryption dependencies
 aes-gcm = "0.10"
