@@ -1,4 +1,4 @@
-name: Tauri Full Release
+name: ProManager Release
 
 on:
   push:
@@ -51,7 +51,9 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 确保 Secret 里是那串纯 Base64 (不带 BEGIN/END 标签)
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          # 确保 Secret 里的密码没有换行符
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           OPENSSL_STATIC: 1
         with:
@@ -66,11 +68,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate update.json
+      - name: Generate update.json (Tauri v2 Logic)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 等待资源上传及 GitHub API 同步
+          # 稍作等待，确保 GitHub Release 附件已全部上传并建立索引
           sleep 60
           
           VERSION=${GITHUB_REF_NAME#v}
@@ -81,35 +83,38 @@ jobs:
           }
 
           download_sig() {
-            local url=$1
-            if [ -n "$url" ]; then
-              curl -sL "$url"
-            else
+            local url=$(get_asset_url "$1")
+            if [ -z "$url" ]; then
               echo "MISSING_SIGNATURE"
+            else
+              curl -sL "$url"
             fi
           }
 
-          # Windows
-          WIN_URL=$(get_asset_url ".nsis.zip")
-          WIN_SIG=$(download_sig $(get_asset_url ".nsis.zip.sig"))
+          # --- 核心逻辑适配 Tauri v2 ---
+          # Windows: 使用 -setup.exe 和 .exe.sig
+          WIN_URL=$(get_asset_url "setup.exe")
+          WIN_SIG=$(download_sig "setup.exe.sig")
 
-          # Linux (Tauri v2 默认生成 AppImage 的压缩包)
-          LINUX_URL=$(get_asset_url ".AppImage.tar.gz")
-          LINUX_SIG=$(download_sig $(get_asset_url ".AppImage.tar.gz.sig"))
+          # Linux: 使用 .AppImage 和 .AppImage.sig
+          LINUX_URL=$(get_asset_url ".AppImage")
+          LINUX_SIG=$(download_sig ".AppImage.sig")
 
-          # macOS
+          # macOS: 依然使用 .app.tar.gz 和 .app.tar.gz.sig
           MAC_URL=$(get_asset_url ".app.tar.gz")
-          MAC_SIG=$(download_sig $(get_asset_url ".app.tar.gz.sig"))
+          MAC_SIG=$(download_sig ".app.tar.gz.sig")
 
-          if [[ "$WIN_SIG" == "MISSING_SIGNATURE" || "$MAC_SIG" == "MISSING_SIGNATURE" ]]; then
-            echo "Error: Required signature files (.sig) were not found in release assets."
+          # 安全检查
+          if [[ "$WIN_SIG" == "MISSING_SIGNATURE" ]]; then
+            echo "::error::Windows signature not found. Check if building with correct private key."
             exit 1
           fi
 
+          # 生成 update.json
           cat <<EOF > update.json
           {
             "version": "$VERSION",
-            "notes": "Update for version $VERSION",
+            "notes": "Update to version $VERSION",
             "pub_date": "$DATE",
             "platforms": {
               "windows-x86_64": { "url": "$WIN_URL", "signature": "$WIN_SIG" },
@@ -119,6 +124,7 @@ jobs:
           }
           EOF
           
+          echo "Final update.json content:"
           cat update.json
 
       - name: Publish update.json to GitHub Pages
