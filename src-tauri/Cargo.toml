@@ -42,14 +42,6 @@ thiserror = "1.0"
 dirs = "4.0"
 zip = { version = "0.6", default-features = false, features = ["deflate"] }
 
-[target.'cfg(not(windows))'.dependencies]
-git2 = { version = "0.18", features = ["vendored-openssl", "vendored-libgit2"] }
-openssl = { version = "0.10", features = ["vendored"] }
-
-[target.'cfg(windows)'.dependencies]
-# Windows 下使用原生 Schannel，不再需要 OpenSSL 和 Perl
-git2 = { version = "0.18" }
-
 # Encryption dependencies
 aes-gcm = "0.10"
 argon2 = "0.5"
@@ -57,3 +49,10 @@ rand = "0.8"
 base64 = "0.22"
 zeroize = "1.7"
 
+[target.'cfg(not(windows))'.dependencies]
+git2 = { version = "0.18", features = ["vendored-openssl", "vendored-libgit2"] }
+openssl = { version = "0.10", features = ["vendored"] }
+
+[target.'cfg(windows)'.dependencies]
+# Windows 下使用原生 Schannel，不再需要 OpenSSL 和 Perl
+git2 = { version = "0.18" }
