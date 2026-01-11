@@ -34,14 +34,22 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          # 为 macOS Universal 编译添加目标
+          # 为 macOS Universal 编译添加目标架构
           targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-          # 上面是 Linux 编译 Tauri 必需的系统库，Windows/macOS 会自动忽略该行
+      - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          # 使用 4.1 版本适配最新的 ubuntu-latest
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install macOS dependencies (OpenSSL Fix)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install openssl
+          # 显式告诉 Rust 编译器 OpenSSL 的位置以支持交叉编译
+          echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
 
       - name: Install Node dependencies
         run: npm ci
@@ -67,21 +75,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 等待 GitHub Release 资源同步完成
-          sleep 20
+          # 稍等片刻确保 GitHub Release 资源已全部上传
+          sleep 30
           
           VERSION=${GITHUB_REF_NAME#v}
           DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          # --- Windows (使用 .msi.zip 或 .nsis.zip，取决于你的 tauri.conf.json 配置) ---
-          WIN_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".msi.zip")) | .url' | head -n 1)
-          WIN_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".msi.zip.sig")) | .url' | head -n 1 | xargs curl -sL)
+          # 提取下载链接与签名 (适配 Tauri 2.0 默认文件名)
+          # Windows NSIS
+          WIN_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".nsis.zip")) | .url' | head -n 1)
+          WIN_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".nsis.zip.sig")) | .url' | head -n 1 | xargs curl -sL)
 
-          # --- Linux (Tauri 2.0 默认使用 .AppImage.tar.gz) ---
+          # Linux AppImage
           LINUX_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".AppImage.tar.gz")) | .url' | head -n 1)
           LINUX_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".AppImage.tar.gz.sig")) | .url' | head -n 1 | xargs curl -sL)
 
-          # --- macOS Universal ---
+          # macOS Universal
           MAC_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".app.tar.gz")) | .url' | head -n 1)
           MAC_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".app.tar.gz.sig")) | .url' | head -n 1 | xargs curl -sL)
 
@@ -91,18 +100,9 @@ jobs:
             "notes": "Update for version $VERSION",
             "pub_date": "$DATE",
             "platforms": {
-              "windows-x86_64": {
-                "url": "$WIN_URL",
-                "signature": "$WIN_SIG"
-              },
-              "linux-x86_64": {
-                "url": "$LINUX_URL",
-                "signature": "$LINUX_SIG"
-              },
-              "darwin-universal": {
-                "url": "$MAC_URL",
-                "signature": "$MAC_SIG"
-              }
+              "windows-x86_64": { "url": "$WIN_URL", "signature": "$WIN_SIG" },
+              "linux-x86_64": { "url": "$LINUX_URL", "signature": "$LINUX_SIG" },
+              "darwin-universal": { "url": "$MAC_URL", "signature": "$MAC_SIG" }
             }
           }
           EOF
