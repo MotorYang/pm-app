@@ -1,15 +1,34 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "proManager",
-  "version": "1.0.0",
-  "identifier": "github.motoryang.pro-manager",
+  "package": {
+    "productName": "proManager",
+    "version": "1.0.0",
+    "identifier": "github.motoryang.pro-manager"
+  },
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
-  "app": {
+  "tauri": {
+    "updater": {
+      "active": true,
+      "endpoints": ["https://motoryang.github.io/pm-app/update.json"],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQxNTRCQTI0MUM1NDhFN0YKUldSL2psUWNKTHBVUVZHaU1QWFdoUDJrVjBJb2J0WkJ2ekVtMkVqSUNhc1hsVzhYd1F5aVJXUlQK"
+    },
+    "bundle": {
+      "active": true,
+      "targets": ["nsis", "deb", "dmg"],
+      "icon": [
+        "icons/icon.png",
+        "icons/icon.ico",
+        "icons/icon.icns"
+      ],
+      "identifier": "github.motoryang.pro-manager",
+      "resources": []
+    },
     "windows": [
       {
         "title": "项目管理",
@@ -29,14 +48,5 @@
         "scope": ["**"]
       }
     }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/icon.png",
-      "icons/icon.ico",
-      "icons/icon.icns"
-    ]
   }
 }

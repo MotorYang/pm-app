@@ -1,0 +1,95 @@
+name: Tauri Full Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: ubuntu-latest
+          - os: macos-latest
+            args: "--target universal-apple-darwin"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Tauri Build
+        uses: tauri-apps/tauri-action@v0
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Release ${{ github.ref_name }}"
+          args: ${{ matrix.args }}
+
+  publish-update:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gh CLI
+        run: sudo apt install gh -y
+
+      - name: Generate update.json
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          WIN_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".exe")) | .url')
+          WIN_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".exe.sig")) | .url' | xargs curl -s | base64 -w0)
+
+          LINUX_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".deb")) | .url')
+          LINUX_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".deb.sig")) | .url' | xargs curl -s | base64 -w0)
+
+          MAC_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".dmg")) | .url')
+          MAC_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".dmg.sig")) | .url' | xargs curl -s | base64 -w0)
+
+          cat <<EOF > update.json
+  {
+    "version": "$VERSION",
+    "notes": "自动生成更新信息",
+    "pub_date": "$DATE",
+    "platforms": {
+      "windows-x86_64": {
+        "url": "$WIN_URL",
+        "signature": "$WIN_SIG"
+      },
+      "linux-x86_64": {
+        "url": "$LINUX_URL",
+        "signature": "$LINUX_SIG"
+      },
+      "darwin-universal": {
+        "url": "$MAC_URL",
+        "signature": "$MAC_SIG"
+      }
+    }
+  }
+  EOF
+
+- name: Publish update.json to GitHub Pages
+  uses: peaceiris/actions-gh-pages@v4
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    publish_dir: .
+    publish_branch: gh-pages
+    publish_files: update.json
