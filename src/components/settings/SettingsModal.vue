@@ -259,7 +259,6 @@ const formatArch = (a) => {
       <main class="settings-main">
         <div class="settings-body">
           <div v-if="activeTab === 'general'" class="panel-content">
-            <h3 class="panel-header">常规</h3>
 
             <div class="form-item">
               <label class="item-label">默认编辑器</label>
@@ -328,7 +327,6 @@ const formatArch = (a) => {
           </div>
 
           <div v-else-if="activeTab === 'export'" class="panel-content">
-            <h3 class="panel-header">项目导出</h3>
             <div class="form-item">
               <label class="item-label">清理策略</label>
               <div class="card-options vertical">

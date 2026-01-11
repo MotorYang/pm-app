@@ -65,6 +65,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，用于生成 changelog
 
       - name: Generate update.json (Tauri v2 Logic)
         env:
@@ -72,9 +74,33 @@ jobs:
         run: |
           # 稍作等待，确保 GitHub Release 附件已全部上传并建立索引
           sleep 60
-          
+
           VERSION=${GITHUB_REF_NAME#v}
           DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # 获取上一个 tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # 生成更新内容（从 commits 提取）
+          if [ -n "$PREV_TAG" ]; then
+            echo "Generating changelog from $PREV_TAG to $GITHUB_REF_NAME"
+            # 提取 commit messages，过滤 merge commits，格式化为列表
+            NOTES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" --no-merges | head -20)
+          else
+            echo "No previous tag found, using default message"
+            NOTES="- 首次发布"
+          fi
+
+          # 如果 NOTES 为空，使用默认消息
+          if [ -z "$NOTES" ]; then
+            NOTES="- 版本更新"
+          fi
+
+          # 转义 JSON 特殊字符
+          NOTES_ESCAPED=$(echo "$NOTES" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+
+          echo "Generated notes:"
+          echo "$NOTES"
 
           get_asset_url() {
             gh release view $GITHUB_REF_NAME --json assets -q ".assets[] | select(.name | contains(\"$1\")) | .url" | head -n 1
@@ -112,7 +138,7 @@ jobs:
           cat <<EOF > update.json
           {
             "version": "$VERSION",
-            "notes": "Update to version $VERSION",
+            "notes": "$NOTES_ESCAPED",
             "pub_date": "$DATE",
             "platforms": {
               "windows-x86_64": { "url": "$WIN_URL", "signature": "$WIN_SIG" },
@@ -121,7 +147,7 @@ jobs:
             }
           }
           EOF
-          
+
           echo "Final update.json content:"
           cat update.json
 

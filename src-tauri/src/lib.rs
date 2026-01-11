@@ -36,6 +36,15 @@ pub fn run() {
     ];
 
     tauri::Builder::default()
+        // 单实例插件必须最先注册
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // 当尝试打开第二个实例时，显示并聚焦现有窗口
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .invoke_handler(tauri::generate_handler![
             commands::terminal::open_terminal,
             commands::folder::open_in_file_explorer,
