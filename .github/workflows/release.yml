@@ -26,9 +26,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # 建议更新到 v4
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # 为 macOS Universal 编译添加目标
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+          # 上面是 Linux 编译 Tauri 必需的系统库，Windows/macOS 会自动忽略该行
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Install Node dependencies
+        run: npm ci
 
       - name: Tauri Build
         uses: tauri-apps/tauri-action@v0
@@ -49,36 +65,44 @@ jobs:
 
       - name: Generate update.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 必须提供 Token 供 gh 使用
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 稍等片刻确保 Release 资源已全部上传就绪
-          sleep 10
+          # 等待 GitHub Release 资源同步完成
+          sleep 20
           
           VERSION=${GITHUB_REF_NAME#v}
           DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          # 提取下载链接
-          WIN_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".msi.zip")) | .url')
-          # 注意：Tauri 更新通常针对 windows-x86_64 使用 .msi.zip 或 .nsis.zip
-          
-          # 获取签名内容（Tauri 的 .sig 文件内容已经是 base64 文本，直接读取即可）
-          WIN_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".msi.zip.sig")) | .url' | xargs curl -sL)
+          # --- Windows (使用 .msi.zip 或 .nsis.zip，取决于你的 tauri.conf.json 配置) ---
+          WIN_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".msi.zip")) | .url' | head -n 1)
+          WIN_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".msi.zip.sig")) | .url' | head -n 1 | xargs curl -sL)
 
-          LINUX_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".AppImage.tar.gz")) | .url')
-          LINUX_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".AppImage.tar.gz.sig")) | .url' | xargs curl -sL)
+          # --- Linux (Tauri 2.0 默认使用 .AppImage.tar.gz) ---
+          LINUX_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".AppImage.tar.gz")) | .url' | head -n 1)
+          LINUX_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".AppImage.tar.gz.sig")) | .url' | head -n 1 | xargs curl -sL)
 
-          MAC_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".app.tar.gz")) | .url')
-          MAC_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".app.tar.gz.sig")) | .url' | xargs curl -sL)
+          # --- macOS Universal ---
+          MAC_URL=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".app.tar.gz")) | .url' | head -n 1)
+          MAC_SIG=$(gh release view $GITHUB_REF_NAME --json assets -q '.assets[] | select(.name | endswith(".app.tar.gz.sig")) | .url' | head -n 1 | xargs curl -sL)
 
           cat <<EOF > update.json
           {
             "version": "$VERSION",
-            "notes": "Release $VERSION",
+            "notes": "Update for version $VERSION",
             "pub_date": "$DATE",
             "platforms": {
-              "windows-x86_64": { "url": "$WIN_URL", "signature": "$WIN_SIG" },
-              "linux-x86_64": { "url": "$LINUX_URL", "signature": "$LINUX_SIG" },
-              "darwin-universal": { "url": "$MAC_URL", "signature": "$MAC_SIG" }
+              "windows-x86_64": {
+                "url": "$WIN_URL",
+                "signature": "$WIN_SIG"
+              },
+              "linux-x86_64": {
+                "url": "$LINUX_URL",
+                "signature": "$LINUX_SIG"
+              },
+              "darwin-universal": {
+                "url": "$MAC_URL",
+                "signature": "$MAC_SIG"
+              }
             }
           }
           EOF
@@ -89,5 +113,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
           publish_branch: gh-pages
-          # 建议只发布这一个文件，避免覆盖掉 Pages 上的其他内容
-          destination_dir: updates
