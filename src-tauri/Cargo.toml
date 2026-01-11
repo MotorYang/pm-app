@@ -1,6 +1,6 @@
 [package]
-name = "proManager"
-version = "1.0.0"
+name = "ProManager"
+version = "1.0.1"
 description = "项目管理App"
 authors = ["motoryang"]
 edition = "2024"
