@@ -3,8 +3,6 @@
   "notes": "Update to version 1.0.1",
   "pub_date": "2026-01-11T10:58:34Z",
   "platforms": {
-    "windows-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.0.1/ProManager_1.0.1_x64-setup.exe", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDazdsSEpXVzR5YlFqTG42dnFjNTU3dnhENXhtTGFRdG1KbGZsdGdManpqcmxqc0RmZGRMcTliQXNzeGswNFpOTWMzTmszVjVCYUwvRTdrMUVud29veEFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MTI4MzY4CWZpbGU6UHJvTWFuYWdlcl8xLjAuMV94NjQtc2V0dXAuZXhlCkVqWkRlMVJUbWI0R0VOZ2NYL3lHUDI1MGVUbHFjbTUxU3d0dDhoTThUYXdmeS9QVHVGK211cmNCaTlLU2NYbVU2SHI3WlpNWTQwOGdvaGtYbURnWUR3PT0K" },
-    "linux-x86_64": { "url": "", "signature": "MISSING_SIGNATURE" },
-    "darwin-universal": { "url": "", "signature": "MISSING_SIGNATURE" }
+    "windows-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.0.1/ProManager_1.0.1_x64-setup.exe", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDazdsSEpXVzR5YlFqTG42dnFjNTU3dnhENXhtTGFRdG1KbGZsdGdManpqcmxqc0RmZGRMcTliQXNzeGswNFpOTWMzTmszVjVCYUwvRTdrMUVud29veEFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MTI4MzY4CWZpbGU6UHJvTWFuYWdlcl8xLjAuMV94NjQtc2V0dXAuZXhlCkVqWkRlMVJUbWI0R0VOZ2NYL3lHUDI1MGVUbHFjbTUxU3d0dDhoTThUYXdmeS9QVHVGK211cmNCaTlLU2NYbVU2SHI3WlpNWTQwOGdvaGtYbURnWUR3PT0K" }
   }
 }
