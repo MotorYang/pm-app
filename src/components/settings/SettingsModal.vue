@@ -2,14 +2,18 @@
 import {ref, onMounted, computed} from 'vue'
 import {useSettingsStore, THEME_COLORS} from '@/stores/settings'
 import {open} from '@tauri-apps/plugin-dialog'
+import {openUrl} from '@tauri-apps/plugin-opener'
+import {platform, version as osVersion, arch} from '@tauri-apps/plugin-os'
+import {getVersion} from '@tauri-apps/api/app'
+// updater 插件在开发模式下有限制，使用 fetch 直接检查更新
 import {
   FolderOpen,
   Check,
-  SettingTwo,
-  ShareTwo,
-  Config,
   CloseOne,
-  Attention
+  Attention,
+  Github,
+  Refresh,
+  LoadingOne
 } from '@icon-park/vue-next'
 
 import CartoonModal from '@/components/ui/CartoonModal.vue'
@@ -46,8 +50,19 @@ const localSettings = ref({
 const tabs = [
   {id: 'general', label: '常规设置'},
   {id: 'export', label: '导出选项'},
-  {id: 'advanced', label: '高级功能'},
+  {id: 'about', label: '关于'},
 ]
+
+// 关于页面状态
+const systemInfo = ref({
+  platform: '',
+  osVersion: '',
+  arch: ''
+})
+const appVersion = ref('')
+const updateStatus = ref('idle') // idle, checking, available, upToDate, error
+const updateInfo = ref(null)
+const updateError = ref('')
 
 /* ---------------- lifecycle ---------------- */
 onMounted(async () => {
@@ -56,6 +71,22 @@ onMounted(async () => {
   localSettings.value.closeButtonBehavior = settingsStore.closeButtonBehavior
   localSettings.value.exportProjectBehavior = settingsStore.exportProjectBehavior
   localSettings.value.themeColor = settingsStore.themeColor
+
+  // 获取系统信息
+  try {
+    systemInfo.value.platform = platform()
+    systemInfo.value.osVersion = osVersion()
+    systemInfo.value.arch = arch()
+  } catch (err) {
+    console.error('获取系统信息失败:', err)
+  }
+
+  // 获取应用版本
+  try {
+    appVersion.value = await getVersion()
+  } catch (err) {
+    console.error('获取版本失败:', err)
+  }
 })
 
 /* ---------------- actions ---------------- */
@@ -98,6 +129,96 @@ const handleSave = async () => {
 const handleClose = () => {
   emit('update:show', false)
   emit('close')
+}
+
+// 更新服务器地址
+const UPDATE_URL = 'https://motoryang.github.io/pm-app/update.json'
+
+// 检查更新
+const handleCheckUpdate = async () => {
+  try {
+    updateStatus.value = 'checking'
+    updateError.value = ''
+    updateInfo.value = null
+
+    // 先通过 fetch 检查远程版本
+    const response = await fetch(UPDATE_URL)
+    if (!response.ok) {
+      if (response.status === 404) {
+        updateStatus.value = 'upToDate'
+        return
+      }
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    const remoteInfo = await response.json()
+    const remoteVersion = remoteInfo.version
+
+    // 比较版本
+    if (remoteVersion && remoteVersion !== appVersion.value) {
+      updateStatus.value = 'available'
+      updateInfo.value = {
+        version: remoteVersion,
+        notes: remoteInfo.notes || '',
+        url: remoteInfo.platforms?.[getPlatformKey()]?.url
+      }
+    } else {
+      updateStatus.value = 'upToDate'
+    }
+  } catch (err) {
+    console.error('检查更新失败:', err)
+    updateStatus.value = 'error'
+    if (err.message?.includes('Failed to fetch') || err.message?.includes('network')) {
+      updateError.value = '网络连接失败，请检查网络后重试'
+    } else {
+      updateError.value = err.message || '检查更新失败'
+    }
+  }
+}
+
+// 获取当前平台的 key
+const getPlatformKey = () => {
+  const p = systemInfo.value.platform
+  const a = systemInfo.value.arch
+  if (p === 'windows') {
+    return a === 'x86_64' ? 'windows-x86_64' : 'windows-i686'
+  } else if (p === 'darwin' || p === 'macos') {
+    return a === 'aarch64' ? 'darwin-aarch64' : 'darwin-x86_64'
+  } else if (p === 'linux') {
+    return 'linux-x86_64'
+  }
+  return 'windows-x86_64'
+}
+
+// 打开外部链接
+const handleOpenUrl = async (url) => {
+  try {
+    await openUrl(url)
+  } catch (err) {
+    console.error('打开链接失败:', err)
+  }
+}
+
+// 格式化平台名称
+const formatPlatform = (p) => {
+  const platformNames = {
+    'windows': 'Windows',
+    'linux': 'Linux',
+    'macos': 'macOS',
+    'darwin': 'macOS'
+  }
+  return platformNames[p] || p
+}
+
+// 格式化架构名称
+const formatArch = (a) => {
+  const archNames = {
+    'x86_64': 'x64',
+    'x86': 'x86',
+    'aarch64': 'ARM64',
+    'arm': 'ARM'
+  }
+  return archNames[a] || a
 }
 </script>
 
@@ -224,9 +345,58 @@ const handleClose = () => {
             </div>
           </div>
 
-          <div v-else class="panel-content empty-state">
-            <Attention :size="48"/>
-            <p>更多功能正在开发中...</p>
+          <div v-else-if="activeTab === 'about'" class="panel-content about-panel">
+            <!-- 应用图标和名称 -->
+            <div class="about-header">
+              <img src="@/assets/logo.png" alt="logo" class="app-logo"/>
+              <div class="app-name">ProManager</div>
+              <div class="app-version">v{{ appVersion || '-' }}</div>
+            </div>
+
+            <!-- 信息列表 -->
+            <div class="about-info">
+              <div class="info-row">
+                <span class="info-label">系统平台</span>
+                <span class="info-value">
+                  {{ formatPlatform(systemInfo.platform) }} {{ systemInfo.osVersion }} ({{ formatArch(systemInfo.arch) }})
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">开源地址</span>
+                <span class="info-link" @click="handleOpenUrl('https://github.com/motoryang/pm-app')">
+                  <Github :size="14"/>
+                  motoryang/pm-app
+                </span>
+              </div>
+            </div>
+
+            <!-- 更新检查 -->
+            <div class="about-update">
+              <CartoonButton
+                  variant="secondary"
+                  size="small"
+                  :disabled="updateStatus === 'checking'"
+                  @click="handleCheckUpdate"
+              >
+                <LoadingOne v-if="updateStatus === 'checking'" :size="16" spin/>
+                <Refresh v-else :size="16"/>
+                <span>{{ updateStatus === 'checking' ? '检查中...' : '检查更新' }}</span>
+              </CartoonButton>
+
+              <div v-if="updateStatus === 'upToDate'" class="update-msg success">
+                <Check :size="14"/>
+                <span>已是最新版本</span>
+              </div>
+              <div v-else-if="updateStatus === 'available' && updateInfo" class="update-msg available">
+                <span>发现新版本 v{{ updateInfo.version }}</span>
+                <span class="update-link" @click="handleOpenUrl('https://github.com/motoryang/pm-app/releases/latest')">
+                  前往下载
+                </span>
+              </div>
+              <div v-else-if="updateStatus === 'error'" class="update-msg error">
+                <span>{{ updateError }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -497,5 +667,118 @@ const handleClose = () => {
 .color-option.selected .color-label {
   color: var(--theme-color);
   font-weight: 700;
+}
+
+/* 关于页面样式 */
+.about-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 24px;
+}
+
+.about-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.app-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.app-version {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+}
+
+.about-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.info-label {
+  color: var(--color-text-tertiary);
+}
+
+.info-value {
+  color: var(--color-text-primary);
+}
+
+.info-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.info-link:hover {
+  text-decoration: underline;
+}
+
+.about-update {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.update-msg.success {
+  color: #16a34a;
+}
+
+.update-msg.available {
+  color: #d97706;
+}
+
+.update-msg.error {
+  color: #dc2626;
+}
+
+.update-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.update-link:hover {
+  text-decoration: underline;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
