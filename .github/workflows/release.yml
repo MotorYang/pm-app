@@ -51,10 +51,8 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 确保 Secret 里是那串纯 Base64 (不带 BEGIN/END 标签)
-          TAURI_SIGNING_PRIVATE_KEY: 'dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5Q1RNRjJrZzc2Wm90T2FKejMrUlBGSnZ5VUloTXpZa3M0dXdZRkg0c0kxQUFBQkFBQUFBQUFBQUFBQUlBQUFBQXoxYk10VTdveHc5ZnNTbFN0WVNKcFlUd08vUUY5U041eXFuZ0cvMGxiMFpPbUlHdHFBWVFSWWI3V3VZaGVwUW9ZTjE3QTNUblhVcnZxMnBCaFM4V0dWVE4vWTJlVVgrN1U1OWk2MzA2aVdQV2pxRVYvWU1nNDVCUDRzWlZxUjNUbFRaemk2bHpmVEU9Cg=='
-          # 确保 Secret 里的密码没有换行符
-          TAURI_KEY_PASSWORD: '745700Yxy@'
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           OPENSSL_STATIC: 1
         with:
           tagName: ${{ github.ref_name }}

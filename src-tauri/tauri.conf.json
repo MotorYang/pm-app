@@ -41,7 +41,7 @@
     "updater": {
       "active": true,
       "endpoints": ["https://motoryang.github.io/pm-app/update.json"],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQxNTRCQTI0MUM1NDhFN0YKUldSL2psUWNKTHBVUVZHaU1QWFdoUDJrVjBJb2J0WkJ2ekVtMkVqSUNhc1hsVzhYd1F5aVJXUlQK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkzNDI4MTQ3QjEzQjUwQjAKUldTd1VEdXhSNEZDa3hDUk1pN2E2ekhQL2V0V25NV3VSMTAvQUNKMVdwZHFLdDVTZVcrc2E5bDEK"
     }
   }
 }
