@@ -28,7 +28,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "deb", "dmg"],
+    "targets": ["nsis", "deb", "dmg", "updater"],
     "icon": [
       "icons/icon.png",
       "icons/icon.ico",
