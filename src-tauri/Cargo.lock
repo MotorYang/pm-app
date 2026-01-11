@@ -3,6 +3,35 @@
 version = 4
 
 [[package]]
+name = "ProManager"
+version = "1.0.1"
+dependencies = [
+ "aes-gcm",
+ "argon2",
+ "base64 0.22.1",
+ "chrono",
+ "dirs 4.0.0",
+ "git2",
+ "openssl",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-opener",
+ "tauri-plugin-os",
+ "tauri-plugin-process",
+ "tauri-plugin-shell",
+ "tauri-plugin-sql",
+ "tauri-plugin-updater",
+ "thiserror 1.0.69",
+ "zeroize",
+ "zip 0.6.6",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3365,35 +3394,6 @@ name = "precomputed-hash"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
-
-[[package]]
-name = "proManager"
-version = "1.0.0"
-dependencies = [
- "aes-gcm",
- "argon2",
- "base64 0.22.1",
- "chrono",
- "dirs 4.0.0",
- "git2",
- "openssl",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-opener",
- "tauri-plugin-os",
- "tauri-plugin-process",
- "tauri-plugin-shell",
- "tauri-plugin-sql",
- "tauri-plugin-updater",
- "thiserror 1.0.69",
- "zeroize",
- "zip 0.6.6",
-]
 
 [[package]]
 name = "proc-macro-crate"

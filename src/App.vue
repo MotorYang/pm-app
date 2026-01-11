@@ -7,10 +7,12 @@ import ProjectView from '@/views/ProjectView.vue'
 import ShortcutCard from '@/components/shortcuts/ShortcutCard.vue'
 import ShortcutDialog from '@/components/shortcuts/ShortcutDialog.vue'
 import ContextMenu from '@/components/ui/ContextMenu.vue'
+import UpdateModal from '@/components/update/UpdateModal.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useShortcutsStore } from '@/stores/shortcuts'
 import { useDocumentsStore } from '@/stores/documents'
 import { useConfirm } from '@/composables/useConfirm'
+import { useUpdater } from '@/composables/useUpdater'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import Logo from '@/assets/logo.png'
 
@@ -19,10 +21,27 @@ const shortcutsStore = useShortcutsStore()
 const documentsStore = useDocumentsStore()
 const confirmDialog = useConfirm()
 
+// 更新器
+const {
+  showUpdateModal,
+  currentVersion,
+  newVersion,
+  releaseNotes,
+  downloading,
+  downloadProgress,
+  downloaded,
+  updateNow,
+  updateLater,
+  handleSkipVersion,
+  initUpdater
+} = useUpdater()
+
 const hasActiveProject = computed(() => projectsStore.activeProject !== null)
 
 onMounted(() => {
   documentsStore.loadRecentDocuments()
+  // 启动时检查更新
+  initUpdater()
 })
 
 // 返回欢迎页面时刷新最近文档列表
@@ -184,6 +203,20 @@ const handleSaveShortcut = (data) => {
 
     <!-- 全局右键菜单 -->
     <ContextMenu />
+
+    <!-- 更新提示弹窗 -->
+    <UpdateModal
+      v-model:show="showUpdateModal"
+      :current-version="currentVersion"
+      :new-version="newVersion"
+      :release-notes="releaseNotes"
+      :downloading="downloading"
+      :download-progress="downloadProgress"
+      :downloaded="downloaded"
+      @update-now="updateNow"
+      @update-later="updateLater"
+      @skip-version="handleSkipVersion"
+    />
   </div>
 </template>
 
