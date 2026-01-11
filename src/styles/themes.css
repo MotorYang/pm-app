@@ -1,0 +1,117 @@
+/* PM-App Theme System - CSS Custom Properties */
+
+:root {
+  /* Light Mode - Cartoon Color Palette */
+  --color-primary: #FF6B9D;          /* Playful pink */
+  --color-secondary: #FFA94D;        /* Warm orange */
+  --color-accent: #4ECDC4;           /* Teal */
+  --color-success: #95E1D3;          /* Mint green */
+  --color-danger: #E52222;           /* Bright red */
+  --color-warning: #FFD93D;          /* Sunny yellow */
+  --color-info: #3498DB;             /* Sky blue */
+
+  /* Background colors */
+  --color-bg-primary: #F8F9FA;       /* Off-white */
+  --color-bg-secondary: #FFFFFF;     /* Pure white */
+  --color-bg-tertiary: #E9ECEF;      /* Light gray */
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text colors */
+  --color-text-primary: #2C3E50;     /* Dark blue-gray */
+  --color-text-secondary: #6C757D;   /* Medium gray */
+  --color-text-tertiary: #ADB5BD;    /* Light gray */
+  --color-text-inverse: #FFFFFF;     /* White text for dark backgrounds */
+
+  /* Border and shadow */
+  --color-border: #DEE2E6;           /* Subtle border */
+  --color-border-focus: var(--color-primary);
+  --color-shadow: rgba(0, 0, 0, 0.1);
+
+  /* Cartoon-specific design tokens */
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+  --border-radius-xl: 30px;
+  --border-radius-full: 999px;
+
+  --border-width: 2px;
+  --border-width-thick: 3px;
+
+  --shadow-sm: 0 2px 8px var(--color-shadow);
+  --shadow-md: 0 4px 16px var(--color-shadow);
+  --shadow-lg: 0 8px 24px var(--color-shadow);
+  --shadow-xl: 0 12px 32px var(--color-shadow);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Bouncy easing for cartoon feel */
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+  /* Spacing scale */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Font sizes */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+/* Dark Mode Theme */
+[data-theme="dark"] {
+  /* Dark Mode - Muted Cartoon Color Palette */
+  --color-primary: #E91E63;
+  --color-secondary: #FF9800;
+  --color-accent: #00BCD4;
+  --color-success: #4CAF50;
+  --color-danger: #E52222;
+  --color-warning: #FFC107;
+  --color-info: #2196F3;
+
+  /* Background colors */
+  --color-bg-primary: #1A1A2E;       /* Deep dark blue */
+  --color-bg-secondary: #16213E;     /* Darker blue */
+  --color-bg-tertiary: #0F3460;      /* Medium dark blue */
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text colors */
+  --color-text-primary: #E9ECEF;     /* Light gray */
+  --color-text-secondary: #ADB5BD;   /* Medium gray */
+  --color-text-tertiary: #6C757D;    /* Dark gray */
+  --color-text-inverse: #1A1A2E;     /* Dark text for light backgrounds */
+
+  /* Border and shadow */
+  --color-border: #2D3748;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color var(--transition-normal),
+              color var(--transition-normal),
+              border-color var(--transition-normal);
+}
+
+/* Disable transitions for animations and transforms */
+*,
+*::before,
+*::after {
+  transition-property: background-color, color, border-color, box-shadow;
+}

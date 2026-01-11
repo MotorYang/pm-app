@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run tauri:*)",
+      "Bash(timeout /t 10)",
+      "Bash(copy srcApp-backup.vue srcApp.vue)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 15)",
+      "Bash(ping:*)",
+      "Bash(cat:*)",
+      "Bash(npm run:*)",
+      "Bash(cmd //c taskkill //F //PID 25900)",
+      "Bash(cmd /c taskkill /F /PID 23696)",
+      "Bash(cmd //c taskkill //F //PID 23696)"
+    ]
+  }
+}
