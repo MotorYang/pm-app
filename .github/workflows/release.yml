@@ -58,8 +58,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Release ${{ github.ref_name }}"
-          # 核心修复：添加 --updater 参数以生成 .sig 文件
-          args: ${{ matrix.args }} --updater
+          args: ${{ matrix.args }}
 
   publish-update:
     needs: build
