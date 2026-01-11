@@ -94,13 +94,13 @@ jobs:
           WIN_URL=$(get_asset_url "setup.exe")
           WIN_SIG=$(download_sig "setup.exe.sig")
 
-          # Linux: 使用 .AppImage 和 .AppImage.sig
-          LINUX_URL=$(get_asset_url ".AppImage")
-          LINUX_SIG=$(download_sig ".AppImage.sig")
+          # Linux: 使用 .deb 和 .deb.sig
+          LINUX_URL=$(get_asset_url ".deb")
+          LINUX_SIG=$(download_sig ".deb.sig")
 
-          # macOS: 依然使用 .app.tar.gz 和 .app.tar.gz.sig
-          MAC_URL=$(get_asset_url ".app.tar.gz")
-          MAC_SIG=$(download_sig ".app.tar.gz.sig")
+          # macOS: 依然使用 .dmg 和 .dmg.sig
+          MAC_URL=$(get_asset_url ".dmg")
+          MAC_SIG=$(download_sig ".dmg.sig")
 
           # 安全检查
           if [[ "$WIN_SIG" == "MISSING_SIGNATURE" ]]; then
