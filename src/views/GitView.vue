@@ -115,7 +115,7 @@ const handleRefresh = async () => {
 }
 
 .git-header {
-  height: 48px;
+  height: 38px;
   padding: var(--spacing-lg);
   border-bottom: var(--border-width) solid var(--color-border);
   display: flex;

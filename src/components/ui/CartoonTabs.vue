@@ -101,7 +101,7 @@ const selectTab = (tabName) => {
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-bg-secondary);
   border-bottom: var(--border-width) solid var(--color-border);
-  height: 48px;
+  height: 38px;
 }
 
 .tabs-header-left {
