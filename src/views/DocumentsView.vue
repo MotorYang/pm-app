@@ -15,6 +15,7 @@ const showCreateModal = ref(false)
 const newFileName = ref('')
 const creating = ref(false)
 const createError = ref('')
+const createInFolder = ref('/')
 
 onMounted(() => {
   if (projectsStore.activeProject) {
@@ -32,10 +33,11 @@ watch(() => projectsStore.activeProject, (newProject) => {
   }
 })
 
-const handleCreate = () => {
+const handleCreate = (folder = '/') => {
   showCreateModal.value = true
   newFileName.value = ''
   createError.value = ''
+  createInFolder.value = folder
 }
 
 const handleCreateSubmit = async () => {
@@ -48,9 +50,10 @@ const handleCreateSubmit = async () => {
   createError.value = ''
 
   try {
-    await documentsStore.createDocument(projectsStore.activeProject.id, newFileName.value.trim())
+    await documentsStore.createDocument(projectsStore.activeProject.id, newFileName.value.trim(), createInFolder.value)
     showCreateModal.value = false
     newFileName.value = ''
+    createInFolder.value = '/'
   } catch (e) {
     createError.value = e.message || '创建文档失败'
   } finally {
@@ -62,6 +65,7 @@ const handleCloseModal = () => {
   showCreateModal.value = false
   newFileName.value = ''
   createError.value = ''
+  createInFolder.value = '/'
 }
 </script>
 

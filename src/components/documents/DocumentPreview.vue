@@ -5,8 +5,8 @@ import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import { useDocumentsStore } from '@/stores/documents'
-import { invoke } from '@tauri-apps/api/core'
-import { convertFileSrc } from '@tauri-apps/api/core'
+import { invoke, convertFileSrc } from '@tauri-apps/api/core'
+import { join } from '@tauri-apps/api/path'
 
 const documentsStore = useDocumentsStore()
 
@@ -115,9 +115,9 @@ const convertLocalImages = async () => {
           docId: documentsStore.activeDocumentId
         })
 
-        // Build full path to image
+        // Build full path to image using Tauri's path API for cross-platform support
         const filename = href.substring(7) // Remove 'images/' prefix
-        let fullPath = `${imagesPath}\\${filename}`
+        const fullPath = await join(imagesPath, filename)
 
         // Convert to Tauri accessible URL
         const assetUrl = convertFileSrc(fullPath)
