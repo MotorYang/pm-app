@@ -125,3 +125,47 @@ pub fn get_document_images_path(app: tauri::AppHandle, doc_id: i64) -> Result<St
 
     Ok(images_dir.to_string_lossy().to_string())
 }
+
+/// Copy images from one document to another
+#[tauri::command]
+pub fn copy_document_images(
+    app: tauri::AppHandle,
+    source_doc_id: i64,
+    target_doc_id: i64,
+) -> Result<(), String> {
+    let source_dir = get_document_dir(&app, source_doc_id)?;
+    let target_dir = get_document_dir(&app, target_doc_id)?;
+
+    let source_images = source_dir.join("images");
+    let target_images = target_dir.join("images");
+
+    // If source images directory doesn't exist, nothing to copy
+    if !source_images.exists() {
+        return Ok(());
+    }
+
+    // Ensure target images directory exists
+    if !target_images.exists() {
+        fs::create_dir_all(&target_images)
+            .map_err(|e| format!("Failed to create target images directory: {}", e))?;
+    }
+
+    // Copy all files from source to target
+    let entries = fs::read_dir(&source_images)
+        .map_err(|e| format!("Failed to read source images directory: {}", e))?;
+
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
+        let path = entry.path();
+
+        if path.is_file() {
+            let file_name = path.file_name().ok_or("Invalid file name")?;
+            let target_path = target_images.join(file_name);
+
+            fs::copy(&path, &target_path)
+                .map_err(|e| format!("Failed to copy image {}: {}", path.display(), e))?;
+        }
+    }
+
+    Ok(())
+}

@@ -15,6 +15,7 @@ export const useDocumentsStore = defineStore('documents', () => {
   const loading = ref(false)
   const saving = ref(false)
   const error = ref(null)
+  const emptyFolders = ref([]) // 存储空文件夹路径
 
   // Database connection
   let db = null
@@ -295,6 +296,224 @@ export const useDocumentsStore = defineStore('documents', () => {
     error.value = null
   }
 
+  // 复制文档到目标文件夹
+  async function copyDocument(documentId, targetFolder) {
+    const doc = documents.value.find(d => d.id === documentId)
+    if (!doc) {
+      throw new Error('Document not found')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const database = await getDb()
+
+      // 读取原文档内容
+      const content = await invoke('read_document_content', { docId: documentId })
+
+      // 生成新标题（添加 "副本" 后缀）
+      let newTitle = doc.title + ' 副本'
+      let suffix = 1
+
+      // 检查是否存在同名文档
+      while (documents.value.some(d => d.title === newTitle && d.folder === targetFolder)) {
+        suffix++
+        newTitle = `${doc.title} 副本 ${suffix}`
+      }
+
+      // 创建新文档记录
+      const result = await database.execute(
+        'INSERT INTO documents (project_id, title, folder) VALUES (?, ?, ?)',
+        [doc.project_id, newTitle, targetFolder]
+      )
+
+      const newDocId = result.lastInsertId
+
+      // 创建文档文件夹
+      await invoke('create_document_folder', { docId: newDocId })
+
+      // 写入内容
+      await invoke('write_document_content', { docId: newDocId, content })
+
+      // 复制图片文件夹（如果存在）
+      try {
+        await invoke('copy_document_images', { sourceDocId: documentId, targetDocId: newDocId })
+      } catch (e) {
+        // 图片复制失败不影响主流程
+        console.warn('Failed to copy images:', e)
+      }
+
+      // 重新加载文档列表
+      await loadDocuments(doc.project_id)
+
+      return newDocId
+    } catch (e) {
+      error.value = e.message || 'Failed to copy document'
+      console.error('Failed to copy document:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 移动文档到目标文件夹
+  async function moveDocument(documentId, targetFolder) {
+    const doc = documents.value.find(d => d.id === documentId)
+    if (!doc) {
+      throw new Error('Document not found')
+    }
+
+    if (doc.folder === targetFolder) {
+      return // 已经在目标文件夹，无需移动
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const database = await getDb()
+
+      // 检查目标文件夹是否存在同名文档
+      const existing = documents.value.find(d => d.title === doc.title && d.folder === targetFolder)
+      if (existing) {
+        throw new Error('目标文件夹已存在同名文档')
+      }
+
+      // 更新文档的 folder 字段
+      await database.execute(
+        'UPDATE documents SET folder = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [targetFolder, documentId]
+      )
+
+      // 更新本地文档
+      doc.folder = targetFolder
+      doc.updated_at = new Date().toISOString()
+    } catch (e) {
+      error.value = e.message || 'Failed to move document'
+      console.error('Failed to move document:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 重命名文件夹
+  async function renameFolder(oldPath, newName) {
+    if (!oldPath || !newName) {
+      throw new Error('Folder path and new name are required')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const database = await getDb()
+
+      // 构建新路径
+      const parts = oldPath.split('/').filter(p => p)
+      parts[parts.length - 1] = newName
+      const newPath = '/' + parts.join('/')
+
+      // 检查新路径是否已存在
+      const existingDoc = documents.value.some(d => d.folder === newPath)
+      const existingEmpty = emptyFolders.value.includes(newPath)
+      if (existingDoc || existingEmpty) {
+        throw new Error('已存在同名文件夹')
+      }
+
+      // 更新所有该文件夹下的文档
+      await database.execute(
+        'UPDATE documents SET folder = ?, updated_at = CURRENT_TIMESTAMP WHERE folder = ?',
+        [newPath, oldPath]
+      )
+
+      // 更新本地文档列表
+      documents.value.forEach(doc => {
+        if (doc.folder === oldPath) {
+          doc.folder = newPath
+          doc.updated_at = new Date().toISOString()
+        }
+      })
+
+      // 更新空文件夹列表
+      const emptyIndex = emptyFolders.value.indexOf(oldPath)
+      if (emptyIndex !== -1) {
+        emptyFolders.value[emptyIndex] = newPath
+        emptyFolders.value.sort()
+      }
+    } catch (e) {
+      error.value = e.message || 'Failed to rename folder'
+      console.error('Failed to rename folder:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 创建新文件夹
+  async function createFolder(folderPath) {
+    if (!folderPath) {
+      throw new Error('Folder path is required')
+    }
+
+    // 检查文件夹是否已存在（在文档中或空文件夹列表中）
+    const existingDocs = documents.value.filter(d => d.folder === folderPath)
+    if (existingDocs.length > 0 || emptyFolders.value.includes(folderPath)) {
+      throw new Error('文件夹已存在')
+    }
+
+    // 添加到空文件夹列表
+    emptyFolders.value.push(folderPath)
+    emptyFolders.value.sort()
+
+    return folderPath
+  }
+
+  // 删除文件夹及其下所有文档
+  async function deleteFolder(folderPath) {
+    if (!folderPath) {
+      throw new Error('Folder path is required')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      // 获取该文件夹下所有文档
+      const docsInFolder = documents.value.filter(d => d.folder === folderPath)
+
+      // 删除每个文档
+      for (const doc of docsInFolder) {
+        await invoke('delete_document_folder', { docId: doc.id })
+      }
+
+      // 从数据库中删除
+      const database = await getDb()
+      await database.execute('DELETE FROM documents WHERE folder = ?', [folderPath])
+
+      // 更新本地列表
+      documents.value = documents.value.filter(d => d.folder !== folderPath)
+
+      // 从空文件夹列表中移除
+      emptyFolders.value = emptyFolders.value.filter(f => f !== folderPath)
+
+      // 如果当前活动文档在被删除的文件夹中，关闭它
+      if (activeDocumentId.value) {
+        const activeDoc = documents.value.find(d => d.id === activeDocumentId.value)
+        if (!activeDoc) {
+          closeDocument()
+        }
+      }
+    } catch (e) {
+      error.value = e.message || 'Failed to delete folder'
+      console.error('Failed to delete folder:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 获取最近打开的文档（跨项目）
   const recentDocuments = ref([])
 
@@ -327,6 +546,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     error,
     hasUnsavedChanges,
     recentDocuments,
+    emptyFolders,
 
     // Getters
     activeDocument,
@@ -341,6 +561,11 @@ export const useDocumentsStore = defineStore('documents', () => {
     createDocument,
     deleteDocument,
     renameDocument,
+    copyDocument,
+    moveDocument,
+    createFolder,
+    renameFolder,
+    deleteFolder,
     loadRecentDocuments,
     clearError
   }
