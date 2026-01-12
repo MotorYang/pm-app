@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Plus, MenuFold, MenuUnfold } from '@icon-park/vue-next'
+import { Plus, MenuFold, MenuUnfold, Tool, Github, Box, Cup, ApplicationMenu, Code, LinkOne, DatabaseNetwork, Api, Terminal, FileCode, DocumentFolder, Search } from '@icon-park/vue-next'
+import { open } from '@tauri-apps/plugin-shell'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import ProjectCard from '@/components/projects/ProjectCard.vue'
 import AddProjectModal from '@/components/projects/AddProjectModal.vue'
@@ -13,6 +14,37 @@ const showAddModal = ref(false)
 
 // Sidebar collapse state
 const isCollapsed = ref(false)
+
+// 工具栏展开状态
+const isToolbarExpanded = ref(false)
+
+// 常用工具站列表
+const toolLinks = [
+  { name: 'GitHub', url: 'https://github.com', icon: Github },
+  { name: 'Docker Hub', url: 'https://hub.docker.com', icon: Box },
+  { name: 'Maven Repo', url: 'https://mvnrepository.com', icon: ApplicationMenu },
+  { name: 'Oracle JDK', url: 'https://www.oracle.com/java/technologies/downloads/', icon: Cup },
+  { name: 'Python', url: 'https://www.python.org', icon: Code },
+  { name: 'NPM', url: 'https://www.npmjs.com', icon: LinkOne },
+  { name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: Search },
+  { name: 'MDN Web Docs', url: 'https://developer.mozilla.org', icon: DocumentFolder },
+  { name: 'Can I Use', url: 'https://caniuse.com', icon: Terminal },
+  { name: 'Regex101', url: 'https://regex101.com', icon: FileCode },
+  { name: 'JSON Editor', url: 'https://jsoneditoronline.org', icon: Api },
+  { name: 'Postman', url: 'https://www.postman.com', icon: Api },
+  { name: 'Redis Docs', url: 'https://redis.io/docs', icon: DatabaseNetwork },
+  { name: 'MySQL Docs', url: 'https://dev.mysql.com/doc/', icon: DatabaseNetwork },
+  { name: 'Vue.js', url: 'https://vuejs.org', icon: Code },
+  { name: 'Tailwind CSS', url: 'https://tailwindcss.com', icon: FileCode },
+]
+
+const toggleToolbar = () => {
+  isToolbarExpanded.value = !isToolbarExpanded.value
+}
+
+const openToolLink = (url) => {
+  open(url)
+}
 
 // 拖拽状态
 const dragIndex = ref(null)
@@ -170,6 +202,28 @@ const handleMouseUp = () => {
       </div>
     </div>
 
+    <!-- 底部工具栏 -->
+    <div class="toolbar-section" :class="{ expanded: isToolbarExpanded, collapsed: isCollapsed }">
+      <button class="toolbar-toggle" @click="toggleToolbar" :title="isToolbarExpanded ? '收起工具栏' : '展开工具栏'">
+        <Tool :size="18" theme="outline" />
+        <span v-if="!isCollapsed" class="toolbar-title">常用工具</span>
+        <MenuUnfold v-if="!isCollapsed && !isToolbarExpanded" :size="14" theme="outline" class="toolbar-arrow" />
+        <MenuFold v-if="!isCollapsed && isToolbarExpanded" :size="14" theme="outline" class="toolbar-arrow" />
+      </button>
+      <div v-if="isToolbarExpanded" class="toolbar-links">
+        <button
+          v-for="tool in toolLinks"
+          :key="tool.name"
+          class="tool-link"
+          @click="openToolLink(tool.url)"
+          :title="tool.name"
+        >
+          <component :is="tool.icon" :size="16" theme="outline" />
+          <span class="tool-name">{{ tool.name }}</span>
+        </button>
+      </div>
+    </div>
+
     <AddProjectModal
       v-model:open="showAddModal"
       @close="showAddModal = false"
@@ -192,6 +246,7 @@ const handleMouseUp = () => {
 
 .app-sidebar.collapsed {
   width: 60px;
+  overflow: visible;
 }
 
 .sidebar-header {
@@ -243,6 +298,12 @@ const handleMouseUp = () => {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-md);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.sidebar-content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
 }
 
 .collapsed .sidebar-content {
@@ -303,5 +364,120 @@ const handleMouseUp = () => {
   height: 2px;
   background-color: var(--color-primary);
   border-radius: 1px;
+}
+
+/* 工具栏样式 */
+.toolbar-section {
+  border-top: var(--border-width) solid var(--color-border);
+  background-color: var(--color-bg-secondary);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.toolbar-toggle {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.toolbar-toggle:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.toolbar-section.collapsed .toolbar-toggle {
+  justify-content: center;
+  padding: var(--spacing-sm);
+}
+
+.toolbar-title {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.toolbar-arrow {
+  opacity: 0.6;
+}
+
+.toolbar-links {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--spacing-sm) var(--spacing-sm);
+  gap: var(--spacing-xs);
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.toolbar-links::-webkit-scrollbar {
+  display: none;
+}
+
+.toolbar-section.collapsed .toolbar-links {
+  position: absolute;
+  left: 100%;
+  bottom: 0;
+  min-width: 160px;
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  margin-left: var(--spacing-xs);
+  max-height: 300px;
+  z-index: 100;
+}
+
+.tool-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+  text-align: left;
+  width: 100%;
+  line-height: 1;
+}
+
+.tool-link :deep(svg) {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.tool-link:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-primary);
+}
+
+.toolbar-section.collapsed .tool-link {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  justify-content: flex-start;
+}
+
+.tool-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
 }
 </style>
