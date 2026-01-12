@@ -256,7 +256,7 @@ const handleMouseUp = () => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
-  height: 48px;
+  height: 38px;
 }
 
 .collapsed .sidebar-header {

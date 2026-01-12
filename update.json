@@ -1,10 +1,10 @@
 {
-  "version": "1.1.1",
-  "notes": "- update version v1.1.1\n-   feat: 文档文件夹功能增强   - 新增文件夹支持：创建、重命名、删除文件夹   - 文档支持复制、剪切、粘贴操作   - 优化文档列表面板ui\n- fix: 修复文档预览图片无法加载的问题\n- feat: 侧边栏新增常用开发工具栏\n- docs: modify README.md",
-  "pub_date": "2026-01-12T13:06:14Z",
+  "version": "1.1.2",
+  "notes": "- update version v1.1.2\n- style: 修复右键菜单图标和文字不垂直居中的bug\n- feat: 新增tab面板切换动画\n- feat: 紧凑版本管理页面及其它Header栏的ui\n- Fix dark theme image reference in README\n- Fix image paths for light and dark themes\n- docs: update document",
+  "pub_date": "2026-01-12T15:17:44Z",
   "platforms": {
-    "windows-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.1.1/ProManager_1.1.1_x64-setup.exe", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDazRsZEZQclkxY3ZLZUtUa3ZXK0NrcWcwc3lRRWV0cnpCZDJPK2ZOK1NkbUlpNnpibDBVTjhpZDZFaHAxKzZ5UUludFQ2MlF5L29ZazkyWEMxYmZRSXc4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MjIyNzcxCWZpbGU6UHJvTWFuYWdlcl8xLjEuMV94NjQtc2V0dXAuZXhlCnZNb1E1S3Q4NitsSzJwbWtKY2ZZbUpQRGFsNXcrSllLazE4UWQyNnlxU2VkR05WNFIwbTBqR09PeDVxRkZIanY3NzJkenhCYWtzeDVaZDdxSDdhNEF3PT0K" },
-    "linux-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.1.1/ProManager_1.1.1_amd64.deb", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDay9EM1A2ZG1sa01IT2ZLMy9uYnNvYm9OL3djS0ljQXV3K1hrSFRqSUFZYUJLNEdERXVvY3lwUjlzbG43TFFoN3EyQk9OMittOVFISVFzR1RBa3g1M1FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MjIyNjAwCWZpbGU6UHJvTWFuYWdlcl8xLjEuMV9hbWQ2NC5kZWIKdklteU40aXJpNzMwYWd0aHVzZ3hNaVdEZnZCMzNWd1R0V2xRYVA1Zk9nbmM5b3c2UzA0V3ROcTl4ZE1tSW1HZnNVQW4rQU1sOGRHOS8xMFBJUUN3Q0E9PQo=" },
-    "darwin-universal": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.1.1/ProManager_1.1.1_universal.dmg", "signature": "MISSING_SIGNATURE" }
+    "windows-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.1.2/ProManager_1.1.2_x64-setup.exe", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDazVkOFprUk8xS2ljYXE4b0NaT3ljTUNLWGUzelNJMEg4VUZJMnNwNDJDZC9VeFN5bDAzbkhZaHdqS1lRQ1l6dlFRaTIwWHJ5U2Jvb09KRERTUnZHeUFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MjMwNDQ2CWZpbGU6UHJvTWFuYWdlcl8xLjEuMl94NjQtc2V0dXAuZXhlClBNd2dFMXM5R1pXeTVpd1YwcXMvd2Y5N1c2VFBRRU1FVVN4VGJIWk16QTh3RWJjc2pMSWNxK2FtRGh5RGgrVHdYdXRJWnBoQ1ZtWUhkeVk1QzFGV0FnPT0K" },
+    "linux-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.1.2/ProManager_1.1.2_amd64.deb", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDa3p2TWV6eG5MMXZpeEZBUGFMNGJVeXZobjNucnE4ckRGR2o1L21SYW1oangvNHFtMUlUT001eWU1M1JTazFkY3dwZ0hSdHA0cE5waEhUSG81ZDJuSUFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MjMwMzAxCWZpbGU6UHJvTWFuYWdlcl8xLjEuMl9hbWQ2NC5kZWIKOEM4WXowdTg4cGFxWEEyUHByTHZuaEIzblIyelRPQ3pINjlzZ0ltL1hVTzhId0FmUGJSN3MzejNDQzJpWEJYMVZVNktTb2JQYTYyN1Rra29MbHN0RGc9PQo=" },
+    "darwin-universal": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.1.2/ProManager_1.1.2_universal.dmg", "signature": "MISSING_SIGNATURE" }
   }
 }

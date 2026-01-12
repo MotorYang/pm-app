@@ -17,6 +17,10 @@
   </a>
 </p>
 
+## UI展示
+![浅色主题](./docs/images/light_theme.png)
+![深色主题](./docs/images/dark_theme.png)
+
 ## 功能特性
 
 ### 项目管理

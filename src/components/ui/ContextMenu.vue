@@ -126,6 +126,11 @@ onBeforeUnmount(() => {
   transition: background-color var(--transition-fast);
 }
 
+.context-menu-item:deep(svg) {
+  display: block;
+  vertical-align: middle;
+}
+
 .context-menu-item:hover {
   background-color: var(--color-bg-tertiary);
 }

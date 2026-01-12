@@ -175,7 +175,7 @@ watch(renderedHtml, async () => {
 }
 
 .preview-header {
-  height: 48px;
+  height: 38px;
   padding-left: var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border);
   background-color: var(--color-bg-secondary);
@@ -183,7 +183,7 @@ watch(renderedHtml, async () => {
 
 .preview-title {
   font-size: var(--font-size-md);
-  line-height: 48px;
+  line-height: 38px;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }

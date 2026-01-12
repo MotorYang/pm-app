@@ -2,7 +2,7 @@
 import {ref, computed} from 'vue'
 import {
   FolderOpen,
-  DocAdd,
+  FileAdditionOne,
   Plus,
   Delete,
   Text,
@@ -419,7 +419,7 @@ const handleCloseRenameModal = () => {
           <FolderPlus :size="20" theme="outline"/>
         </button>
         <button @click="handleCreate" title="新建文档">
-          <DocAdd :size="20" theme="outline"/>
+          <FileAdditionOne :size="20" theme="outline"/>
         </button>
       </div>
     </div>
@@ -628,7 +628,7 @@ const handleCloseRenameModal = () => {
 }
 
 .document-list-header {
-  height: 48px;
+  height: 38px;
   padding: var(--spacing-md);
   border-bottom: var(--border-width) solid var(--color-border);
   display: flex;

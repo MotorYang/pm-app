@@ -50,6 +50,7 @@ const selectTab = (tabName) => {
 
 <template>
   <div class="cartoon-tabs">
+    <!-- Tabs Header -->
     <div class="tabs-header">
       <div v-if="title || $slots.headerLeft" class="tabs-header-left">
         <template v-if="$slots.headerLeft">
@@ -74,12 +75,14 @@ const selectTab = (tabName) => {
       </div>
     </div>
 
+    <!-- Tabs Content with transition -->
     <div class="tabs-content">
-      <template v-for="tab in tabs" :key="tab.name">
-        <div v-if="activeTab === tab.name" class="tab-panel">
-          <component :is="tab.vnode" />
+      <Transition name="tab-fade" mode="out-in">
+        <!-- 保证只有一个直接子元素 -->
+        <div class="tab-panel-wrapper" :key="activeTab">
+          <component :is="tabs.find(t => t.name === activeTab)?.vnode" />
         </div>
-      </template>
+      </Transition>
     </div>
   </div>
 </template>
@@ -101,7 +104,7 @@ const selectTab = (tabName) => {
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-bg-secondary);
   border-bottom: var(--border-width) solid var(--color-border);
-  height: 48px;
+  height: 38px;
 }
 
 .tabs-header-left {
@@ -170,9 +173,38 @@ const selectTab = (tabName) => {
   position: relative;
 }
 
-.tab-panel {
+/* 保证动画元素覆盖父元素 */
+.tab-panel-wrapper {
   width: 100%;
   height: 100%;
-  overflow: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Transition Animation */
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.tab-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.tab-fade-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tab-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tab-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

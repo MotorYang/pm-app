@@ -38,7 +38,7 @@ const getCommitSubject = (message) => {
       <div class="commit-list">
         <div class="list-header">
           <h3 class="section-title">
-            <Fork :size="16" theme="outline"/>
+            <Fork :size="14" theme="outline"/>
             提交历史
           </h3>
           <span class="commit-count">{{ gitStore.commits.length }} 个提交</span>
@@ -54,18 +54,16 @@ const getCommitSubject = (message) => {
               :key="commit.hash"
               class="commit-item"
               :class="{
-          selected: selectedHash === commit.hash,
-          merge: isMergeCommit(commit)
-        }"
+              selected: selectedHash === commit.hash,
+              merge: isMergeCommit(commit)
+            }"
               @click="selectCommit(commit)"
           >
-            <!-- 提交图形指示器 -->
             <div class="commit-graph">
               <div class="commit-dot" :class="{ merge: isMergeCommit(commit) }"></div>
               <div v-if="commit.parents.length > 0" class="commit-line"></div>
             </div>
 
-            <!-- 提交信息 -->
             <div class="commit-content">
               <div class="commit-header">
                 <span class="commit-hash">{{ commit.short_hash }}</span>
@@ -77,14 +75,14 @@ const getCommitSubject = (message) => {
               </div>
 
               <div class="commit-meta">
-            <span class="author">
-              <User :size="12" theme="outline"/>
-              {{ commit.author }}
-            </span>
+                <span class="author">
+                  <User :size="10" theme="outline"/>
+                  {{ commit.author }}
+                </span>
                 <span class="date">
-              <Time :size="12" theme="outline"/>
-              {{ gitStore.formatDate(commit.date) }}
-            </span>
+                  <Time :size="10" theme="outline"/>
+                  {{ gitStore.formatDate(commit.date) }}
+                </span>
               </div>
             </div>
           </div>
@@ -100,7 +98,7 @@ const getCommitSubject = (message) => {
   display: flex;
   flex-direction: column;
 }
-/* 添加包裹层来处理 CartoonCard 的 padding */
+
 .commit-list-card :deep(.cartoon-card-body) {
   flex: 1;
   min-height: 0;
@@ -117,7 +115,7 @@ const getCommitSubject = (message) => {
 }
 
 .commit-list {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 4px 8px; /* 缩小 padding */
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -128,25 +126,25 @@ const getCommitSubject = (message) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
-  padding-bottom: var(--spacing-xs);
+  gap: 8px;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .section-title {
-  font-size: var(--font-size-md);
+  font-size: 14px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 4px;
 }
 
 .commit-count {
-  font-size: var(--font-size-xs);
+  font-size: 11px;
   color: var(--color-text-tertiary);
 }
 
@@ -156,7 +154,7 @@ const getCommitSubject = (message) => {
   align-items: center;
   justify-content: center;
   color: var(--color-text-secondary);
-  padding: var(--spacing-xl);
+  padding: 16px;
 }
 
 .commits {
@@ -168,8 +166,8 @@ const getCommitSubject = (message) => {
 
 .commit-item {
   display: flex;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  gap: 4px;
+  padding: 2px 4px;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -189,14 +187,14 @@ const getCommitSubject = (message) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 16px;
+  width: 14px;
   flex-shrink: 0;
   position: relative;
 }
 
 .commit-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background-color: var(--color-primary);
   border: 2px solid var(--color-primary);
@@ -219,30 +217,30 @@ const getCommitSubject = (message) => {
   flex: 1;
   background-color: var(--color-border);
   margin-top: 1px;
-  min-height: 16px;
+  min-height: 12px;
 }
 
 .commit-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
 .commit-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 4px;
 }
 
 .commit-hash {
   font-family: 'Consolas', 'Monaco', monospace;
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   background-color: var(--color-bg-tertiary);
-  padding: 2px var(--spacing-xs);
+  padding: 1px 4px;
   border-radius: var(--border-radius-sm);
 }
 
@@ -252,11 +250,11 @@ const getCommitSubject = (message) => {
 }
 
 .merge-badge {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   font-weight: var(--font-weight-medium);
   color: white;
   background-color: var(--color-secondary);
-  padding: 2px var(--spacing-xs);
+  padding: 1px 4px;
   border-radius: var(--border-radius-sm);
 }
 
@@ -265,7 +263,7 @@ const getCommitSubject = (message) => {
 }
 
 .commit-message {
-  font-size: var(--font-size-sm);
+  font-size: 12px;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -280,8 +278,8 @@ const getCommitSubject = (message) => {
 .commit-meta {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-xs);
+  gap: 6px;
+  font-size: 10px;
   color: var(--color-text-tertiary);
 }
 
@@ -293,6 +291,6 @@ const getCommitSubject = (message) => {
 .date {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 2px;
 }
 </style>
