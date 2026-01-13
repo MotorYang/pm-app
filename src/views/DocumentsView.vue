@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import DocumentList from '@/components/documents/DocumentList.vue'
 import DocumentSplitView from '@/components/documents/DocumentSplitView.vue'
+import PdfViewer from '@/components/documents/PdfViewer.vue'
+import ImageViewer from '@/components/documents/ImageViewer.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
@@ -10,6 +12,16 @@ import { useProjectsStore } from '@/stores/projects'
 
 const documentsStore = useDocumentsStore()
 const projectsStore = useProjectsStore()
+
+// Computed: current document type
+const activeDocType = computed(() => {
+  return documentsStore.activeDocument?.type || 'markdown'
+})
+
+// Check if the active document is editable (markdown)
+const isMarkdown = computed(() => activeDocType.value === 'markdown')
+const isPdf = computed(() => activeDocType.value === 'pdf')
+const isImage = computed(() => activeDocType.value === 'image')
 
 const showCreateModal = ref(false)
 const newFileName = ref('')
@@ -76,7 +88,33 @@ const handleCloseModal = () => {
     </div>
 
     <div class="documents-main">
-      <DocumentSplitView />
+      <!-- Empty state -->
+      <div v-if="!documentsStore.activeDocument" class="documents-empty">
+        <p>请选择或创建一个文档</p>
+      </div>
+
+      <!-- Markdown editor with preview -->
+      <DocumentSplitView v-else-if="isMarkdown" />
+
+      <!-- PDF viewer -->
+      <PdfViewer
+          v-else-if="isPdf"
+          :data="documentsStore.activeDocumentBinary"
+          :title="documentsStore.activeDocument?.title"
+      />
+
+      <!-- Image viewer -->
+      <ImageViewer
+          v-else-if="isImage"
+          :data="documentsStore.activeDocumentBinary"
+          :title="documentsStore.activeDocument?.title"
+          :ext="documentsStore.activeDocument?.file_ext"
+      />
+
+      <!-- Unknown type fallback -->
+      <div v-else class="documents-empty">
+        <p>不支持预览此文件类型</p>
+      </div>
     </div>
 
     <CartoonModal
@@ -139,6 +177,15 @@ const handleCloseModal = () => {
   flex: 1;
   height: 100%;
   overflow: hidden;
+}
+
+.documents-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
 }
 
 .create-form {

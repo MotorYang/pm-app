@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, computed} from 'vue'
-import {useSettingsStore, THEME_COLORS} from '@/stores/settings'
+import {useSettingsStore, THEME_COLORS, IMAGE_SAVE_LOCATIONS} from '@/stores/settings'
 import {open} from '@tauri-apps/plugin-dialog'
 import {openUrl} from '@tauri-apps/plugin-opener'
 import {platform, version as osVersion, arch} from '@tauri-apps/plugin-os'
@@ -43,12 +43,14 @@ const localSettings = ref({
   editorPath: '',
   closeButtonBehavior: 'hide',
   exportProjectBehavior: 'ignore-plugin-directory',
-  themeColor: 'pink'
+  themeColor: 'pink',
+  imageAttachmentPath: '.attachments'
 })
 
 // Tab 配置
 const tabs = [
   {id: 'general', label: '常规设置'},
+  {id: 'documents', label: '文档设置'},
   {id: 'export', label: '导出选项'},
   {id: 'about', label: '关于'},
 ]
@@ -71,6 +73,7 @@ onMounted(async () => {
   localSettings.value.closeButtonBehavior = settingsStore.closeButtonBehavior
   localSettings.value.exportProjectBehavior = settingsStore.exportProjectBehavior
   localSettings.value.themeColor = settingsStore.themeColor
+  localSettings.value.imageAttachmentPath = settingsStore.imageAttachmentPath
 
   // 获取系统信息
   try {
@@ -112,7 +115,8 @@ const handleSave = async () => {
       settingsStore.saveEditorPath(localSettings.value.editorPath),
       settingsStore.saveCloseButtonBehavior(localSettings.value.closeButtonBehavior),
       settingsStore.saveExportProjectBehavior(localSettings.value.exportProjectBehavior),
-      settingsStore.saveThemeColor(localSettings.value.themeColor)
+      settingsStore.saveThemeColor(localSettings.value.themeColor),
+      settingsStore.saveImageAttachmentPath(localSettings.value.imageAttachmentPath)
     ])
 
     // 模拟保存成功的微小延迟，增加“确切感”
@@ -321,6 +325,30 @@ const formatArch = (a) => {
                     <Check v-if="localSettings.themeColor === theme.id" :size="14"/>
                   </div>
                   <span class="color-label">{{ theme.label }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else-if="activeTab === 'documents'" class="panel-content">
+            <div class="form-item">
+              <label class="item-label">图片保存位置</label>
+              <p class="item-hint" style="margin-top: 0; margin-bottom: 12px;">
+                粘贴或插入图片时，图片将保存到相对于当前文档的指定位置
+              </p>
+              <div class="card-options vertical">
+                <div
+                    v-for="location in IMAGE_SAVE_LOCATIONS"
+                    :key="location.id"
+                    class="option-card"
+                    :class="{ selected: localSettings.imageAttachmentPath === location.id }"
+                    @click="localSettings.imageAttachmentPath = location.id"
+                >
+                  <div class="card-title">
+                    <b>{{ location.label }}</b>
+                    <Check v-if="localSettings.imageAttachmentPath === location.id"/>
+                  </div>
+                  <p>{{ location.description }}</p>
                 </div>
               </div>
             </div>

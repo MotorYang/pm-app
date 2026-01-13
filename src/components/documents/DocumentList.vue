@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed} from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 import {
   FolderOpen,
   FileAdditionOne,
@@ -13,19 +13,89 @@ import {
   FileText,
   Down,
   Right,
-  Home
+  Home,
+  Picture,
+  FilePdf,
+  DownloadOne,
+  Code,
+  FileZip,
+  FileWord,
+  Music,
+  Video,
+  FileHashOne,
+  FolderOne
 } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import {useDocumentsStore} from '@/stores/documents'
+import {useProjectsStore} from '@/stores/projects'
 import {useConfirm} from '@/composables/useConfirm.js'
 import {useContextMenu} from '@/composables/useContextMenu'
+import {useFileDrop} from '@/composables/useFileDrop'
+import {getFileType, getDisplayName, fileTypeColors} from '@/utils/fileTypes'
 
 const documentsStore = useDocumentsStore()
+const projectsStore = useProjectsStore()
 const contextMenu = useContextMenu()
 const confirmDialog = useConfirm()
 const emit = defineEmits(['create'])
+
+// 文件拖拽相关
+const dropZoneRef = ref(null)
+const {isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop} = useFileDrop(
+    async (files) => {
+      if (!projectsStore.activeProjectId) return
+
+      const results = await documentsStore.importFiles(
+          projectsStore.activeProjectId,
+          files,
+          currentDropFolder.value
+      )
+
+      // 显示导入结果
+      const successCount = results.filter(r => r.success).length
+      const failCount = results.filter(r => !r.success).length
+
+      if (failCount > 0) {
+        alert(`导入完成：成功 ${successCount} 个，失败 ${failCount} 个`)
+      }
+    }
+)
+const currentDropFolder = ref('/')
+
+// 获取文件类型图标组件
+const getFileIcon = (doc) => {
+  const type = doc.type || 'markdown'
+  switch (type) {
+    case 'pdf':
+      return FilePdf
+    case 'image':
+      return Picture
+    case 'text':
+      return FileText
+    case 'code':
+      return Code
+    case 'archive':
+      return FileZip
+    case 'office':
+      return FileWord
+    case 'audio':
+      return Music
+    case 'video':
+      return Video
+    case 'file':
+      return FileHashOne
+    default:
+      return FileText
+  }
+}
+
+// 获取文件类型颜色
+const getFileIconColor = (doc) => {
+  const type = doc.type || 'markdown'
+  return fileTypeColors[type] || fileTypeColors.markdown
+}
 
 // 文档重命名相关
 const showRenameModal = ref(false)
@@ -105,7 +175,8 @@ const allFolders = computed(() => {
 })
 
 const handleDocumentClick = (doc) => {
-  documentsStore.openDocument(doc.id)
+  // 使用 openDocumentByType 支持不同文件类型（markdown, pdf, image）
+  documentsStore.openDocumentByType(doc.id)
 }
 
 const toggleFolderCollapse = (folder) => {
@@ -167,6 +238,11 @@ const handleFolderContextMenu = (folder, event) => {
       icon: Plus,
       action: () => handleCreateInFolder(folder)
     },
+    {
+      label: '导入文件',
+      icon: DownloadOne,
+      action: () => handleDownloadOneFile(folder)
+    },
     {divider: true},
     {
       label: '重命名文件夹',
@@ -203,9 +279,50 @@ const handleEmptyContextMenu = (event) => {
       label: '新建文件夹',
       icon: FolderPlus,
       action: () => handleCreateFolder()
+    },
+    {divider: true},
+    {
+      label: '导入文件',
+      icon: DownloadOne,
+      action: () => handleDownloadOneFile('/')
     }
   ]
   contextMenu.show(event, menuItems)
+}
+
+// 导入文件
+const handleDownloadOneFile = async (targetFolder) => {
+  if (!projectsStore.activeProjectId) return
+
+  try {
+    const {open} = await import('@tauri-apps/plugin-dialog')
+    const selected = await open({
+      multiple: true
+    })
+
+    if (selected && selected.length > 0) {
+      const files = selected.map(path => ({
+        path,
+        name: path.split(/[/\\]/).pop()
+      }))
+
+      const results = await documentsStore.importFiles(
+          projectsStore.activeProjectId,
+          files,
+          targetFolder
+      )
+
+      const successCount = results.filter(r => r.success).length
+      const failCount = results.filter(r => !r.success).length
+
+      if (failCount > 0) {
+        alert(`导入完成：成功 ${successCount} 个，失败 ${failCount} 个`)
+      }
+    }
+  } catch (e) {
+    console.error('Failed to import file:', e)
+    alert('导入失败: ' + (e.message || '未知错误'))
+  }
 }
 
 // 在指定文件夹下新建文档
@@ -358,7 +475,7 @@ const handleDelete = async (doc, event) => {
 
   const result = await confirmDialog({
     title: '删除文档',
-    message: `确定要删除文档"${doc.title}.md"吗？`,
+    message: `确定要删除"${doc.title}"吗？`,
     danger: true,
     confirmText: '删除',
     cancelText: '取消'
@@ -424,7 +541,24 @@ const handleCloseRenameModal = () => {
       </div>
     </div>
 
-    <div class="document-list-content" @contextmenu="handleEmptyContextMenu">
+    <div
+        class="document-list-content"
+        :class="{ 'is-dragging': isDragging }"
+        ref="dropZoneRef"
+        @contextmenu="handleEmptyContextMenu"
+        @dragenter="handleDragEnter"
+        @dragleave="handleDragLeave"
+        @dragover="handleDragOver"
+        @drop="handleDrop"
+    >
+      <!-- 拖拽提示遮罩 -->
+      <div v-if="isDragging" class="drop-overlay">
+        <div class="drop-hint">
+          <DownloadOne :size="32" theme="outline"/>
+          <span>松开鼠标导入文件</span>
+        </div>
+      </div>
+
       <div v-if="documentsStore.loading && documentsStore.documents.length === 0" class="document-list-loading">
         加载中...
       </div>
@@ -432,7 +566,7 @@ const handleCloseRenameModal = () => {
       <div v-else-if="documentsStore.documents.length === 0" class="document-list-empty"
            @contextmenu="handleEmptyContextMenu">
         <p>还没有文档</p>
-        <p class="empty-hint">点击"新建"或右键创建文档</p>
+        <p class="empty-hint">点击"新建"或拖入文件</p>
       </div>
 
       <div v-else class="document-tree">
@@ -446,8 +580,14 @@ const handleCloseRenameModal = () => {
               @click="handleDocumentClick(doc)"
               @contextmenu="handleContextMenu(doc, $event)"
           >
-            <FileText :size="14" theme="outline" class="file-icon"/>
-            <span class="document-name">{{ doc.title }}.md</span>
+            <component
+                :is="getFileIcon(doc)"
+                :size="14"
+                theme="outline"
+                class="file-icon"
+                :style="{ color: getFileIconColor(doc) }"
+            />
+            <span class="document-name">{{ doc.title }}.{{ doc.file_ext || 'md' }}</span>
             <span
                 v-if="documentsStore.hasUnsavedChanges && doc.id === documentsStore.activeDocumentId"
                 class="unsaved-indicator"
@@ -483,8 +623,14 @@ const handleCloseRenameModal = () => {
                 @click="handleDocumentClick(doc)"
                 @contextmenu="handleContextMenu(doc, $event)"
             >
-              <FileText :size="14" theme="outline" class="file-icon"/>
-              <span class="document-name">{{ doc.title }}.md</span>
+              <component
+                  :is="getFileIcon(doc)"
+                  :size="14"
+                  theme="outline"
+                  class="file-icon"
+                  :style="{ color: getFileIconColor(doc) }"
+              />
+              <span class="document-name">{{ doc.title }}.{{ doc.file_ext || 'md' }}</span>
               <span
                   v-if="documentsStore.hasUnsavedChanges && doc.id === documentsStore.activeDocumentId"
                   class="unsaved-indicator"
@@ -676,6 +822,34 @@ const handleCloseRenameModal = () => {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-sm);
+  position: relative;
+}
+
+.document-list-content.is-dragging {
+  background-color: rgba(var(--color-primary-rgb, 59, 130, 246), 0.05);
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
+  border: 2px dashed var(--color-primary);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.drop-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
 }
 
 .document-list-loading,

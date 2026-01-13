@@ -5,10 +5,12 @@ import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import { useDocumentsStore } from '@/stores/documents'
+import { useProjectsStore } from '@/stores/projects'
 import { invoke, convertFileSrc } from '@tauri-apps/api/core'
 import { join } from '@tauri-apps/api/path'
 
 const documentsStore = useDocumentsStore()
+const projectsStore = useProjectsStore()
 
 // 自定义渲染器，为代码块添加语言标签和复制按钮
 const renderer = new marked.Renderer()
@@ -41,15 +43,25 @@ renderer.code = function(code, language) {
 // Store for converting image paths
 const imagePathCache = new Map()
 
+// Check if path is a relative local path (not a URL)
+const isRelativePath = (href) => {
+  if (!href) return false
+  // Skip absolute URLs
+  if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('data:')) {
+    return false
+  }
+  // Skip absolute file paths
+  if (href.startsWith('/') || /^[a-zA-Z]:/.test(href)) {
+    return false
+  }
+  return true
+}
+
 // Custom image renderer to handle local image paths
 renderer.image = function(href, title, text) {
-  // If it's a relative path starting with 'images/', convert it to absolute path
-  if (href.startsWith('images/') && documentsStore.activeDocumentId) {
-    // We'll need to get the document directory path
-    // For now, mark it for later processing
-    const imageKey = `${documentsStore.activeDocumentId}_${href}`
-
-    return `<img src="${href}" alt="${text}" title="${title || ''}" data-local-image="${imageKey}" />`
+  // If it's a relative path, mark it for later conversion to Tauri asset URL
+  if (isRelativePath(href) && documentsStore.activeDocumentId) {
+    return `<img src="${href}" alt="${text}" title="${title || ''}" data-local-image="true" />`
   }
 
   return `<img src="${href}" alt="${text}" title="${title || ''}" />`
@@ -108,24 +120,44 @@ const convertLocalImages = async () => {
 
   for (const img of images) {
     const href = img.getAttribute('src')
-    if (href && href.startsWith('images/')) {
-      try {
-        // Get the document's images directory path
+    if (!href || !isRelativePath(href)) continue
+
+    try {
+      let fullPath
+
+      // File system mode: use docvault path
+      if (documentsStore.useFileSystemMode && projectsStore.activeProjectId) {
+        // Get the docvault base path
+        const vaultPath = await invoke('get_docvault_path', {
+          projectId: projectsStore.activeProjectId
+        })
+
+        // Get the document's folder path
+        const doc = documentsStore.activeDocument
+        const docFolder = doc?.folder === '/' ? '' : (doc?.folder?.replace(/^\//, '') || '')
+
+        // Build full path: vault + document folder + relative image path
+        if (docFolder) {
+          fullPath = await join(vaultPath, docFolder, href)
+        } else {
+          fullPath = await join(vaultPath, href)
+        }
+      } else if (href.startsWith('images/')) {
+        // Legacy mode: use document images path
         const imagesPath = await invoke('get_document_images_path', {
           docId: documentsStore.activeDocumentId
         })
-
-        // Build full path to image using Tauri's path API for cross-platform support
         const filename = href.substring(7) // Remove 'images/' prefix
-        const fullPath = await join(imagesPath, filename)
-
-        // Convert to Tauri accessible URL
-        const assetUrl = convertFileSrc(fullPath)
-
-        img.src = assetUrl
-      } catch (error) {
-        console.error('Failed to convert image path:', error)
+        fullPath = await join(imagesPath, filename)
+      } else {
+        continue // Skip if not in file system mode and not images/ prefix
       }
+
+      // Convert to Tauri accessible URL
+      const assetUrl = convertFileSrc(fullPath)
+      img.src = assetUrl
+    } catch (error) {
+      console.error('Failed to convert image path:', error)
     }
   }
 }

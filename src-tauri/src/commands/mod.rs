@@ -1,5 +1,6 @@
 // Commands module
 // pub mod projects;
+pub mod docvault;
 pub mod documents;
 pub mod editor;
 pub mod folder;

@@ -33,6 +33,18 @@ pub fn run() {
             sql: include_str!("../migrations/004_remove_document_content.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "rename vault fields",
+            sql: include_str!("../migrations/005_rename_vault_fields.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 6,
+            description: "add document type support",
+            sql: include_str!("../migrations/006_document_types.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()
@@ -73,6 +85,21 @@ pub fn run() {
             commands::documents::get_document_images_path,
             commands::documents::copy_document_images,
             commands::handover::export_project_handover,
+            // DocVault commands
+            commands::docvault::get_docvault_path,
+            commands::docvault::init_docvault,
+            commands::docvault::import_file_to_docvault,
+            commands::docvault::create_docvault_folder,
+            commands::docvault::rename_docvault_item,
+            commands::docvault::delete_docvault_item,
+            commands::docvault::read_docvault_file,
+            commands::docvault::read_docvault_binary,
+            commands::docvault::write_docvault_file,
+            commands::docvault::write_docvault_binary,
+            commands::docvault::save_docvault_attachment,
+            commands::docvault::get_docvault_attachments_path,
+            commands::docvault::scan_docvault,
+            commands::docvault::get_docvault_file_info,
         ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())

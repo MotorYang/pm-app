@@ -4,9 +4,13 @@ import { Save } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import MarkdownToolbar from './MarkdownToolbar.vue'
 import { useDocumentsStore } from '@/stores/documents'
+import { useProjectsStore } from '@/stores/projects'
+import { useSettingsStore } from '@/stores/settings'
 import { invoke } from '@tauri-apps/api/core'
 
 const documentsStore = useDocumentsStore()
+const projectsStore = useProjectsStore()
+const settingsStore = useSettingsStore()
 
 const localContent = ref('')
 const textareaRef = ref(null)
@@ -200,12 +204,51 @@ const uploadImage = async (file) => {
     const ext = file.name.split('.').pop() || 'png'
     const filename = `image_${timestamp}.${ext}`
 
-    // Call backend to save image
-    const imagePath = await invoke('save_document_image', {
-      docId: documentsStore.activeDocumentId,
-      filename: filename,
-      imageData: bytes
-    })
+    let imagePath
+    const doc = documentsStore.activeDocument
+    const projectId = projectsStore.activeProjectId
+
+    // 文件系统模式
+    if (documentsStore.useFileSystemMode && doc && projectId) {
+      // 获取图片保存位置设置
+      const saveLocation = settingsStore.imageAttachmentPath || '.attachments'
+
+      // 获取文档所在的文件夹路径
+      const docFolder = doc.folder === '/' ? '' : doc.folder.replace(/^\//, '')
+
+      // 根据设置构建图片保存路径
+      let imageRelativePath
+      let markdownImagePath
+
+      if (saveLocation === 'same') {
+        // 保存到文档同级目录
+        imageRelativePath = docFolder ? `${docFolder}/${filename}` : filename
+        markdownImagePath = filename
+      } else {
+        // 保存到子文件夹（.attachments, assets, images 等）
+        imageRelativePath = docFolder
+          ? `${docFolder}/${saveLocation}/${filename}`
+          : `${saveLocation}/${filename}`
+        markdownImagePath = `${saveLocation}/${filename}`
+      }
+
+      console.log('Saving image to:', imageRelativePath)
+
+      await invoke('write_docvault_binary', {
+        projectId: projectId,
+        relativePath: imageRelativePath,
+        data: bytes
+      })
+
+      imagePath = markdownImagePath
+    } else {
+      // 旧模式：使用 save_document_image
+      imagePath = await invoke('save_document_image', {
+        docId: documentsStore.activeDocumentId,
+        filename: filename,
+        imageData: bytes
+      })
+    }
 
     // Insert markdown image syntax
     insertImageMarkdown(filename, imagePath)
@@ -225,8 +268,8 @@ const insertImageMarkdown = (filename, imagePath) => {
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
 
-  // Use relative path for markdown
-  const markdown = `![${filename}](images/${filename})`
+  // 使用传入的 imagePath 构建 markdown
+  const markdown = `![${filename}](${imagePath})`
 
   const before = textarea.value.substring(0, start)
   const after = textarea.value.substring(end)
