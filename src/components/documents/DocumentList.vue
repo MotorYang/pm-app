@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed} from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 import {
   FolderOpen,
   FileAdditionOne,
@@ -13,19 +13,110 @@ import {
   FileText,
   Down,
   Right,
-  Home
+  Home,
+  Picture,
+  FilePdf,
+  DownloadOne,
+  Code,
+  FileZip,
+  FileWord,
+  Music,
+  Video,
+  FileHashOne,
+  FolderOne,
+  FolderCode,
+  Refresh
 } from '@icon-park/vue-next'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
+import FolderTreeItem from './FolderTreeItem.vue'
 import {useDocumentsStore} from '@/stores/documents'
+import {useProjectsStore} from '@/stores/projects'
 import {useConfirm} from '@/composables/useConfirm.js'
 import {useContextMenu} from '@/composables/useContextMenu'
+import {useFileDrop} from '@/composables/useFileDrop'
+import {getFileType, getDisplayName, fileTypeColors} from '@/utils/fileTypes'
 
 const documentsStore = useDocumentsStore()
+const projectsStore = useProjectsStore()
 const contextMenu = useContextMenu()
 const confirmDialog = useConfirm()
 const emit = defineEmits(['create'])
+
+// 文件拖拽相关
+const dropZoneRef = ref(null)
+const {isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop} = useFileDrop(
+    async (files) => {
+      if (!projectsStore.activeProjectId) return
+
+      const results = await documentsStore.importFiles(
+          projectsStore.activeProjectId,
+          files,
+          currentDropFolder.value
+      )
+
+      // 显示导入结果
+      const successResults = results.filter(r => r.success)
+      const failCount = results.filter(r => !r.success).length
+
+      if (failCount > 0) {
+        alert(`导入完成：成功 ${successResults.length} 个，失败 ${failCount} 个`)
+      }
+
+      // 导入成功后，自动打开第一个导入的文件
+      if (successResults.length > 0) {
+        const firstResult = successResults[0]
+        const targetFolder = currentDropFolder.value
+        // 根据文件名和目标文件夹查找文档
+        // firstResult.name 是完整文件名（带扩展名），doc.title 是不带扩展名的
+        const fileName = firstResult.name
+        const fileNameWithoutExt = fileName.includes('.')
+          ? fileName.substring(0, fileName.lastIndexOf('.'))
+          : fileName
+        const docToOpen = documentsStore.documents.find(d =>
+          (d.title === fileName || d.title === fileNameWithoutExt) && d.folder === targetFolder
+        )
+        if (docToOpen) {
+          documentsStore.openDocumentByType(docToOpen.id)
+        }
+      }
+    }
+)
+const currentDropFolder = ref('/')
+
+// 获取文件类型图标组件
+const getFileIcon = (doc) => {
+  const type = doc.type || 'markdown'
+  switch (type) {
+    case 'pdf':
+      return FilePdf
+    case 'image':
+      return Picture
+    case 'text':
+      return FileText
+    case 'code':
+      return Code
+    case 'archive':
+      return FileZip
+    case 'office':
+      return FileWord
+    case 'audio':
+      return Music
+    case 'video':
+      return Video
+    case 'file':
+      return FileHashOne
+    default:
+      return FileText
+  }
+}
+
+// 获取文件类型颜色
+const getFileIconColor = (doc) => {
+  const type = doc.type || 'markdown'
+  return fileTypeColors[type] || fileTypeColors.markdown
+}
 
 // 文档重命名相关
 const showRenameModal = ref(false)
@@ -50,6 +141,7 @@ const clipboard = ref({
 // 新建文件夹相关
 const showCreateFolderModal = ref(false)
 const newFolderPath = ref('')
+const parentFolderPath = ref('/') // 父文件夹路径，用于创建子文件夹
 const creatingFolder = ref(false)
 const createFolderError = ref('')
 
@@ -61,7 +153,80 @@ const rootDocuments = computed(() => {
   return documentsStore.documents.filter(doc => !doc.folder || doc.folder === '/')
 })
 
-// 按文件夹分组的文档（排除根目录）
+// 构建树形结构的文件夹
+const folderTree = computed(() => {
+  // 收集所有文件夹路径
+  const allPaths = new Set()
+
+  // 添加空文件夹
+  documentsStore.emptyFolders.forEach(folder => {
+    if (folder && folder !== '/') {
+      allPaths.add(folder)
+    }
+  })
+
+  // 添加有文档的文件夹
+  documentsStore.documents.forEach(doc => {
+    if (doc.folder && doc.folder !== '/') {
+      allPaths.add(doc.folder)
+    }
+  })
+
+  // 构建树形结构
+  const root = { children: {}, docs: [] }
+
+  Array.from(allPaths).sort().forEach(path => {
+    const parts = path.split('/').filter(p => p)
+    let current = root
+
+    let currentPath = ''
+    parts.forEach((part, index) => {
+      currentPath += '/' + part
+      if (!current.children[part]) {
+        current.children[part] = {
+          name: part,
+          path: currentPath,
+          children: {},
+          docs: []
+        }
+      }
+      current = current.children[part]
+    })
+  })
+
+  // 将文档分配到对应的文件夹
+  documentsStore.documents.forEach(doc => {
+    const folder = doc.folder || '/'
+    if (folder === '/') return
+
+    const parts = folder.split('/').filter(p => p)
+    let current = root
+
+    parts.forEach(part => {
+      if (current.children[part]) {
+        current = current.children[part]
+      }
+    })
+
+    if (current !== root) {
+      current.docs.push(doc)
+    }
+  })
+
+  // 转换为数组格式便于渲染
+  function toArray(node) {
+    return Object.values(node.children).map(child => ({
+      name: child.name,
+      path: child.path,
+      docs: child.docs,
+      children: toArray(child)
+    }))
+  }
+
+  return toArray(root)
+})
+
+// 按文件夹分组的文档（排除根目录）- 保留用于兼容
 const documentsByFolder = computed(() => {
   const folders = {}
 
@@ -104,8 +269,15 @@ const allFolders = computed(() => {
   return Array.from(folders).sort()
 })
 
+// 获取文件夹的显示名称（只显示最后一级）
+const getFolderDisplayName = (folder) => {
+  const parts = folder.path.split('/').filter(p => p)
+  return parts[parts.length - 1] || folder.name
+}
+
 const handleDocumentClick = (doc) => {
-  documentsStore.openDocument(doc.id)
+  // 使用 openDocumentByType 支持不同文件类型（markdown, pdf, image）
+  documentsStore.openDocumentByType(doc.id)
 }
 
 const toggleFolderCollapse = (folder) => {
@@ -124,9 +296,14 @@ const handleCreate = () => {
   emit('create')
 }
 
+// 手动刷新文档列表
+const handleRefresh = () => {
+  documentsStore.refreshDocuments()
+}
+
 const handleContextMenu = (doc, event) => {
-  event.preventDefault()
-  event.stopPropagation()
+  // 调试日志
+  console.log('handleContextMenu (document) called:', { docPath: doc?.path, docTitle: doc?.title })
 
   const menuItems = [
     {
@@ -147,6 +324,12 @@ const handleContextMenu = (doc, event) => {
     },
     {divider: true},
     {
+      label: '在资源管理器中打开',
+      icon: FolderCode,
+      action: () => handleOpenInExplorer(doc.path)
+    },
+    {divider: true},
+    {
       label: '删除文档',
       icon: Delete,
       danger: true,
@@ -158,14 +341,30 @@ const handleContextMenu = (doc, event) => {
 
 // 文件夹右键菜单
 const handleFolderContextMenu = (folder, event) => {
-  event.preventDefault()
-  event.stopPropagation()
+  // 调试日志
+  console.log('handleFolderContextMenu called:', { folder, eventType: event?.type })
+
+  // 防御性检查 - 确保参数有效
+  if (!folder || !event) {
+    console.error('handleFolderContextMenu: invalid params', { folder, event })
+    return
+  }
 
   const menuItems = [
     {
       label: '新建文档',
       icon: Plus,
       action: () => handleCreateInFolder(folder)
+    },
+    {
+      label: '新建子文件夹',
+      icon: FolderPlus,
+      action: () => handleCreateSubFolder(folder)
+    },
+    {
+      label: '导入文件',
+      icon: DownloadOne,
+      action: () => handleDownloadOneFile(folder)
     },
     {divider: true},
     {
@@ -178,6 +377,12 @@ const handleFolderContextMenu = (folder, event) => {
       icon: Clipboard,
       action: () => handlePaste(folder)
     }] : []),
+    {divider: true},
+    {
+      label: '在资源管理器中打开',
+      icon: FolderCode,
+      action: () => handleOpenInExplorer(folder)
+    },
     {divider: true},
     {
       label: '删除文件夹',
@@ -203,14 +408,87 @@ const handleEmptyContextMenu = (event) => {
       label: '新建文件夹',
       icon: FolderPlus,
       action: () => handleCreateFolder()
+    },
+    {divider: true},
+    {
+      label: '导入文件',
+      icon: DownloadOne,
+      action: () => handleDownloadOneFile('/')
+    },
+    {divider: true},
+    {
+      label: '在资源管理器中打开',
+      icon: FolderCode,
+      action: () => handleOpenInExplorer('/')
     }
   ]
   contextMenu.show(event, menuItems)
 }
 
+// 导入文件
+const handleDownloadOneFile = async (targetFolder) => {
+  if (!projectsStore.activeProjectId) return
+
+  try {
+    const {open} = await import('@tauri-apps/plugin-dialog')
+    const selected = await open({
+      multiple: true
+    })
+
+    if (selected && selected.length > 0) {
+      const files = selected.map(path => ({
+        path,
+        name: path.split(/[/\\]/).pop()
+      }))
+
+      const results = await documentsStore.importFiles(
+          projectsStore.activeProjectId,
+          files,
+          targetFolder
+      )
+
+      const successResults = results.filter(r => r.success)
+      const failCount = results.filter(r => !r.success).length
+
+      if (failCount > 0) {
+        alert(`导入完成：成功 ${successResults.length} 个，失败 ${failCount} 个`)
+      }
+
+      // 导入成功后，自动打开第一个导入的文件
+      if (successResults.length > 0) {
+        const firstResult = successResults[0]
+        // 根据文件名和目标文件夹查找文档
+        // firstResult.name 是完整文件名（带扩展名），doc.title 是不带扩展名的
+        const fileName = firstResult.name
+        const fileNameWithoutExt = fileName.includes('.')
+          ? fileName.substring(0, fileName.lastIndexOf('.'))
+          : fileName
+        const docToOpen = documentsStore.documents.find(d =>
+          (d.title === fileName || d.title === fileNameWithoutExt) && d.folder === targetFolder
+        )
+        if (docToOpen) {
+          documentsStore.openDocumentByType(docToOpen.id)
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Failed to import file:', e)
+    alert('导入失败: ' + (e.message || '未知错误'))
+  }
+}
+
 // 在指定文件夹下新建文档
 const handleCreateInFolder = (folder) => {
   emit('create', folder)
+}
+
+// 在资源管理器中打开
+const handleOpenInExplorer = async (itemPath) => {
+  try {
+    await documentsStore.openInExplorer(itemPath)
+  } catch (e) {
+    alert('打开失败: ' + (e.message || '未知错误'))
+  }
 }
 
 // 复制文档
@@ -309,9 +587,18 @@ const handleFolderDelete = async (folder) => {
   }
 }
 
-// 新建文件夹
+// 新建文件夹（在根目录）
 const handleCreateFolder = () => {
   newFolderPath.value = ''
+  parentFolderPath.value = '/'
+  createFolderError.value = ''
+  showCreateFolderModal.value = true
+}
+
+// 新建子文件夹（在指定文件夹下）
+const handleCreateSubFolder = (parentFolder) => {
+  newFolderPath.value = ''
+  parentFolderPath.value = parentFolder
   createFolderError.value = ''
   showCreateFolderModal.value = true
 }
@@ -323,8 +610,19 @@ const handleCreateFolderSubmit = async () => {
     return
   }
 
-  // 构建文件夹路径
-  let folderPath = folderName.startsWith('/') ? folderName : '/' + folderName
+  // 文件夹名称不能包含路径分隔符
+  if (folderName.includes('/') || folderName.includes('\\')) {
+    createFolderError.value = '文件夹名称不能包含路径分隔符'
+    return
+  }
+
+  // 构建完整文件夹路径
+  let folderPath
+  if (parentFolderPath.value === '/') {
+    folderPath = '/' + folderName
+  } else {
+    folderPath = parentFolderPath.value + '/' + folderName
+  }
 
   // 检查文件夹是否已存在
   if (allFolders.value.includes(folderPath)) {
@@ -336,10 +634,10 @@ const handleCreateFolderSubmit = async () => {
   createFolderError.value = ''
 
   try {
-    // 通过创建一个空文档来创建文件夹
     await documentsStore.createFolder(folderPath)
     showCreateFolderModal.value = false
     newFolderPath.value = ''
+    parentFolderPath.value = '/'
   } catch (e) {
     createFolderError.value = e.message || '创建失败'
   } finally {
@@ -350,6 +648,7 @@ const handleCreateFolderSubmit = async () => {
 const handleCloseCreateFolderModal = () => {
   showCreateFolderModal.value = false
   newFolderPath.value = ''
+  parentFolderPath.value = '/'
   createFolderError.value = ''
 }
 
@@ -358,7 +657,7 @@ const handleDelete = async (doc, event) => {
 
   const result = await confirmDialog({
     title: '删除文档',
-    message: `确定要删除文档"${doc.title}.md"吗？`,
+    message: `确定要删除"${doc.title}"吗？`,
     danger: true,
     confirmText: '删除',
     cancelText: '取消'
@@ -415,6 +714,9 @@ const handleCloseRenameModal = () => {
     <div class="document-list-header">
       <h3 class="document-list-title">文档</h3>
       <div class="header-actions">
+        <button @click="handleRefresh" title="刷新">
+          <Refresh :size="18" theme="outline"/>
+        </button>
         <button @click="handleCreateFolder" title="新建文件夹">
           <FolderPlus :size="20" theme="outline"/>
         </button>
@@ -424,7 +726,24 @@ const handleCloseRenameModal = () => {
       </div>
     </div>
 
-    <div class="document-list-content" @contextmenu="handleEmptyContextMenu">
+    <div
+        class="document-list-content"
+        :class="{ 'is-dragging': isDragging }"
+        ref="dropZoneRef"
+        @contextmenu="handleEmptyContextMenu"
+        @dragenter="handleDragEnter"
+        @dragleave="handleDragLeave"
+        @dragover="handleDragOver"
+        @drop="handleDrop"
+    >
+      <!-- 拖拽提示遮罩 -->
+      <div v-if="isDragging" class="drop-overlay">
+        <div class="drop-hint">
+          <DownloadOne :size="32" theme="outline"/>
+          <span>松开鼠标导入文件</span>
+        </div>
+      </div>
+
       <div v-if="documentsStore.loading && documentsStore.documents.length === 0" class="document-list-loading">
         加载中...
       </div>
@@ -432,7 +751,7 @@ const handleCloseRenameModal = () => {
       <div v-else-if="documentsStore.documents.length === 0" class="document-list-empty"
            @contextmenu="handleEmptyContextMenu">
         <p>还没有文档</p>
-        <p class="empty-hint">点击"新建"或右键创建文档</p>
+        <p class="empty-hint">点击"新建"或拖入文件</p>
       </div>
 
       <div v-else class="document-tree">
@@ -444,10 +763,16 @@ const handleCloseRenameModal = () => {
               class="document-item"
               :class="{ active: doc.id === documentsStore.activeDocumentId }"
               @click="handleDocumentClick(doc)"
-              @contextmenu="handleContextMenu(doc, $event)"
+              @contextmenu.prevent.stop="handleContextMenu(doc, $event)"
           >
-            <FileText :size="14" theme="outline" class="file-icon"/>
-            <span class="document-name">{{ doc.title }}.md</span>
+            <component
+                :is="getFileIcon(doc)"
+                :size="14"
+                theme="outline"
+                class="file-icon"
+                :style="{ color: getFileIconColor(doc) }"
+            />
+            <span class="document-name">{{ doc.title }}.{{ doc.file_ext || 'md' }}</span>
             <span
                 v-if="documentsStore.hasUnsavedChanges && doc.id === documentsStore.activeDocumentId"
                 class="unsaved-indicator"
@@ -457,43 +782,22 @@ const handleCloseRenameModal = () => {
           </div>
         </div>
 
-        <!-- 文件夹 -->
-        <div
-            v-for="(docs, folder) in documentsByFolder"
-            :key="folder"
-            class="folder-group"
-        >
-          <div
-              class="folder-header"
-              @click="toggleFolderCollapse(folder)"
-              @contextmenu="handleFolderContextMenu(folder, $event)"
-          >
-            <Right v-if="isFolderCollapsed(folder)" :size="12" theme="outline" class="folder-arrow"/>
-            <Down v-else :size="12" theme="outline" class="folder-arrow"/>
-            <FolderOpen :size="14" theme="outline" class="folder-icon"/>
-            <span class="folder-name">{{ folder.replace(/^\//, '') }}</span>
-          </div>
-
-          <div v-if="!isFolderCollapsed(folder)" class="folder-documents">
-            <div
-                v-for="doc in docs"
-                :key="doc.id"
-                class="document-item"
-                :class="{ active: doc.id === documentsStore.activeDocumentId }"
-                @click="handleDocumentClick(doc)"
-                @contextmenu="handleContextMenu(doc, $event)"
-            >
-              <FileText :size="14" theme="outline" class="file-icon"/>
-              <span class="document-name">{{ doc.title }}.md</span>
-              <span
-                  v-if="documentsStore.hasUnsavedChanges && doc.id === documentsStore.activeDocumentId"
-                  class="unsaved-indicator"
-              >
-                ●
-              </span>
-            </div>
-          </div>
-        </div>
+        <!-- 文件夹树 -->
+        <FolderTreeItem
+            v-for="folder in folderTree"
+            :key="folder.path"
+            :folder="folder"
+            :depth="0"
+            :collapsed-folders="collapsedFolders"
+            :active-document-id="documentsStore.activeDocumentId"
+            :has-unsaved-changes="documentsStore.hasUnsavedChanges"
+            :get-file-icon="getFileIcon"
+            :get-file-icon-color="getFileIconColor"
+            @toggle-collapse="toggleFolderCollapse"
+            @folder-context-menu="handleFolderContextMenu"
+            @document-click="handleDocumentClick"
+            @document-context-menu="handleContextMenu"
+        />
       </div>
     </div>
 
@@ -580,11 +884,14 @@ const handleCloseRenameModal = () => {
     <!-- Create Folder Modal -->
     <CartoonModal
         :open="showCreateFolderModal"
-        title="新建文件夹"
+        :title="parentFolderPath === '/' ? '新建文件夹' : '新建子文件夹'"
         size="sm"
         @close="handleCloseCreateFolderModal"
     >
       <div class="rename-form">
+        <div v-if="parentFolderPath !== '/'" class="parent-folder-hint">
+          将在 <code>{{ parentFolderPath }}</code> 下创建
+        </div>
         <CartoonInput
             v-model="newFolderPath"
             label="文件夹名称"
@@ -676,6 +983,34 @@ const handleCloseRenameModal = () => {
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-sm);
+  position: relative;
+}
+
+.document-list-content.is-dragging {
+  background-color: rgba(var(--color-primary-rgb, 59, 130, 246), 0.05);
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(var(--color-primary-rgb, 59, 130, 246), 0.1);
+  border: 2px dashed var(--color-primary);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.drop-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
 }
 
 .document-list-loading,
@@ -810,5 +1145,21 @@ const handleCloseRenameModal = () => {
   border-radius: var(--border-radius-md);
   color: var(--color-danger);
   font-size: var(--font-size-sm);
+}
+
+.parent-folder-hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+}
+
+.parent-folder-hint code {
+  background-color: var(--color-bg-secondary);
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  font-family: monospace;
+  color: var(--color-primary);
 }
 </style>

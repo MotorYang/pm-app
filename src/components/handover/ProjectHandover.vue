@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useTauri } from '@/composables/useTauri.js'
 import { save } from '@tauri-apps/plugin-dialog'
+import { listen } from '@tauri-apps/api/event'
 import { FolderClose, Lock, FileText, CheckOne } from '@icon-park/vue-next'
 import CartoonCard from '@/components/ui/CartoonCard.vue'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
@@ -11,7 +12,6 @@ import HandoverProgress from './HandoverProgress.vue'
 import { useDocumentsStore } from '@/stores/documents.js'
 import { useSettingsStore } from '@/stores/settings.js'
 import { useVaultStore } from '@/stores/vault.js'
-import Database from '@tauri-apps/plugin-sql'
 
 const projectsStore = useProjectsStore()
 const documentsStore = useDocumentsStore()
@@ -38,20 +38,33 @@ const checkVaultData = async () => {
   if (!projectsStore.activeProject) return
 
   try {
-    const db = await Database.load('sqlite:pm-app.db')
-    const result = await db.select(
-      'SELECT COUNT(*) as count FROM vault_entries WHERE project_id = $1',
-      [projectsStore.activeProject.id]
-    )
-    hasVaultData.value = result[0].count > 0
+    hasVaultData.value = await vaultStore.hasEntries(projectsStore.activeProject.id)
   } catch (error) {
     console.error('Failed to check vault data:', error)
     hasVaultData.value = false
   }
 }
 
+// 监听导出进度事件
+let unlistenProgress = null
+
+const setupProgressListener = async () => {
+  unlistenProgress = await listen('export-progress', (event) => {
+    const { progress, message } = event.payload
+    exportProgress.value = progress
+    exportMessage.value = message
+  })
+}
+
 onMounted(() => {
   checkVaultData()
+  setupProgressListener()
+})
+
+onUnmounted(() => {
+  if (unlistenProgress) {
+    unlistenProgress()
+  }
 })
 
 // Watch vault selection
@@ -120,29 +133,35 @@ const handleExport = async () => {
 
     exportMessage.value = '正在导出...'
 
+    // 获取文档库路径
+    let docvaultPath = null
+    if (selectedItems.value.documents) {
+      docvaultPath = await documentsStore.getDocvaultPath(projectsStore.activeProject.id)
+    }
+
     /*
     * 调用Rust后端来导出项目
+    * 进度由后端通过 export-progress 事件更新
     */
     await tauri.invokeCommand('export_project_handover', {
       project: projectsStore.activeProject,
       outputPath: filePath,
-      documents: selectedItems.value.documents ? documentsStore.documents: [],
+      docvaultPath: docvaultPath,
       vaultEntries: vaultEntriesToExport,
       vaultMasters: selectedItems.value.vault ? vaultPassword.value : null,
       exportOptions: {
         ignore_plugin: settingsStore.exportProjectBehavior,
         zip_encryption: false,
       }
-    }).finally(() => {
-      exportProgress.value = 100
-      exportMessage.value = '导出完成！'
-      // Reset after a delay
     })
+    // 导出完成后进度由后端事件更新为 100%
 
   } catch (error) {
     console.error('Export failed:', error)
     errorMessage.value = '导出失败: ' + error
     isExporting.value = false
+    exportProgress.value = 0
+    exportMessage.value = ''
   }
 }
 </script>

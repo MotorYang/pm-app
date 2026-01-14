@@ -12,12 +12,21 @@ export const THEME_COLORS = [
   { id: 'green', label: '森林绿', color: '#27AE60' },
 ]
 
+// 图片保存位置选项
+export const IMAGE_SAVE_LOCATIONS = [
+  { id: '.attachments', label: '.attachments 文件夹', description: '保存到文档同级的 .attachments 隐藏文件夹' },
+  { id: 'same', label: '文档同级目录', description: '直接保存到与文档相同的目录' },
+  { id: 'assets', label: 'assets 文件夹', description: '保存到文档同级的 assets 文件夹' },
+  { id: 'images', label: 'images 文件夹', description: '保存到文档同级的 images 文件夹' },
+]
+
 export const useSettingsStore = defineStore('settings', () => {
   const db = ref(null)
   const editorPath = ref('')
   const closeButtonBehavior = ref('hide') // 'hide' or 'quit'
   const exportProjectBehavior = ref('ignore-plugin-directory') // 'ignore-plugin-directory' | 'all-directory'
   const themeColor = ref('pink') // 默认主题色
+  const imageAttachmentPath = ref('.attachments') // 图片保存位置，默认 .attachments
   const loading = ref(false)
   const error = ref(null)
 
@@ -61,6 +70,12 @@ export const useSettingsStore = defineStore('settings', () => {
       )
       themeColor.value = themeResult.length > 0 ? themeResult[0].value : 'pink'
       applyThemeColor(themeColor.value)
+
+      // imageAttachmentPath
+      const imagePathResult = await db.value.select(
+          "SELECT value FROM app_settings WHERE key = 'image_attachment_path'"
+      )
+      imageAttachmentPath.value = imagePathResult.length > 0 ? imagePathResult[0].value : '.attachments'
 
     } catch (err) {
       error.value = err.message
@@ -150,12 +165,28 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  // Save imageAttachmentPath
+  const saveImageAttachmentPath = async (path) => {
+    try {
+      loading.value = true
+      error.value = null
+      await saveSetting('image_attachment_path', path)
+      imageAttachmentPath.value = path
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // State
     editorPath,
     closeButtonBehavior,
     exportProjectBehavior,
     themeColor,
+    imageAttachmentPath,
     loading,
     error,
 
@@ -165,6 +196,7 @@ export const useSettingsStore = defineStore('settings', () => {
     saveCloseButtonBehavior,
     saveExportProjectBehavior,
     saveThemeColor,
+    saveImageAttachmentPath,
     applyThemeColor
   }
 })

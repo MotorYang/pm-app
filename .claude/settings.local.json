@@ -14,7 +14,8 @@
       "Bash(npm run:*)",
       "Bash(cmd //c taskkill //F //PID 25900)",
       "Bash(cmd /c taskkill /F /PID 23696)",
-      "Bash(cmd //c taskkill //F //PID 23696)"
+      "Bash(cmd //c taskkill //F //PID 23696)",
+      "Bash(cargo check:*)"
     ]
   }
 }
