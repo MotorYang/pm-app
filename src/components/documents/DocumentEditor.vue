@@ -204,51 +204,42 @@ const uploadImage = async (file) => {
     const ext = file.name.split('.').pop() || 'png'
     const filename = `image_${timestamp}.${ext}`
 
-    let imagePath
     const doc = documentsStore.activeDocument
     const projectId = projectsStore.activeProjectId
 
-    // 文件系统模式
-    if (documentsStore.useFileSystemMode && doc && projectId) {
-      // 获取图片保存位置设置
-      const saveLocation = settingsStore.imageAttachmentPath || '.attachments'
-
-      // 获取文档所在的文件夹路径
-      const docFolder = doc.folder === '/' ? '' : doc.folder.replace(/^\//, '')
-
-      // 根据设置构建图片保存路径
-      let imageRelativePath
-      let markdownImagePath
-
-      if (saveLocation === 'same') {
-        // 保存到文档同级目录
-        imageRelativePath = docFolder ? `${docFolder}/${filename}` : filename
-        markdownImagePath = filename
-      } else {
-        // 保存到子文件夹（.attachments, assets, images 等）
-        imageRelativePath = docFolder
-          ? `${docFolder}/${saveLocation}/${filename}`
-          : `${saveLocation}/${filename}`
-        markdownImagePath = `${saveLocation}/${filename}`
-      }
-
-      console.log('Saving image to:', imageRelativePath)
-
-      await invoke('write_docvault_binary', {
-        projectId: projectId,
-        relativePath: imageRelativePath,
-        data: bytes
-      })
-
-      imagePath = markdownImagePath
-    } else {
-      // 旧模式：使用 save_document_image
-      imagePath = await invoke('save_document_image', {
-        docId: documentsStore.activeDocumentId,
-        filename: filename,
-        imageData: bytes
-      })
+    if (!doc || !projectId) {
+      throw new Error('No active document or project')
     }
+
+    // 获取图片保存位置设置
+    const saveLocation = settingsStore.imageAttachmentPath || '.attachments'
+
+    // 获取文档所在的文件夹路径
+    const docFolder = doc.folder === '/' ? '' : doc.folder.replace(/^\//, '')
+
+    // 根据设置构建图片保存路径
+    let imageRelativePath
+    let imagePath
+
+    if (saveLocation === 'same') {
+      // 保存到文档同级目录
+      imageRelativePath = docFolder ? `${docFolder}/${filename}` : filename
+      imagePath = filename
+    } else {
+      // 保存到子文件夹（.attachments, assets, images 等）
+      imageRelativePath = docFolder
+        ? `${docFolder}/${saveLocation}/${filename}`
+        : `${saveLocation}/${filename}`
+      imagePath = `${saveLocation}/${filename}`
+    }
+
+    console.log('Saving image to:', imageRelativePath)
+
+    await invoke('write_docvault_binary', {
+      projectId: projectId,
+      relativePath: imageRelativePath,
+      data: bytes
+    })
 
     // Insert markdown image syntax
     insertImageMarkdown(filename, imagePath)

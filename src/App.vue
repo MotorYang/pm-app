@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import {Time, FileText, Plus, MoreFour} from '@icon-park/vue-next'
+import { ref, computed, onMounted } from 'vue'
+import {Plus, MoreFour} from '@icon-park/vue-next'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import ProjectView from '@/views/ProjectView.vue'
@@ -40,45 +40,9 @@ const {
 const hasActiveProject = computed(() => projectsStore.activeProject !== null)
 
 onMounted(() => {
-  documentsStore.loadRecentDocuments()
   // 启动时检查更新
   initUpdater()
 })
-
-// 返回欢迎页面时刷新最近文档列表
-watch(hasActiveProject, (hasProject) => {
-  if (!hasProject) {
-    documentsStore.loadRecentDocuments()
-  }
-})
-
-// 打开最近文档
-const handleOpenRecentDoc = async (doc) => {
-  // 先切换到对应项目
-  await projectsStore.setActiveProject(doc.project_id)
-  // 加载项目文档
-  await documentsStore.loadDocuments(doc.project_id)
-  // 打开文档
-  await documentsStore.openDocument(doc.id)
-}
-
-// 格式化时间
-const formatTime = (dateStr) => {
-  if (!dateStr) return ''
-  // SQLite CURRENT_TIMESTAMP 返回 UTC 时间，格式为 "YYYY-MM-DD HH:MM:SS"
-  // 需要添加 'Z' 后缀让 JS 正确解析为 UTC
-  const normalizedStr = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z'
-  const date = new Date(normalizedStr)
-  const now = new Date()
-  const diff = now - date
-
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`
-
-  return date.toLocaleDateString('zh-CN')
-}
 
 const showShortcutDialog = ref(false)
 const editingShortcut = ref(null)
@@ -165,30 +129,6 @@ const handleSaveShortcut = (data) => {
           </div>
         </div>
 
-        <div v-if="documentsStore.recentDocuments.length > 0" class="recent-section">
-          <h3 class="section-title">
-            <Time :size="16" theme="outline" />
-            最近文档
-          </h3>
-          <div class="recent-list">
-            <div
-              v-for="doc in documentsStore.recentDocuments"
-              :key="doc.id"
-              class="recent-item"
-              @click="handleOpenRecentDoc(doc)"
-            >
-              <FileText :size="14" theme="outline" class="recent-icon" />
-              <span class="recent-doc-name">{{ doc.title }}.md</span>
-              <span
-                class="recent-project-tag"
-                :style="{ backgroundColor: doc.project_color + '20', color: doc.project_color }"
-              >
-                {{ doc.project_name }}
-              </span>
-              <span class="recent-time">{{ formatTime(doc.updated_at) }}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Project view when a project is selected -->

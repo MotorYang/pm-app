@@ -123,34 +123,23 @@ const convertLocalImages = async () => {
     if (!href || !isRelativePath(href)) continue
 
     try {
+      if (!projectsStore.activeProjectId) continue
+
+      // Get the docvault base path
+      const vaultPath = await invoke('get_docvault_path', {
+        projectId: projectsStore.activeProjectId
+      })
+
+      // Get the document's folder path
+      const doc = documentsStore.activeDocument
+      const docFolder = doc?.folder === '/' ? '' : (doc?.folder?.replace(/^\//, '') || '')
+
+      // Build full path: vault + document folder + relative image path
       let fullPath
-
-      // File system mode: use docvault path
-      if (documentsStore.useFileSystemMode && projectsStore.activeProjectId) {
-        // Get the docvault base path
-        const vaultPath = await invoke('get_docvault_path', {
-          projectId: projectsStore.activeProjectId
-        })
-
-        // Get the document's folder path
-        const doc = documentsStore.activeDocument
-        const docFolder = doc?.folder === '/' ? '' : (doc?.folder?.replace(/^\//, '') || '')
-
-        // Build full path: vault + document folder + relative image path
-        if (docFolder) {
-          fullPath = await join(vaultPath, docFolder, href)
-        } else {
-          fullPath = await join(vaultPath, href)
-        }
-      } else if (href.startsWith('images/')) {
-        // Legacy mode: use document images path
-        const imagesPath = await invoke('get_document_images_path', {
-          docId: documentsStore.activeDocumentId
-        })
-        const filename = href.substring(7) // Remove 'images/' prefix
-        fullPath = await join(imagesPath, filename)
+      if (docFolder) {
+        fullPath = await join(vaultPath, docFolder, href)
       } else {
-        continue // Skip if not in file system mode and not images/ prefix
+        fullPath = await join(vaultPath, href)
       }
 
       // Convert to Tauri accessible URL

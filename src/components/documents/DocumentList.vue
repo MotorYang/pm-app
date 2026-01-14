@@ -57,11 +57,29 @@ const {isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop}
       )
 
       // 显示导入结果
-      const successCount = results.filter(r => r.success).length
+      const successResults = results.filter(r => r.success)
       const failCount = results.filter(r => !r.success).length
 
       if (failCount > 0) {
-        alert(`导入完成：成功 ${successCount} 个，失败 ${failCount} 个`)
+        alert(`导入完成：成功 ${successResults.length} 个，失败 ${failCount} 个`)
+      }
+
+      // 导入成功后，自动打开第一个导入的文件
+      if (successResults.length > 0) {
+        const firstResult = successResults[0]
+        const targetFolder = currentDropFolder.value
+        // 根据文件名和目标文件夹查找文档
+        // firstResult.name 是完整文件名（带扩展名），doc.title 是不带扩展名的
+        const fileName = firstResult.name
+        const fileNameWithoutExt = fileName.includes('.')
+          ? fileName.substring(0, fileName.lastIndexOf('.'))
+          : fileName
+        const docToOpen = documentsStore.documents.find(d =>
+          (d.title === fileName || d.title === fileNameWithoutExt) && d.folder === targetFolder
+        )
+        if (docToOpen) {
+          documentsStore.openDocumentByType(docToOpen.id)
+        }
       }
     }
 )
@@ -429,11 +447,28 @@ const handleDownloadOneFile = async (targetFolder) => {
           targetFolder
       )
 
-      const successCount = results.filter(r => r.success).length
+      const successResults = results.filter(r => r.success)
       const failCount = results.filter(r => !r.success).length
 
       if (failCount > 0) {
-        alert(`导入完成：成功 ${successCount} 个，失败 ${failCount} 个`)
+        alert(`导入完成：成功 ${successResults.length} 个，失败 ${failCount} 个`)
+      }
+
+      // 导入成功后，自动打开第一个导入的文件
+      if (successResults.length > 0) {
+        const firstResult = successResults[0]
+        // 根据文件名和目标文件夹查找文档
+        // firstResult.name 是完整文件名（带扩展名），doc.title 是不带扩展名的
+        const fileName = firstResult.name
+        const fileNameWithoutExt = fileName.includes('.')
+          ? fileName.substring(0, fileName.lastIndexOf('.'))
+          : fileName
+        const docToOpen = documentsStore.documents.find(d =>
+          (d.title === fileName || d.title === fileNameWithoutExt) && d.folder === targetFolder
+        )
+        if (docToOpen) {
+          documentsStore.openDocumentByType(docToOpen.id)
+        }
       }
     }
   } catch (e) {
