@@ -2,10 +2,82 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use tauri::Manager;
+use tauri::Emitter;
 use zip::{ZipWriter, write::FileOptions};
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+
+// 进度事件结构
+#[derive(Clone, Serialize)]
+pub struct ExportProgress {
+    pub progress: u32,
+    pub message: String,
+    pub current: usize,
+    pub total: usize,
+}
+
+// 进度追踪器
+struct ProgressTracker<'a> {
+    app: &'a tauri::AppHandle,
+    current: usize,
+    total: usize,
+    last_emitted: usize,
+}
+
+impl<'a> ProgressTracker<'a> {
+    fn new(app: &'a tauri::AppHandle, total: usize) -> Self {
+        Self {
+            app,
+            current: 0,
+            total,
+            last_emitted: 0,
+        }
+    }
+
+    fn increment(&mut self) {
+        self.current += 1;
+        // 每处理 10 个文件或进度变化超过 1% 时发送事件
+        let current_percent = if self.total > 0 {
+            (self.current * 100) / self.total
+        } else {
+            0
+        };
+        let last_percent = if self.total > 0 {
+            (self.last_emitted * 100) / self.total
+        } else {
+            0
+        };
+
+        if current_percent > last_percent || self.current - self.last_emitted >= 10 {
+            self.emit();
+            self.last_emitted = self.current;
+        }
+    }
+
+    fn emit(&self) {
+        let progress = if self.total > 0 {
+            ((self.current as f64 / self.total as f64) * 100.0).min(99.0) as u32
+        } else {
+            0
+        };
+
+        let _ = self.app.emit("export-progress", ExportProgress {
+            progress,
+            message: format!("正在打包文件 ({}/{})", self.current, self.total),
+            current: self.current,
+            total: self.total,
+        });
+    }
+
+    fn complete(&self) {
+        let _ = self.app.emit("export-progress", ExportProgress {
+            progress: 100,
+            message: "导出完成！".to_string(),
+            current: self.total,
+            total: self.total,
+        });
+    }
+}
 
 // ---------------- 数据结构 ----------------
 
@@ -19,15 +91,6 @@ pub struct Project {
     pub settings: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Document {
-    pub id: i64,
-    pub project_id: i64,
-    pub title: String,
-    pub folder: String,
-    pub created_at: String,
-    pub updated_at: String,
-}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct VaultEntry {
@@ -150,19 +213,50 @@ fn sanitize_filename(name: &str) -> String {
     sanitized
 }
 
+// 统计目录中的文件数量
+fn count_files_in_directory(dir: &Path, ignore: bool) -> usize {
+    const IGNORE_DIRS: &[&str] = &[".git", "target", "node_modules", ".idea", ".vscode", ".DS_Store"];
+
+    if !dir.exists() { return 0; }
+
+    let mut count = 0;
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if ignore && IGNORE_DIRS.iter().any(|i| *i == name) { continue; }
+
+            if let Ok(file_type) = entry.file_type() {
+                if file_type.is_symlink() { continue; }
+                if file_type.is_dir() {
+                    count += count_files_in_directory(&entry.path(), ignore);
+                } else if file_type.is_file() {
+                    count += 1;
+                }
+            }
+        }
+    }
+    count
+}
+
 fn add_directory_to_zip(
     zip: &mut ZipWriter<fs::File>,
     dir: &Path,
     zip_base: &str,
     options: FileOptions,
     ignore: bool,
+    mut tracker: Option<&mut ProgressTracker>,
 ) -> Result<(), String> {
     const IGNORE_DIRS: &[&str] = &[".git", "target", "node_modules", ".idea", ".vscode", ".DS_Store"];
 
     if !dir.exists() { return Ok(()); }
 
-    for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
+    // 收集所有条目以便在循环中使用可变引用
+    let entries: Vec<_> = fs::read_dir(dir)
+        .map_err(|e| e.to_string())?
+        .filter_map(|e| e.ok())
+        .collect();
+
+    for entry in entries {
         let path = entry.path();
         let name = entry.file_name().to_string_lossy().into_owned();
 
@@ -173,11 +267,16 @@ fn add_directory_to_zip(
         let zip_path = format!("{}/{}", zip_base.trim_end_matches('/'), name);
 
         if file_type.is_dir() {
-            add_directory_to_zip(zip, &path, &zip_path, options, ignore)?;
+            add_directory_to_zip(zip, &path, &zip_path, options, ignore, tracker.as_deref_mut())?;
         } else if file_type.is_file() {
             let mut f = fs::File::open(&path).map_err(|e| e.to_string())?;
             zip.start_file(&zip_path, options).map_err(|e| e.to_string())?;
             std::io::copy(&mut f, zip).map_err(|e| e.to_string())?;
+
+            // 更新进度
+            if let Some(ref mut t) = tracker {
+                t.increment();
+            }
         }
     }
     Ok(())
@@ -189,28 +288,58 @@ fn add_directory_to_zip(
 pub async fn export_project_handover(
     app: tauri::AppHandle,
     project: Project,
-    documents: Option<Vec<Document>>,
+    docvault_path: Option<String>,
     vault_entries: Option<Vec<VaultEntry>>,
     vault_masters: Option<String>,
     output_path: String,
     export_options: ExportOptions,
 ) -> Result<(), String> {
+    // 发送初始进度
+    let _ = app.emit("export-progress", ExportProgress {
+        progress: 0,
+        message: "正在统计文件数量...".to_string(),
+        current: 0,
+        total: 0,
+    });
+
+    // 1. 统计总文件数
+    let ignore_dirs = export_options.ignore_plugin == "ignore-plugin-directory";
+    let project_root = PathBuf::from(&project.path);
+    let mut total_files: usize = 1; // info.json
+
+    if project_root.exists() && project_root.is_dir() {
+        total_files += count_files_in_directory(&project_root, ignore_dirs);
+    }
+
+    if let Some(ref path) = docvault_path {
+        let docvault_dir = PathBuf::from(path);
+        if docvault_dir.exists() && docvault_dir.is_dir() {
+            total_files += count_files_in_directory(&docvault_dir, false);
+        }
+    }
+
+    if vault_entries.is_some() && vault_masters.is_some() {
+        total_files += 2; // vault/info.json and vault/vault.md
+    }
+
+    // 2. 创建进度追踪器
+    let mut tracker = ProgressTracker::new(&app, total_files);
+    tracker.emit(); // 发送初始进度（0/total）
+
+    // 3. 开始导出
     let file = fs::File::create(&output_path).map_err(|e| e.to_string())?;
     let mut zip = ZipWriter::new(file);
 
-    // 设置 ZIP 选项（如果需要密码，可以在此处扩展）
     let zip_options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
 
-    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
-
-    // 1. 项目基础信息
+    // 4. 项目基础信息
     zip.start_file("info.json", zip_options).map_err(|e| e.to_string())?;
     let project_json = serde_json::to_string_pretty(&project).map_err(|e| e.to_string())?;
     zip.write_all(project_json.as_bytes()).map_err(|e| e.to_string())?;
+    tracker.increment();
 
-    // 2. 项目源码导出
-    let project_root = PathBuf::from(&project.path);
+    // 5. 项目源码导出
     if project_root.exists() && project_root.is_dir() {
         let folder_name = sanitize_filename(&project.name);
         let zip_project_path = format!("project/{}", folder_name);
@@ -219,64 +348,23 @@ pub async fn export_project_handover(
             &project_root,
             &zip_project_path,
             zip_options,
-            export_options.ignore_plugin == "ignore-plugin-directory"
+            ignore_dirs,
+            Some(&mut tracker),
         )?;
     }
 
-    // 3.导出文档
-    if let Some(docs) = documents {
-        for doc in docs {
-            // 物理路径：app_data/data/documents/doc-ID
-            let doc_dir = app_data_dir.join("data/documents").join(format!("doc-{}", doc.id));
-
-            // 清洗文件名和文件夹名
-            let safe_folder = if doc.folder == "/" || doc.folder.is_empty() {
-                "".to_string()
-            } else {
-                sanitize_filename(&doc.folder)
-            };
-            let safe_title = sanitize_filename(&doc.title);
-
-            // 构造 ZIP 内的基础目录路径
-            // 如果有文件夹：docs/文件夹/标题
-            // 如果没文件夹：docs/标题
-            let base_zip_dir = if safe_folder.is_empty() {
-                format!("docs/{}", safe_title)
-            } else {
-                format!("docs/{}/{}", safe_folder, safe_title)
-            };
-
-            // 3.1 写入 index.md
-            let index_path = doc_dir.join("index.md");
-            if index_path.exists() {
-                let content = fs::read_to_string(&index_path).map_err(|e| e.to_string())?;
-                // 路径：docs/.../标题/index.md
-                let zip_index_path = format!("{}/index.md", base_zip_dir);
-                zip.start_file(zip_index_path, zip_options).map_err(|e| e.to_string())?;
-                zip.write_all(content.as_bytes()).map_err(|e| e.to_string())?;
-            }
-
-            // 3.2 写入图片资源目录
-            let img_dir = doc_dir.join("images");
-            if img_dir.exists() {
-                // 路径：docs/.../标题/images/
-                let zip_img_dir = format!("{}/images", base_zip_dir);
-                add_directory_to_zip(
-                    &mut zip,
-                    &img_dir,
-                    &zip_img_dir,
-                    zip_options,
-                    false
-                )?;
-            }
+    // 6. 导出文档库
+    if let Some(path) = docvault_path {
+        let docvault_dir = PathBuf::from(&path);
+        if docvault_dir.exists() && docvault_dir.is_dir() {
+            add_directory_to_zip(&mut zip, &docvault_dir, "docs", zip_options, false, Some(&mut tracker))?;
         }
     }
 
-    // 4. 保险箱解密导出
+    // 7. 保险箱解密导出
     if let (Some(entries), Some(master)) = (vault_entries, vault_masters) {
         let exported_at = Utc::now().to_rfc3339();
 
-        // 执行解密
         let export_payload = VaultExport {
             entries,
             masters: master,
@@ -284,12 +372,11 @@ pub async fn export_project_handover(
         };
         let decrypted = decrypt_vault_export(export_payload).await?;
 
-        // 生成明文导入格式的 JSON
         let import_data: Vec<VaultImportEntry> = decrypted.iter().map(|e| {
             VaultImportEntry {
                 title: e.title.clone(),
                 param_key: e.param_key.clone(),
-                param_value: e.param_value.clone(), // 明文密码/值
+                param_value: e.param_value.clone(),
                 notes: e.notes.clone(),
                 url: e.url.clone(),
                 category: e.category.clone(),
@@ -302,15 +389,20 @@ pub async fn export_project_handover(
             "version": "1.0"
         });
 
-        // 写入 vault/info.json
         zip.start_file("vault/info.json", zip_options).map_err(|e| e.to_string())?;
         zip.write_all(serde_json::to_string_pretty(&vault_json).unwrap().as_bytes()).map_err(|e| e.to_string())?;
+        tracker.increment();
 
         let md_report = vault_to_markdown(&decrypted, &exported_at);
         zip.start_file("vault/vault.md", zip_options).map_err(|e| e.to_string())?;
         zip.write_all(md_report.as_bytes()).map_err(|e| e.to_string())?;
+        tracker.increment();
     }
 
     zip.finish().map_err(|e| e.to_string())?;
+
+    // 发送完成事件
+    tracker.complete();
+
     Ok(())
 }

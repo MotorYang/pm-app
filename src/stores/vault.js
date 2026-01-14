@@ -30,6 +30,16 @@ export const useVaultStore = defineStore('vault', () => {
     return result[0].count > 0
   }
 
+  // Check if vault has any entries for a project
+  const hasEntries = async (projectId) => {
+    await initDB()
+    const result = await db.value.select(
+      'SELECT COUNT(*) as count FROM vault_entries WHERE project_id = $1',
+      [projectId]
+    )
+    return result[0].count > 0
+  }
+
   // Initialize vault for a project
   const initVault = async (projectId, password) => {
     try {
@@ -356,6 +366,7 @@ export const useVaultStore = defineStore('vault', () => {
 
     // Actions
     isVaultInitialized,
+    hasEntries,
     initVault,
     unlockVault,
     lockVault,
