@@ -4,6 +4,7 @@ import DocumentList from '@/components/documents/DocumentList.vue'
 import DocumentSplitView from '@/components/documents/DocumentSplitView.vue'
 import PdfViewer from '@/components/documents/PdfViewer.vue'
 import ImageViewer from '@/components/documents/ImageViewer.vue'
+import FilePreviewer from '@/components/documents/FilePreviewer.vue'
 import CartoonModal from '@/components/ui/CartoonModal.vue'
 import CartoonInput from '@/components/ui/CartoonInput.vue'
 import CartoonButton from '@/components/ui/CartoonButton.vue'
@@ -26,15 +27,25 @@ const handleWindowFocus = () => {
   lastFocusTime = now
 }
 
-// Computed: current document type
+// 自动识别文档类型
 const activeDocType = computed(() => {
-  return documentsStore.activeDocument?.type || 'markdown'
+  const doc = documentsStore.activeDocument
+  if (!doc || !doc.title) return null
+
+  const ext = doc.file_ext?.toLowerCase() || ''
+  if (ext === 'md') return 'markdown'
+  if (ext === 'pdf') return 'pdf'
+  if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) return 'image'
+
+  // 默认其它为文本 / 代码文件
+  return 'text'
 })
 
 // Check if the active document is editable (markdown)
 const isMarkdown = computed(() => activeDocType.value === 'markdown')
 const isPdf = computed(() => activeDocType.value === 'pdf')
 const isImage = computed(() => activeDocType.value === 'image')
+const isText = computed(() => activeDocType.value === 'text')
 
 const showCreateModal = ref(false)
 const newFileName = ref('')
@@ -133,6 +144,12 @@ const handleCloseModal = () => {
           :data="documentsStore.activeDocumentBinary"
           :title="documentsStore.activeDocument?.title"
           :ext="documentsStore.activeDocument?.file_ext"
+      />
+
+      <!-- 文本 / 代码文件预览 -->
+      <FilePreviewer
+          v-else-if="isText"
+          :text-document="documentsStore.activeDocument"
       />
 
       <!-- Unknown type fallback -->
