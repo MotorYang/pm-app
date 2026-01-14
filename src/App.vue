@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import {Plus, MoreFour} from '@icon-park/vue-next'
+import {
+  Plus, MoreFour, FileText, Time,
+  FilePdf, Picture, Code, FileZip, FileWord, Music, Video, FileHashOne
+} from '@icon-park/vue-next'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import ProjectView from '@/views/ProjectView.vue'
@@ -13,7 +16,7 @@ import { useShortcutsStore } from '@/stores/shortcuts'
 import { useDocumentsStore } from '@/stores/documents'
 import { useConfirm } from '@/composables/useConfirm'
 import { useUpdater } from '@/composables/useUpdater'
-import CartoonButton from '@/components/ui/CartoonButton.vue'
+import { getFileType, fileTypeColors } from '@/utils/fileTypes'
 import Logo from '@/assets/logo.png'
 
 const projectsStore = useProjectsStore()
@@ -87,6 +90,123 @@ const handleSaveShortcut = (data) => {
     shortcutsStore.addShortcut(data)
   }
 }
+
+const handleOpenRecentDoc = async (doc) => {
+  if (!doc || !doc.project_id) {
+    return
+  }
+
+  const project =
+    Array.isArray(projectsStore.projects)
+      ? projectsStore.projects.find(p => p.id === doc.project_id)
+      : null
+
+  if (!project) {
+    alert('对应项目不存在，可能已被删除')
+    return
+  }
+
+  try {
+    if (!projectsStore.activeProject || projectsStore.activeProject.id !== doc.project_id) {
+      await projectsStore.setActiveProject(doc.project_id)
+    }
+
+    await documentsStore.loadDocuments(doc.project_id)
+
+    if (doc.path) {
+      await documentsStore.openDocumentByPath(doc.path, doc.project_id)
+    } else if (doc.id) {
+      await documentsStore.openDocumentByType(doc.id)
+    }
+  } catch (e) {
+    alert('打开文档失败: ' + (e.message || '未知错误'))
+  }
+}
+
+// 获取文件类型图标
+const getFileIcon = (doc) => {
+  let type = doc.type
+  if (!type && doc.file_ext) {
+    type = getFileType(doc.file_ext)
+  } else if (!type && doc.title) {
+    const parts = doc.title.split('.')
+    if (parts.length > 1) {
+      type = getFileType(parts[parts.length - 1])
+    }
+  }
+
+  if (!type) type = 'markdown'
+
+  switch (type) {
+    case 'pdf': return FilePdf
+    case 'image': return Picture
+    case 'text': return FileText
+    case 'code': return Code
+    case 'archive': return FileZip
+    case 'office': return FileWord
+    case 'audio': return Music
+    case 'video': return Video
+    case 'file': return FileHashOne
+    default: return FileText
+  }
+}
+
+// 获取文件类型颜色
+const getFileIconColor = (doc) => {
+  let type = doc.type
+  if (!type && doc.file_ext) {
+    type = getFileType(doc.file_ext)
+  } else if (!type && doc.title) {
+    const parts = doc.title.split('.')
+    if (parts.length > 1) {
+      type = getFileType(parts[parts.length - 1])
+    }
+  }
+
+  if (!type) type = 'markdown'
+  return fileTypeColors[type] || fileTypeColors.markdown
+}
+
+// 获取文档显示名称
+const getDocDisplayName = (doc) => {
+  if (!doc.title) return 'Untitled'
+  
+  // 如果有明确的扩展名
+  if (doc.file_ext) {
+    // 检查标题是否已经包含了扩展名
+    if (doc.title.toLowerCase().endsWith('.' + doc.file_ext.toLowerCase())) {
+      return doc.title
+    }
+    return `${doc.title}.${doc.file_ext}`
+  }
+  
+  // 兼容旧数据：如果没有扩展名且标题不包含点号，默认显示为 .md
+  if (!doc.title.includes('.')) {
+    return `${doc.title}.md`
+  }
+
+  return doc.title
+}
+
+const formatTime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHour = Math.floor(diffMin / 60)
+  const diffDay = Math.floor(diffHour / 24)
+
+  if (diffSec < 60) return '刚刚'
+  if (diffMin < 60) return `${diffMin} 分钟前`
+  if (diffHour < 24) return `${diffHour} 小时前`
+  if (diffDay < 7) return `${diffDay} 天前`
+
+  return date.toLocaleDateString()
+}
 </script>
 
 <template>
@@ -126,6 +246,37 @@ const handleSaveShortcut = (data) => {
 
           <div v-else class="no-shortcuts">
             <p>暂无快捷方式，点击右上角按钮添加</p>
+          </div>
+        </div>
+
+        <div class="recent-section">
+          <h3 class="section-title">
+            <Time :size="16" theme="outline" />
+            最近文档
+          </h3>
+          <div class="recent-list">
+            <div
+                v-for="doc in documentsStore.recentDocuments"
+                :key="doc.id"
+                class="recent-item"
+                @click="handleOpenRecentDoc(doc)"
+            >
+              <component
+                  :is="getFileIcon(doc)"
+                  :size="14"
+                  theme="outline"
+                  class="recent-icon"
+                  :style="{ color: getFileIconColor(doc) }"
+              />
+              <span class="recent-doc-name">{{ getDocDisplayName(doc) }}</span>
+              <span
+                  class="recent-project-tag"
+                  :style="{ backgroundColor: doc.project_color + '20', color: doc.project_color }"
+              >
+                {{ doc.project_name }}
+              </span>
+              <span class="recent-time">{{ formatTime(doc.updated_at) }}</span>
+            </div>
           </div>
         </div>
 
