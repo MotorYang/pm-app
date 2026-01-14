@@ -195,6 +195,7 @@ const handleMouseUp = () => {
             :project="project"
             :active="project.id === projectsStore.activeProjectId"
             :collapsed="isCollapsed"
+            :compact="!isCollapsed"
             @click="handleProjectClick"
             @delete="handleDeleteProject"
           />
@@ -285,7 +286,7 @@ const handleMouseUp = () => {
 }
 
 .sidebar-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
@@ -334,7 +335,7 @@ const handleMouseUp = () => {
 .projects-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .collapsed .projects-list {

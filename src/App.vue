@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import {
   Plus, MoreFour, FileText, Time,
-  FilePdf, Picture, Code, FileZip, FileWord, Music, Video, FileHashOne
+  FilePdf, Picture, Code, FileZip, FileWord, Music, Video, FileHashOne, AllApplication
 } from '@icon-park/vue-next'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
@@ -268,7 +268,7 @@ const formatTime = (value) => {
             <div class="shortcuts-section">
               <div class="section-header">
                 <h3 class="section-title">
-                  <MoreFour :size="16" theme="outline" />
+                  <MoreFour :size="22" theme="outline" />
                   快捷方式
                 </h3>
                 <button @click="handleAddShortcut">
@@ -295,6 +295,7 @@ const formatTime = (value) => {
             <div class="projects-section" v-if="recentProjects.length > 0">
               <div class="section-header">
                 <h3 class="section-title">
+                  <AllApplication :size="22" theme="outline" />
                   最近项目
                 </h3>
               </div>
@@ -323,7 +324,7 @@ const formatTime = (value) => {
             <div class="recent-section">
               <div class="section-header">
                 <h3 class="section-title">
-                  <Time :size="16" theme="outline" />
+                  <Time :size="22" theme="outline" />
                   最近文档
                 </h3>
               </div>

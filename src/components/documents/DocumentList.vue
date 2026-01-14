@@ -945,7 +945,7 @@ const handleCloseRenameModal = () => {
 }
 
 .document-list-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
