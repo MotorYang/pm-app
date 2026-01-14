@@ -10,6 +10,7 @@ export const useDocumentsStore = defineStore('documents', () => {
 
   // State
   const documents = ref([])
+  const recentDocuments = ref([])
   const fileTree = ref([]) // 文件系统树形结构
   const activeDocumentId = ref(null)
   const activeDocumentPath = ref(null) // 当前文档的相对路径
@@ -26,6 +27,64 @@ export const useDocumentsStore = defineStore('documents', () => {
   })
 
   const hasUnsavedChanges = ref(false)
+
+  const RECENT_DOCS_KEY = 'pm-app-recent-documents'
+
+  function loadRecentDocumentsFromStorage() {
+    try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
+      const raw = localStorage.getItem(RECENT_DOCS_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        recentDocuments.value = parsed
+      }
+    } catch (e) {
+      console.error('Failed to load recent documents:', e)
+    }
+  }
+
+  function saveRecentDocumentsToStorage() {
+    try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
+      localStorage.setItem(RECENT_DOCS_KEY, JSON.stringify(recentDocuments.value))
+    } catch (e) {
+      console.error('Failed to save recent documents:', e)
+    }
+  }
+
+  function addRecentDocument(doc, project) {
+    if (!doc) return
+    const projectId = doc.project_id || project?.id || projectsStore.activeProjectId
+    if (!projectId) return
+
+    const projectInfo =
+      project ||
+      (Array.isArray(projectsStore.projects)
+        ? projectsStore.projects.find(p => p.id === projectId)
+        : null)
+
+    const entry = {
+      id: doc.id,
+      path: doc.path,
+      title: doc.title,
+      project_id: projectId,
+      project_name: projectInfo?.name || '',
+      project_color: projectInfo?.color || '#999999',
+      file_ext: doc.file_ext,
+      type: doc.type,
+      updated_at: new Date().toISOString()
+    }
+
+    const list = recentDocuments.value.filter(
+      item => !(item.project_id === projectId && item.path === doc.path)
+    )
+    list.unshift(entry)
+    recentDocuments.value = list.slice(0, 20)
+    saveRecentDocumentsToStorage()
+  }
+
+  loadRecentDocumentsFromStorage()
 
   // Group documents by folder
   const documentsByFolder = computed(() => {
@@ -172,6 +231,12 @@ export const useDocumentsStore = defineStore('documents', () => {
         })
         activeDocumentBinary.value = binaryData
       }
+
+      const project =
+        Array.isArray(projectsStore.projects)
+          ? projectsStore.projects.find(p => p.id === (doc.project_id || projectId))
+          : null
+      addRecentDocument(doc, project)
 
       hasUnsavedChanges.value = false
     } catch (e) {
@@ -735,6 +800,7 @@ export const useDocumentsStore = defineStore('documents', () => {
   return {
     // State
     documents,
+    recentDocuments,
     fileTree,
     activeDocumentId,
     activeDocumentPath,
