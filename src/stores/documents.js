@@ -92,13 +92,18 @@ export const useDocumentsStore = defineStore('documents', () => {
   }
 
   // Actions
-  async function loadDocuments(projectId) {
+  async function loadDocuments(projectId, options = {}) {
+    const { preserveSelection = false } = options
+
     if (!projectId) {
       documents.value = []
       fileTree.value = []
       closeDocument()
       return
     }
+
+    // 保存当前选中的文档路径
+    const currentDocPath = preserveSelection ? activeDocumentPath.value : null
 
     loading.value = true
     error.value = null
@@ -121,6 +126,15 @@ export const useDocumentsStore = defineStore('documents', () => {
         documents.value = result
       }
 
+      // 如果需要保留选中状态，尝试重新选中之前的文档
+      if (currentDocPath) {
+        const previousDoc = documents.value.find(d => d.path === currentDocPath)
+        if (previousDoc) {
+          // 文档仍然存在，保持选中
+          return
+        }
+      }
+
       // 自动打开第一个 markdown 文档
       const firstMarkdown = documents.value.find(d => d.type === 'markdown')
       if (firstMarkdown) {
@@ -136,6 +150,13 @@ export const useDocumentsStore = defineStore('documents', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  // 刷新文档列表（保留当前选中的文档）
+  async function refreshDocuments() {
+    const projectId = projectsStore.activeProjectId
+    if (!projectId) return
+    await loadDocuments(projectId, { preserveSelection: true })
   }
 
   // 通过路径打开文档（文件系统模式）
@@ -437,6 +458,21 @@ export const useDocumentsStore = defineStore('documents', () => {
     error.value = null
 
     try {
+      // 文件系统模式下使用 docvault 复制
+      if (useFileSystemMode.value) {
+        const projectId = doc.project_id || projectsStore.activeProjectId
+        await invoke('copy_docvault_item', {
+          projectId,
+          sourcePath: doc.path,
+          targetFolder
+        })
+
+        // 重新加载文档列表
+        await loadDocuments(projectId)
+        return doc.path
+      }
+
+      // 旧模式：数据库方式
       const database = await getDb()
 
       // 读取原文档内容
@@ -502,6 +538,21 @@ export const useDocumentsStore = defineStore('documents', () => {
     error.value = null
 
     try {
+      // 文件系统模式下使用 docvault 移动
+      if (useFileSystemMode.value) {
+        const projectId = doc.project_id || projectsStore.activeProjectId
+        await invoke('move_docvault_item', {
+          projectId,
+          sourcePath: doc.path,
+          targetFolder
+        })
+
+        // 重新加载文档列表
+        await loadDocuments(projectId)
+        return
+      }
+
+      // 旧模式：数据库方式
       const database = await getDb()
 
       // 检查目标文件夹是否存在同名文档
@@ -1086,6 +1137,27 @@ export const useDocumentsStore = defineStore('documents', () => {
     }
   }
 
+  // 在资源管理器中打开文件或文件夹
+  async function openInExplorer(itemPath) {
+    const projectId = projectsStore.activeProjectId
+    if (!projectId) {
+      console.warn('openInExplorer: no active project')
+      return
+    }
+
+    console.log('openInExplorer:', { projectId, itemPath })
+
+    try {
+      await invoke('open_in_explorer', {
+        projectId,
+        itemPath: itemPath || '/'
+      })
+    } catch (e) {
+      console.error('Failed to open in explorer:', e, { projectId, itemPath })
+      throw e
+    }
+  }
+
   return {
     // State
     documents,
@@ -1109,6 +1181,7 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     // Actions (Legacy)
     loadDocuments,
+    refreshDocuments,
     openDocument,
     saveDocument,
     updateContent,
@@ -1138,6 +1211,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     renameInDocvault,
     saveAttachment,
     scanDocvault,
-    buildRelativePath
+    buildRelativePath,
+    openInExplorer
   }
 })

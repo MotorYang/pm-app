@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import DocumentList from '@/components/documents/DocumentList.vue'
 import DocumentSplitView from '@/components/documents/DocumentSplitView.vue'
 import PdfViewer from '@/components/documents/PdfViewer.vue'
@@ -12,6 +12,19 @@ import { useProjectsStore } from '@/stores/projects'
 
 const documentsStore = useDocumentsStore()
 const projectsStore = useProjectsStore()
+
+// 窗口焦点刷新 - 当用户从外部切换回来时刷新文档列表
+let lastFocusTime = Date.now()
+const REFRESH_COOLDOWN = 2000 // 2秒内不重复刷新
+
+const handleWindowFocus = () => {
+  const now = Date.now()
+  if (now - lastFocusTime > REFRESH_COOLDOWN && projectsStore.activeProject) {
+    console.log('Window focused, refreshing documents...')
+    documentsStore.refreshDocuments()
+  }
+  lastFocusTime = now
+}
 
 // Computed: current document type
 const activeDocType = computed(() => {
@@ -33,6 +46,18 @@ onMounted(() => {
   if (projectsStore.activeProject) {
     documentsStore.loadDocuments(projectsStore.activeProject.id)
   }
+
+  // 监听窗口焦点变化
+  window.addEventListener('focus', handleWindowFocus)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      handleWindowFocus()
+    }
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('focus', handleWindowFocus)
 })
 
 // Watch for active project changes
@@ -99,8 +124,7 @@ const handleCloseModal = () => {
       <!-- PDF viewer -->
       <PdfViewer
           v-else-if="isPdf"
-          :data="documentsStore.activeDocumentBinary"
-          :title="documentsStore.activeDocument?.title"
+          :pdf-document="documentsStore.activeDocument"
       />
 
       <!-- Image viewer -->
@@ -124,6 +148,9 @@ const handleCloseModal = () => {
       @close="handleCloseModal"
     >
       <div class="create-form">
+        <div v-if="createInFolder !== '/'" class="target-folder-hint">
+          将在 <code>{{ createInFolder }}</code> 下创建
+        </div>
         <CartoonInput
           v-model="newFileName"
           label="文件名"
@@ -201,5 +228,21 @@ const handleCloseModal = () => {
   border-radius: var(--border-radius-md);
   color: var(--color-danger);
   font-size: var(--font-size-sm);
+}
+
+.target-folder-hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+}
+
+.target-folder-hint code {
+  background-color: var(--color-bg-secondary);
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  font-family: monospace;
+  color: var(--color-primary);
 }
 </style>

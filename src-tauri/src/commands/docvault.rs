@@ -455,6 +455,240 @@ fn scan_directory(dir: &PathBuf, vault_root: &PathBuf) -> Result<Vec<ScanItem>, 
     Ok(items)
 }
 
+/// Copy a file or folder in the docvault
+#[tauri::command]
+pub fn copy_docvault_item(
+    app: tauri::AppHandle,
+    project_id: i64,
+    source_path: String,
+    target_folder: String,
+) -> Result<String, String> {
+    let vault_dir = get_docvault_dir(&app, project_id)?;
+
+    let source_clean = source_path.trim_start_matches('/');
+    let source_full = vault_dir.join(source_clean);
+
+    if !source_full.exists() {
+        return Err(format!("Source path does not exist: {}", source_path));
+    }
+
+    // Get file name
+    let file_name = source_full
+        .file_name()
+        .ok_or("Invalid source file name")?
+        .to_string_lossy()
+        .to_string();
+
+    // Build target path
+    let target_dir = if target_folder == "/" || target_folder.is_empty() {
+        vault_dir.clone()
+    } else {
+        let clean_folder = target_folder.trim_start_matches('/');
+        vault_dir.join(clean_folder)
+    };
+
+    // Create target directory if needed
+    fs::create_dir_all(&target_dir)
+        .map_err(|e| format!("Failed to create target directory: {}", e))?;
+
+    // Generate unique file name if target already exists
+    let mut target_name = file_name.clone();
+    let mut counter = 1;
+
+    let (stem, ext) = if source_full.is_file() {
+        let stem = source_full
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or(file_name.clone());
+        let ext = source_full
+            .extension()
+            .map(|e| format!(".{}", e.to_string_lossy()))
+            .unwrap_or_default();
+        (stem, ext)
+    } else {
+        (file_name.clone(), String::new())
+    };
+
+    while target_dir.join(&target_name).exists() {
+        target_name = format!("{} 副本{}{}", stem, if counter > 1 { format!(" {}", counter) } else { String::new() }, ext);
+        counter += 1;
+    }
+
+    let target_path = target_dir.join(&target_name);
+
+    // Copy file or directory
+    if source_full.is_dir() {
+        copy_dir_all(&source_full, &target_path)?;
+    } else {
+        fs::copy(&source_full, &target_path)
+            .map_err(|e| format!("Failed to copy file: {}", e))?;
+    }
+
+    // Return the new relative path
+    let new_relative = target_path
+        .strip_prefix(&vault_dir)
+        .map(|p| format!("/{}", p.to_string_lossy().replace("\\", "/")))
+        .unwrap_or_else(|_| format!("/{}", target_name));
+
+    Ok(new_relative)
+}
+
+/// Helper function to recursively copy a directory
+fn copy_dir_all(src: &PathBuf, dst: &PathBuf) -> Result<(), String> {
+    fs::create_dir_all(dst)
+        .map_err(|e| format!("Failed to create directory: {}", e))?;
+
+    for entry in fs::read_dir(src).map_err(|e| format!("Failed to read directory: {}", e))? {
+        let entry = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+
+        if src_path.is_dir() {
+            copy_dir_all(&src_path, &dst_path)?;
+        } else {
+            fs::copy(&src_path, &dst_path)
+                .map_err(|e| format!("Failed to copy file: {}", e))?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Move a file or folder in the docvault
+#[tauri::command]
+pub fn move_docvault_item(
+    app: tauri::AppHandle,
+    project_id: i64,
+    source_path: String,
+    target_folder: String,
+) -> Result<String, String> {
+    let vault_dir = get_docvault_dir(&app, project_id)?;
+
+    let source_clean = source_path.trim_start_matches('/');
+    let source_full = vault_dir.join(source_clean);
+
+    if !source_full.exists() {
+        return Err(format!("Source path does not exist: {}", source_path));
+    }
+
+    // Get file name
+    let file_name = source_full
+        .file_name()
+        .ok_or("Invalid source file name")?
+        .to_string_lossy()
+        .to_string();
+
+    // Build target path
+    let target_dir = if target_folder == "/" || target_folder.is_empty() {
+        vault_dir.clone()
+    } else {
+        let clean_folder = target_folder.trim_start_matches('/');
+        vault_dir.join(clean_folder)
+    };
+
+    // Create target directory if needed
+    fs::create_dir_all(&target_dir)
+        .map_err(|e| format!("Failed to create target directory: {}", e))?;
+
+    let target_path = target_dir.join(&file_name);
+
+    // Check if target already exists
+    if target_path.exists() && target_path != source_full {
+        return Err("目标文件夹已存在同名文件".to_string());
+    }
+
+    // Move file or directory
+    fs::rename(&source_full, &target_path)
+        .map_err(|e| format!("Failed to move: {}", e))?;
+
+    // Return the new relative path
+    let new_relative = target_path
+        .strip_prefix(&vault_dir)
+        .map(|p| format!("/{}", p.to_string_lossy().replace("\\", "/")))
+        .unwrap_or_else(|_| format!("/{}", file_name));
+
+    Ok(new_relative)
+}
+
+/// Open a file or folder in the system file explorer
+#[tauri::command]
+pub fn open_in_explorer(
+    app: tauri::AppHandle,
+    project_id: i64,
+    item_path: String,
+) -> Result<(), String> {
+    let vault_dir = get_docvault_dir(&app, project_id)?;
+
+    let clean_path = item_path.trim_start_matches('/');
+
+    let mut full_path = vault_dir.clone();
+    if !clean_path.is_empty() {
+        for part in clean_path.split('/') {
+            if !part.is_empty() {
+                full_path.push(part);
+            }
+        }
+    }
+
+    if !full_path.exists() {
+        return Err(format!("Path does not exist: {} (full: {:?})", item_path, full_path));
+    }
+
+    // Get the directory to open (if it's a file, open its parent directory)
+    let dir_to_open = if full_path.is_file() {
+        full_path.parent().unwrap_or(&vault_dir).to_path_buf()
+    } else {
+        full_path.clone()
+    };
+
+    #[cfg(target_os = "windows")]
+    {
+        let full = full_path
+            .canonicalize()
+            .map_err(|e| format!("Invalid path: {}", e))?;
+
+        let mut cmd = std::process::Command::new("explorer");
+
+        if full.is_file() {
+            cmd.arg("/select,")
+                .arg(&full);
+        } else {
+            cmd.arg(&full);
+        }
+
+        cmd.spawn()
+            .map_err(|e| format!("Failed to open explorer: {}", e))?;
+    }
+
+
+    #[cfg(target_os = "macos")]
+    {
+        if full_path.is_file() {
+            // On macOS, use -R to reveal the file in Finder
+            std::process::Command::new("open")
+                .arg("-R")
+                .arg(&full_path)
+                .spawn()
+                .map_err(|e| format!("Failed to open Finder: {}", e))?;
+        } else {
+            std::process::Command::new("open")
+                .arg(&dir_to_open)
+                .spawn()
+                .map_err(|e| format!("Failed to open Finder: {}", e))?;
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&dir_to_open)
+            .spawn()
+            .map_err(|e| format!("Failed to open file manager: {}", e))?;
+    }
+
+    Ok(())
+}
+
 /// Get file info for a specific file
 #[tauri::command]
 pub fn get_docvault_file_info(
@@ -493,3 +727,11 @@ pub fn get_docvault_file_info(
         size: metadata.len(),
     })
 }
+
+#[tauri::command]
+pub fn get_file_absolute_path(app: tauri::AppHandle, project_id: i64, relative_path: String) -> Result<String, String> {
+    let vault_dir = get_docvault_dir(&app, project_id)?;
+    let full_path = vault_dir.join(relative_path.trim_start_matches('/'));
+    Ok(full_path.to_string_lossy().to_string())
+}
+

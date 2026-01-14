@@ -100,6 +100,10 @@ pub fn run() {
             commands::docvault::get_docvault_attachments_path,
             commands::docvault::scan_docvault,
             commands::docvault::get_docvault_file_info,
+            commands::docvault::copy_docvault_item,
+            commands::docvault::move_docvault_item,
+            commands::docvault::open_in_explorer,
+            commands::docvault::get_file_absolute_path,
         ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
