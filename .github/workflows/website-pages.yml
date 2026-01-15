@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - 'website-v*'
 
 permissions:
   contents: read
