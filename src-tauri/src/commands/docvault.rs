@@ -634,24 +634,17 @@ pub fn open_in_explorer(
         return Err(format!("Path does not exist: {} (full: {:?})", item_path, full_path));
     }
 
-    // Get the directory to open (if it's a file, open its parent directory)
-    let dir_to_open = if full_path.is_file() {
-        full_path.parent().unwrap_or(&vault_dir).to_path_buf()
-    } else {
-        full_path.clone()
-    };
+    // 如果是文件，拿到文件；如果是目录，拿到目录
+    let full = full_path
+        .canonicalize()
+        .map_err(|e| format!("Invalid path: {}", e))?;
 
     #[cfg(target_os = "windows")]
     {
-        let full = full_path
-            .canonicalize()
-            .map_err(|e| format!("Invalid path: {}", e))?;
-
         let mut cmd = std::process::Command::new("explorer");
 
         if full.is_file() {
-            cmd.arg("/select,")
-                .arg(&full);
+            cmd.arg("/select,").arg(&full);
         } else {
             cmd.arg(&full);
         }
@@ -660,19 +653,17 @@ pub fn open_in_explorer(
             .map_err(|e| format!("Failed to open explorer: {}", e))?;
     }
 
-
     #[cfg(target_os = "macos")]
     {
-        if full_path.is_file() {
-            // On macOS, use -R to reveal the file in Finder
+        if full.is_file() {
             std::process::Command::new("open")
                 .arg("-R")
-                .arg(&full_path)
+                .arg(&full)
                 .spawn()
                 .map_err(|e| format!("Failed to open Finder: {}", e))?;
         } else {
             std::process::Command::new("open")
-                .arg(&dir_to_open)
+                .arg(&full)
                 .spawn()
                 .map_err(|e| format!("Failed to open Finder: {}", e))?;
         }
@@ -680,12 +671,17 @@ pub fn open_in_explorer(
 
     #[cfg(target_os = "linux")]
     {
+        let target = if full.is_file() {
+            full.parent().unwrap_or(&vault_dir)
+        } else {
+            &full
+        };
+
         std::process::Command::new("xdg-open")
-            .arg(&dir_to_open)
+            .arg(target)
             .spawn()
             .map_err(|e| format!("Failed to open file manager: {}", e))?;
     }
-
     Ok(())
 }
 

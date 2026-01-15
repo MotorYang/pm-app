@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pomo 开源项目 - 透明、安全、社区驱动">
+  <meta name="keywords" content="Pomo, 开源, GitHub, Tauri, Vue3, Rust, 贡献">
+  <title>开源 - Pomo</title>
+  <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo.png" sizes="32x32" type="image/png">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+          <img src="./images/logo.png" width="32" height="32" alt="Pomo 图标" />
+        Pomo
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="features.html">功能</a></li>
+        <li><a href="download.html">下载</a></li>
+        <li><a href="open-source.html" class="active">开源</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <a href="download.html" class="btn btn-primary">立即下载</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="菜单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">首页</a>
+    <a href="features.html">功能</a>
+    <a href="download.html">下载</a>
+    <a href="open-source.html" class="active">开源</a>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="opensource-hero">
+    <div class="container">
+      <h1>开源透明</h1>
+      <p class="hero-description">
+        Pomo 是一个完全开源的项目。我们相信透明和社区协作是构建值得信赖的软件的基础。
+        每一行代码都可以被审计，每一个功能都欢迎社区贡献。
+      </p>
+      <div class="hero-actions">
+        <a href="https://github.com/motoryang/pm-app" target="_blank" class="btn btn-primary btn-large">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          查看 GitHub 仓库
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Open Source -->
+  <section class="section">
+    <div class="container">
+      <h2 class="text-center">为什么开源？</h2>
+      <p class="text-center" style="max-width: 700px; margin: 0 auto 3rem;">
+        对于处理敏感数据的工具，开源不仅是一种开发模式，更是一种责任。
+      </p>
+      <div class="opensource-values">
+        <div class="opensource-card">
+          <div class="opensource-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h3>完全透明</h3>
+          <p>
+            每一行代码都是公开的。你可以准确地知道应用在做什么，
+            数据如何处理，加密如何实现。没有隐藏的后门，没有秘密的数据收集。
+          </p>
+        </div>
+        <div class="opensource-card">
+          <div class="opensource-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>安全可审计</h3>
+          <p>
+            安全不应该依赖于"模糊"。开源代码可以被安全研究人员、
+            社区成员和任何感兴趣的人审计，及时发现并修复潜在漏洞。
+          </p>
+        </div>
+        <div class="opensource-card">
+          <div class="opensource-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3>社区驱动</h3>
+          <p>
+            开源项目属于社区。用户可以报告问题、提出建议、贡献代码。
+            Pomo 的发展方向由真正使用它的开发者决定。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="tech-stack">
+        <h2 class="text-center">技术栈</h2>
+        <p class="text-center" style="max-width: 600px; margin: 0 auto;">
+          Pomo 采用现代化的技术栈构建，注重性能、安全和开发体验。
+        </p>
+        <div class="tech-grid">
+          <div class="tech-item">
+            <div class="tech-item-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32" style="color: var(--accent-primary);">
+                <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm0 3.5l7.25 4.25L12 12 4.75 7.75 12 3.5zM3.5 9l7.5 4.5v7l-7.5-4.5v-7zm9 11.5v-7l7.5-4.5v7l-7.5 4.5z"/>
+              </svg>
+            </div>
+            <h4>Tauri 2.0</h4>
+          </div>
+          <div class="tech-item">
+            <div class="tech-item-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32" style="color: #4FC08D;">
+                <path d="M2 3l10 18L22 3H17l-5 9-5-9H2z"/>
+              </svg>
+            </div>
+            <h4>Vue 3</h4>
+          </div>
+          <div class="tech-item">
+            <div class="tech-item-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32" style="color: #DEA584;">
+                <path d="M23.834 8.101a13.912 13.912 0 0 1-13.643 11.72 10.105 10.105 0 0 1-1.994-.12 6.111 6.111 0 0 1-5.082-5.761 5.934 5.934 0 0 1 11.867-.084c.025.983-.401 1.846-1.277 1.871-.936 0-1.374-.668-1.374-1.567v-2.5a1.531 1.531 0 0 0-1.52-1.533H8.715a3.648 3.648 0 1 0 2.695 6.08l.073-.11.074.121a2.58 2.58 0 0 0 2.2 1.048 2.909 2.909 0 0 0 2.695-3.04 7.912 7.912 0 0 0-.217-1.933 7.404 7.404 0 0 0-14.64 1.603 7.497 7.497 0 0 0 7.308 7.405s.549.05 1.167.035a15.803 15.803 0 0 0 8.475-2.528c.036-.025.072.025.048.061a12.44 12.44 0 0 1-9.69 3.963 8.744 8.744 0 0 1-8.9-8.972 9.049 9.049 0 0 1 3.635-7.247 8.863 8.863 0 0 1 5.229-1.726h2.813a7.915 7.915 0 0 0 5.839-2.578.11.11 0 0 1 .059-.034.112.112 0 0 1 .12.053.113.113 0 0 1 .015.067 7.934 7.934 0 0 1-1.227 3.549h-.001a7.862 7.862 0 0 1-4.786 3.159h3.9c1.117 0 2.178-.442 2.965-1.229a4.189 4.189 0 0 0 1.229-2.965V4.972c0-.046.018-.09.05-.122a.17.17 0 0 1 .122-.05c.218 0 .38.164.38.38v3.255c0 2.017-1.643 3.66-3.66 3.66H8.715a1.69 1.69 0 0 0-1.526 2.413 1.688 1.688 0 0 0 1.526.977h.007c.93-.033 1.656-.85 1.625-1.779a1.689 1.689 0 0 0-1.691-1.625h-.016a1.693 1.693 0 0 0-1.193.508 1.679 1.679 0 0 0-.487 1.211 1.69 1.69 0 0 0 3.378.011c0-.936.76-1.693 1.696-1.693h2.813c1.652 0 3.234-.659 4.401-1.831a6.21 6.21 0 0 0 1.831-4.401v-.379a1.993 1.993 0 0 0-.591-1.42 2.002 2.002 0 0 0-1.42-.588z"/>
+              </svg>
+            </div>
+            <h4>Rust</h4>
+          </div>
+          <div class="tech-item">
+            <div class="tech-item-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32" style="color: #003B57;">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 3.6c4.635 0 8.4 3.765 8.4 8.4s-3.765 8.4-8.4 8.4-8.4-3.765-8.4-8.4 3.765-8.4 8.4-8.4zm0 2.4c-3.313 0-6 2.687-6 6s2.687 6 6 6 6-2.687 6-6-2.687-6-6-6z"/>
+              </svg>
+            </div>
+            <h4>SQLite</h4>
+          </div>
+          <div class="tech-item">
+            <div class="tech-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" style="color: var(--success);">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <h4>AES-256</h4>
+          </div>
+          <div class="tech-item">
+            <div class="tech-item-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" style="color: var(--warning);">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h4>Argon2</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contribute -->
+  <section class="section">
+    <div class="container contribute-section">
+      <h2>参与贡献</h2>
+      <p style="max-width: 600px; margin: 0 auto;">
+        我们欢迎各种形式的贡献：代码、文档、问题报告、功能建议，或者只是分享给其他开发者。
+      </p>
+      <div class="contribute-steps">
+        <div class="contribute-step">
+          <div class="contribute-step-number">1</div>
+          <h4>Fork 仓库</h4>
+          <p>在 GitHub 上 Fork Pomo 仓库到你的账号</p>
+        </div>
+        <div class="contribute-step">
+          <div class="contribute-step-number">2</div>
+          <h4>创建分支</h4>
+          <p>基于 <code>develop</code> 分支创建你的功能分支</p>
+        </div>
+        <div class="contribute-step">
+          <div class="contribute-step-number">3</div>
+          <h4>提交更改</h4>
+          <p>编写代码并提交，确保遵循项目的代码规范</p>
+        </div>
+        <div class="contribute-step">
+          <div class="contribute-step-number">4</div>
+          <h4>发起 PR</h4>
+          <p>创建 Pull Request，描述你的更改内容</p>
+        </div>
+      </div>
+      <div style="margin-top: 3rem;">
+        <a href="https://github.com/motoryang/pm-app" target="_blank" class="btn btn-outline btn-large">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          开始贡献
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Other Ways to Help -->
+  <section class="section section-alt">
+    <div class="container">
+      <h2 class="text-center">其他参与方式</h2>
+      <p class="text-center" style="max-width: 600px; margin: 0 auto 2rem;">
+        不写代码也可以为项目做出贡献
+      </p>
+      <div class="features-grid">
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h3>报告问题</h3>
+          <p>发现 Bug？在 GitHub Issues 中报告，帮助我们改进产品。详细的复现步骤会非常有帮助。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <h3>功能建议</h3>
+          <p>有好的想法？在 GitHub Discussions 或 Issues 中分享你的功能建议和使用场景。</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <h3>完善文档</h3>
+          <p>帮助改进文档、翻译内容，或者写教程文章介绍如何使用 Pomo。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- License -->
+  <section class="section">
+    <div class="container text-center">
+      <h2>开源许可</h2>
+      <p style="max-width: 600px; margin: 0 auto 2rem;">
+        Pomo 采用 MIT 许可证发布。你可以自由使用、修改和分发，
+        包括用于商业目的。唯一的要求是保留版权声明。
+      </p>
+      <pre style="text-align: left; max-width: 600px; margin: 0 auto;"><code class="mono">MIT License
+
+Copyright (c) 2024 Pomo
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software...</code></pre>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>加入我们的开源社区</h2>
+      <p>和全球开发者一起，构建更好的本地优先工具</p>
+      <a href="https://github.com/motoryang/pm-app" target="_blank" class="btn btn-primary btn-large">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        访问 GitHub 仓库
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+            <img src="./images/logo.png" width="32" height="32" alt="Pomo 图标" />
+            Pomo
+        </div>
+        <ul class="footer-links">
+          <li><a href="index.html">首页</a></li>
+          <li><a href="features.html">功能</a></li>
+          <li><a href="download.html">下载</a></li>
+          <li><a href="open-source.html">开源</a></li>
+        </ul>
+        <div class="footer-social">
+          <a href="https://github.com/motoryang/pm-app" target="_blank" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+      if (theme === 'dark') {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      } else {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      }
+    }
+
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenu.classList.toggle('active');
+    }
+
+    // Initialize theme from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    });
+  </script>
+</body>
+</html>

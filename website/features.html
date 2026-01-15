@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pomo 功能详解 - 项目管理、文档系统、Git 集成和安全保险库">
+  <meta name="keywords" content="Pomo, 功能, 项目管理, Git, Markdown, 加密存储">
+  <title>功能详解 - Pomo</title>
+  <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo.png" sizes="32x32" type="image/png">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+          <img src="./images/logo.png" width="32" height="32" alt="Pomo 图标" />
+        Pomo
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="features.html" class="active">功能</a></li>
+        <li><a href="download.html">下载</a></li>
+        <li><a href="open-source.html">开源</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <a href="download.html" class="btn btn-primary">立即下载</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="菜单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">首页</a>
+    <a href="features.html" class="active">功能</a>
+    <a href="download.html">下载</a>
+    <a href="open-source.html">开源</a>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="features-hero">
+    <div class="container">
+      <h1>功能详解</h1>
+      <p class="hero-description">
+        Pomo 整合了开发者日常工作流程中最常用的功能模块，
+        让你在一个应用中完成项目管理、文档编辑、版本控制和凭据存储。
+      </p>
+    </div>
+  </section>
+
+  <!-- Project & Workflow -->
+  <section class="section">
+    <div class="container">
+      <div class="feature-header">
+        <div class="feature-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2>项目与工作流</h2>
+          <p>高效管理本地项目，快速切换工作上下文</p>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>项目仪表盘</h4>
+            <p>一览所有项目状态，包括最近活动、Git 状态和待办事项</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>快速项目切换</h4>
+            <p>一键切换不同项目工作区，保持上下文和窗口状态</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>快捷方式管理</h4>
+            <p>为常用操作创建快捷方式，支持自定义命令和脚本</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>终端集成</h4>
+            <p>内置终端快速访问，支持在项目目录直接打开系统终端</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>文件管理器联动</h4>
+            <p>一键在系统文件管理器中打开项目目录</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>项目分组与标签</h4>
+            <p>使用分组和标签组织项目，快速筛选和定位</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DocVault -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="feature-header">
+        <div class="feature-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+          </svg>
+        </div>
+        <div>
+          <h2>DocVault 文档库</h2>
+          <p>项目文档的集中管理，支持 Markdown 和 PDF</p>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Markdown 编辑器</h4>
+            <p>功能完整的 Markdown 编辑器，支持实时预览和语法高亮</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>PDF 阅读器</h4>
+            <p>内置 PDF 查看器，无需切换应用即可阅读技术文档</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>文档树结构</h4>
+            <p>使用树形结构组织文档，支持无限层级和拖拽排序</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>最近文档</h4>
+            <p>快速访问最近编辑或查看的文档</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>全文搜索</h4>
+            <p>在所有文档中快速搜索关键词和内容</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>本地存储</h4>
+            <p>所有文档存储在本地，无云端同步，数据完全掌控</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Git Integration -->
+  <section class="section">
+    <div class="container">
+      <div class="feature-header">
+        <div class="feature-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Git 版本控制</h2>
+          <p>可视化 Git 操作，告别繁琐的命令行</p>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>可视化状态</h4>
+            <p>直观显示文件变更状态：新增、修改、删除、未跟踪</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>提交历史</h4>
+            <p>浏览完整的提交历史，查看每次提交的详细信息和差异</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>分支管理</h4>
+            <p>创建、切换、合并分支，可视化分支关系图</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>暂存/取消暂存</h4>
+            <p>点击即可暂存或取消暂存文件，支持部分文件暂存</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>提交界面</h4>
+            <p>简洁的提交界面，支持多行提交信息和快捷键操作</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>差异对比</h4>
+            <p>并排或内联显示文件差异，清晰了解每处变更</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secure Vault -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="feature-header">
+        <div class="feature-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div>
+          <h2>安全保险库</h2>
+          <p>军用级加密保护你的敏感数据</p>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>AES-256-GCM 加密</h4>
+            <p>使用行业标准的 AES-256-GCM 算法加密所有存储数据</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Argon2 密码派生</h4>
+            <p>使用 Argon2 算法从主密码派生加密密钥，抵御暴力破解</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>文件名混淆</h4>
+            <p>加密文件的文件名和路径信息，防止元数据泄露</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>完全本地存储</h4>
+            <p>加密数据仅存储在本地，不经过任何服务器</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>密钥管理</h4>
+            <p>安全存储 API 密钥、数据库密码、令牌等敏感凭据</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>敏感文件存储</h4>
+            <p>加密存储证书、配置文件等敏感文件</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Experience -->
+  <section class="section">
+    <div class="container">
+      <div class="feature-header">
+        <div class="feature-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <path d="M3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <h2>用户体验</h2>
+          <p>为开发者精心设计的界面和交互</p>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>卡通风格 UI</h4>
+            <p>友好的视觉设计，在专业中带有一丝趣味</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>亮色/暗色主题</h4>
+            <p>支持亮色和暗色两种主题，适应不同的工作环境</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>紧凑布局</h4>
+            <p>高信息密度设计，最大化利用屏幕空间</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>响应式调整</h4>
+            <p>窗口大小变化时自动调整布局，保持良好的使用体验</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>键盘快捷键</h4>
+            <p>丰富的键盘快捷键支持，提高操作效率</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4>高性能</h4>
+            <p>基于 Tauri 和 Rust 构建，启动快速，内存占用低</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>体验完整功能</h2>
+      <p>下载 Pomo，开始使用本地优先的开发者工作空间</p>
+      <a href="download.html" class="btn btn-primary btn-large">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        立即下载
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+            <img src="./images/logo.png" width="32" height="32" alt="Pomo 图标" />
+          Pomo
+        </div>
+        <ul class="footer-links">
+          <li><a href="index.html">首页</a></li>
+          <li><a href="features.html">功能</a></li>
+          <li><a href="download.html">下载</a></li>
+          <li><a href="open-source.html">开源</a></li>
+        </ul>
+        <div class="footer-social">
+          <a href="https://github.com/motoryang/pm-app" target="_blank" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+      if (theme === 'dark') {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      } else {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      }
+    }
+
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenu.classList.toggle('active');
+    }
+
+    // Initialize theme from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    });
+  </script>
+</body>
+</html>
