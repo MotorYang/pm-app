@@ -389,7 +389,7 @@ const formatArch = (a) => {
             <!-- 应用图标和名称 -->
             <div class="about-header">
               <img src="@/assets/logo.png" alt="logo" class="app-logo"/>
-              <div class="app-name">ProManager</div>
+              <div class="app-name">Pomo</div>
               <div class="app-version">v{{ appVersion || '-' }}</div>
             </div>
 

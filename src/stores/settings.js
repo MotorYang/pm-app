@@ -33,7 +33,7 @@ export const useSettingsStore = defineStore('settings', () => {
   // Initialize database
   const initDB = async () => {
     if (!db.value) {
-      db.value = await Database.load('sqlite:pm-app.db')
+      db.value = await Database.load('sqlite:pomo.db')
     }
   }
 
