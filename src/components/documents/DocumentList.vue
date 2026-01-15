@@ -971,7 +971,6 @@ const handleCloseRenameModal = () => {
 
 .header-actions > button:deep(svg) {
   display: block;
-  vertical-align: middle;
 }
 
 .header-actions > button:hover {

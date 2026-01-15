@@ -27,7 +27,7 @@ pub async fn get_all_projects(app: tauri::AppHandle) -> Result<Vec<Project>, Str
     use tauri_plugin_sql::{Builder, Migration, MigrationKind};
 
     let db = app.state::<tauri_plugin_sql::DbPool>();
-    let connection = db.get("sqlite:pm-app.db")
+    let connection = db.get("sqlite:pomo.db")
         .ok_or("Failed to get database connection")?;
 
     let result: Vec<Project> = tauri_plugin_sql::query("SELECT * FROM projects ORDER BY last_accessed DESC")
@@ -49,7 +49,7 @@ pub async fn add_project(
     let description = project.description.unwrap_or_default();
 
     let result = db
-        .get("sqlite:pm-app.db")
+        .get("sqlite:pomo.db")
         .ok_or("Failed to get database connection")?
         .execute(
             "INSERT INTO projects (name, path, description, color) VALUES (?, ?, ?, ?)",
@@ -68,7 +68,7 @@ pub async fn delete_project(
 ) -> Result<(), String> {
     let db = app.state::<tauri_plugin_sql::DbPool>();
 
-    db.get("sqlite:pm-app.db")
+    db.get("sqlite:pomo.db")
         .ok_or("Failed to get database connection")?
         .execute("DELETE FROM projects WHERE id = ?", &[&id])
         .await
@@ -84,7 +84,7 @@ pub async fn update_project_access_time(
 ) -> Result<(), String> {
     let db = app.state::<tauri_plugin_sql::DbPool>();
 
-    db.get("sqlite:pm-app.db")
+    db.get("sqlite:pomo.db")
         .ok_or("Failed to get database connection")?
         .execute(
             "UPDATE projects SET last_accessed = CURRENT_TIMESTAMP WHERE id = ?",

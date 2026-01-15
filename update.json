@@ -1,10 +1,10 @@
 {
-  "version": "1.2.3",
-  "notes": "- 更新软件版本 1.2.3\n- style(ui): 调整多个组件的样式细节\n- feat: 重构欢迎页面布局并添加概览卡片\n- feat(文档): 添加最近文档功能并更新版本号至1.2.2",
-  "pub_date": "2026-01-15T08:44:52Z",
+  "version": "1.2.4",
+  "notes": "- 更新版本 v1.2.4\n- 修改软件名称为Pomo\n- feat(website): 添加产品介绍网站，修改软件名称为Pomo\n- docs: 更新 README.md文档\n- refactor: 优化文件资源管理器打开逻辑并移除无用字段",
+  "pub_date": "2026-01-15T10:43:04Z",
   "platforms": {
-    "windows-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.2.3/ProManager_1.2.3_x64-setup.exe", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDay9ib21tTUd1c1BBT0MrTEVENUdQbFRQTnc1R25YSW91a2pXS29WblBYM3J1Yjh4OU5mdE1WZlRVN2IvQzd1RHJNN1A5ZnRKVHVxd2VBY1A4bGNvbUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4NDY2NTY0CWZpbGU6UHJvTWFuYWdlcl8xLjIuM194NjQtc2V0dXAuZXhlClRtcDRQQ1NSUE1FMXk2aS9JSTBTcWhQalVnZ08xdDg1dC9PL29kRnFZbnBoRXFhQ3JiaVhNWlM0Qnp4dm1reWRiR3BOWG1Za25uVGRLRUlTNUYyTkRnPT0K" },
-    "linux-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.2.3/ProManager_1.2.3_amd64.deb", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDaytaQ1BEeWxpQVpidWpNUTlFcUhFaS9ZZjZuSmhvTG8ydmMyNVBCNnJpbUtuVEozL1hHQjVhUHZTT1NqUHNxR3l3ZlBha3FqcXdObUdiL3BERUwrOHdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4NDY2MzkyCWZpbGU6UHJvTWFuYWdlcl8xLjIuM19hbWQ2NC5kZWIKVTZvaUpUczhCZEZlNkdLRUNTamphR29Id1JSYmlkYks0cTJ4OWZSeFRVMkRDSk4wYW8zMDk1eG5SdE9hc1lEQjhSMnFUWTFYTW9pWEdjY2hhVHJLRHc9PQo=" },
-    "darwin-universal": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.2.3/ProManager_1.2.3_universal.dmg", "signature": "MISSING_SIGNATURE" }
+    "windows-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.2.4/Pomo_1.2.4_x64-setup.exe", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDazlHbS81OWFRWWZUMzF4MUxsN1NwV0FCbkFrckZoSjVhUHlQSGx0dENnMHdWL21UMU1zMVBrZC9EU2xNNjBxb1dRNWhqRXJrRWl5eUZZT3dKRXN0M0FjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4NDczMzI4CWZpbGU6UG9tb18xLjIuNF94NjQtc2V0dXAuZXhlCnJJTVVXTmRNK2wrbzVxUlNNR1NKQjBOQkhqcXQwaTJ6WGpMRXpxb2UrTFN0Q3hkL1lEaElya3h5dHJ1bDRPTzB5eUZ6cmQxYWFnYzNrdnpaTGl4MEJ3PT0K" },
+    "linux-x86_64": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.2.4/Pomo_1.2.4_amd64.deb", "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTd1VEdXhSNEZDa3pIZVRBWURJRFhJalIrMHgwb1AzWHlxSWQrVkZJUG1zSzVjZUJVckFWbkNFaVFuMlJ4cGtMcysvZ1Fkbmw5REU5K1RwaEpUczJvNzQyM25TWU1yM1F3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4NDczMTEzCWZpbGU6UG9tb18xLjIuNF9hbWQ2NC5kZWIKczE4TW5mSUFjNjc1M3VrZmNteHoyREx1a3ErQ3NWc2t1dFBVOGIxdnRMcjhkcnYyVEdpY3N3TWxnRTFFb0VzWkZlMzJWL2ovczRBUENWOGdDOE04QkE9PQo=" },
+    "darwin-universal": { "url": "https://github.com/MotorYang/pm-app/releases/download/v1.2.4/Pomo_1.2.4_universal.dmg", "signature": "MISSING_SIGNATURE" }
   }
 }

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="下载 Pomo - 支持 Windows、macOS 和 Linux">
+  <meta name="keywords" content="Pomo, 下载, Windows, macOS, Linux, 安装">
+  <title>下载 - Pomo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="url(#logo-gradient)"/>
+          <path d="M8 10h16M8 16h12M8 22h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#6366f1"/>
+              <stop offset="1" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        Pomo
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="features.html">功能</a></li>
+        <li><a href="download.html" class="active">下载</a></li>
+        <li><a href="open-source.html">开源</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <a href="download.html" class="btn btn-primary">立即下载</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="菜单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">首页</a>
+    <a href="features.html">功能</a>
+    <a href="download.html" class="active">下载</a>
+    <a href="open-source.html">开源</a>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="download-hero">
+    <div class="container">
+      <h1>下载 Pomo</h1>
+      <p class="hero-description">
+        选择你的操作系统，下载对应的安装包。所有安装包均通过 GitHub Actions 自动构建，
+        源码公开透明，你可以自行审计或从源码构建。
+      </p>
+    </div>
+  </section>
+
+  <!-- Download Cards -->
+  <section class="section">
+    <div class="container">
+      <div class="download-cards">
+        <!-- Windows -->
+        <div class="download-card">
+          <div class="download-card-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+            </svg>
+          </div>
+          <h3>Windows</h3>
+          <p>支持 Windows 10/11<br>x64 架构</p>
+          <a href="https://github.com/motoryang/pm-app/releases/latest" target="_blank" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            下载 .msi
+          </a>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="download-card-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+          </div>
+          <h3>macOS</h3>
+          <p>支持 macOS 11+<br>Intel & Apple Silicon</p>
+          <a href="https://github.com/motoryang/pm-app/releases/latest" target="_blank" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            下载 .dmg
+          </a>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="download-card-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.132 1.884 1.071.771-.06 1.592-.536 2.257-1.306.631-.765 1.683-1.084 2.378-1.503.348-.199.629-.469.649-.853.023-.4-.2-.811-.714-1.376v-.097l-.003-.003c-.17-.2-.25-.535-.338-.926-.085-.401-.182-.786-.492-1.046h-.003c-.059-.054-.123-.067-.188-.135a.357.357 0 00-.19-.064c.431-1.278.264-2.55-.173-3.694-.533-1.41-1.465-2.638-2.175-3.483-.796-1.005-1.576-1.957-1.56-3.368.026-2.152.236-6.133-3.544-6.139zm.529 3.405h.013c.213 0 .396.062.584.198.19.135.33.332.438.533.105.259.158.459.166.724 0-.02 0-.038-.002-.059v.001l-.001-.002v.007c.002.064.003.123.003.182-.01.44-.105.773-.291 1.083-.186.31-.431.567-.724.756a2.44 2.44 0 01-1.017.329c-.328 0-.623-.092-.897-.251-.275-.16-.502-.392-.673-.672a2.38 2.38 0 01-.293-1.088c0-.303.062-.598.166-.871.104-.272.26-.5.44-.697.247-.25.51-.397.788-.488a2.41 2.41 0 01.732-.122zm4.21 5.715c1.046.048 1.86.727 2.445 1.57.583.84.905 1.831 1.03 2.598.074.453.088.832.027 1.11-.062.287-.183.477-.4.57-.26.11-.56.058-.861-.088-.302-.147-.6-.386-.878-.659-.549-.548-1.026-1.297-1.29-2.143-.271-.843-.235-1.738.045-2.461.18-.466.402-.86.685-1.069.27-.2.565-.304.876-.314a.79.79 0 01.06-.002.873.873 0 01.26.043v-.155zm-8.876.026a2.94 2.94 0 01.312.094c.291.092.517.263.711.464.198.195.356.418.49.661.135.242.238.503.302.777.062.277.074.556.027.821-.046.264-.14.512-.287.735-.294.447-.75.81-1.269 1.086-.521.279-1.093.468-1.594.58-.503.107-.935.152-1.213.152-.28-.007-.455-.054-.522-.133-.068-.08-.066-.202.014-.426.08-.223.234-.537.476-.901.242-.363.57-.773.99-1.183.42-.41.937-.81 1.563-1.17.613-.365.988-.546 1.213-.556.226-.01.292.01.292.01-.39.044-.693.067-.693.067zm3.028 2.42c.217.017.416.124.59.272.17.15.305.348.395.6.08.253.113.548.09.866-.022.316-.099.64-.232.95-.131.314-.329.6-.581.84-.25.24-.55.43-.886.548-.335.118-.694.153-1.056.106-.36-.046-.71-.171-1.014-.383-.318-.21-.546-.484-.7-.773-.154-.29-.233-.596-.254-.897-.02-.3.012-.596.095-.867.082-.27.216-.517.39-.727.174-.21.393-.378.64-.49.248-.112.518-.165.79-.159.27.007.537.073.773.2.235.126.439.309.584.547.145.239.229.533.232.866.003.332-.074.703-.24 1.035-.166.333-.42.614-.735.81-.317.194-.674.295-1.035.291-.36-.005-.708-.109-.996-.309-.287-.2-.493-.481-.624-.808-.132-.327-.185-.684-.154-1.037.032-.353.147-.692.333-.983.187-.29.446-.516.752-.66.306-.144.647-.2.983-.155l.041.007c-.294-.037-.59-.017-.865.068a1.92 1.92 0 00-.75.421 2.11 2.11 0 00-.51.73c-.122.29-.181.61-.172.933.008.323.085.645.228.93.142.285.35.527.6.708.249.18.539.295.84.332.3.037.603-.003.875-.116.27-.113.51-.3.683-.537.173-.237.27-.525.278-.826.008-.3-.074-.613-.24-.863a1.396 1.396 0 00-.654-.524 1.405 1.405 0 00-.818-.1 1.42 1.42 0 00-.73.369c-.2.191-.338.44-.397.71-.06.27-.043.55.046.808.089.259.249.485.457.652.208.167.458.27.72.297.263.027.527-.023.76-.145.232-.122.425-.31.549-.544.124-.234.175-.498.147-.759-.028-.26-.133-.51-.303-.71a1.275 1.275 0 00-.671-.39 1.288 1.288 0 00-.772.048c-.244.1-.453.27-.6.49-.148.22-.229.475-.236.738-.006.263.065.523.2.746.134.222.333.398.567.503.234.105.493.135.742.088.25-.048.48-.172.66-.357.18-.186.306-.424.358-.683.052-.259.027-.526-.071-.768a1.16 1.16 0 00-.456-.527 1.168 1.168 0 00-.664-.183c-.237.006-.468.084-.664.223a1.17 1.17 0 00-.427.55 1.17 1.17 0 00-.05.685c.062.225.19.427.365.576.175.148.39.239.62.26.228.021.456-.03.652-.147.195-.116.352-.292.448-.502.096-.21.129-.444.093-.672a1.066 1.066 0 00-.312-.576 1.072 1.072 0 00-.565-.29 1.077 1.077 0 00-.636.077c-.196.091-.359.24-.468.428-.108.187-.158.402-.143.617.015.214.095.42.228.586.133.167.315.29.519.354.205.064.422.067.628.007.206-.06.39-.18.528-.345a.97.97 0 00.217-.553.98.98 0 00-.155-.567.967.967 0 00-.457-.375.971.971 0 00-.587-.048.973.973 0 00-.504.293.981.981 0 00-.233.516.985.985 0 00.107.577c.102.182.264.322.46.395.195.073.409.078.607.013.199-.065.372-.196.49-.371a.884.884 0 00.145-.55.888.888 0 00-.234-.518.891.891 0 00-.494-.26.894.894 0 00-.548.083.898.898 0 00-.389.388.903.903 0 00-.082.547c.036.186.133.356.275.48.143.124.324.195.514.2.189.006.375-.054.524-.168a.8.8 0 00.268-.44.803.803 0 00-.041-.518.807.807 0 00-.339-.378.81.81 0 00-.49-.103.814.814 0 00-.444.228.818.818 0 00-.21.445.822.822 0 00.108.494c.094.151.236.264.404.32.168.056.348.053.514-.01.165-.062.305-.18.398-.334a.722.722 0 00.089-.488.726.726 0 00-.232-.427.73.73 0 00-.43-.183.733.733 0 00-.455.117.736.736 0 00-.275.363.74.74 0 00.003.456c.061.148.17.272.31.352.14.08.302.112.463.092a.647.647 0 00.406-.218.65.65 0 00.15-.438.652.652 0 00-.19-.424.655.655 0 00-.427-.178.658.658 0 00-.434.148.661.661 0 00-.22.396.664.664 0 00.117.449c.095.128.236.215.394.24a.576.576 0 00.436-.103.58.58 0 00.219-.364.582.582 0 00-.096-.431.584.584 0 00-.364-.231.587.587 0 00-.427.082.59.59 0 00-.234.34.592.592 0 00.06.423c.078.127.203.22.35.26a.505.505 0 00.418-.073.508.508 0 00.197-.336.51.51 0 00-.105-.387.513.513 0 00-.35-.188.515.515 0 00-.382.113.518.518 0 00-.177.344.52.52 0 00.135.38c.098.104.236.163.38.163a.436.436 0 00.351-.168.438.438 0 00.083-.383.44.44 0 00-.235-.3.442.442 0 00-.382-.017.444.444 0 00-.253.274.447.447 0 00.054.37c.076.106.196.175.328.19a.365.365 0 00.33-.14.368.368 0 00.06-.346.37.37 0 00-.24-.24.372.372 0 00-.345.06.374.374 0 00-.14.329c.014.132.083.252.189.328a.296.296 0 00.37.053.298.298 0 00.137-.341.3.3 0 00-.268-.21.302.302 0 00-.262.158.304.304 0 00.038.348.227.227 0 00.16.066.228.228 0 00.161-.066.23.23 0 000-.321.155.155 0 00-.11-.045.155.155 0 00-.11.045.156.156 0 000 .22.078.078 0 00.11 0 .078.078 0 000-.11z"/>
+            </svg>
+          </div>
+          <h3>Linux</h3>
+          <p>支持主流发行版<br>AppImage / .deb</p>
+          <a href="https://github.com/motoryang/pm-app/releases/latest" target="_blank" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            下载 AppImage
+          </a>
+        </div>
+      </div>
+
+      <!-- Download Info -->
+      <div class="download-info">
+        <h2 class="text-center">关于安装包</h2>
+        <div class="download-info-grid">
+          <div class="download-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>
+            </svg>
+            <h4>GitHub Actions 构建</h4>
+            <p>所有安装包通过 GitHub Actions 自动构建，构建过程公开透明</p>
+          </div>
+          <div class="download-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            </svg>
+            <h4>源码可用</h4>
+            <p>完整源码在 GitHub 开源，你可以审计代码或自行编译</p>
+          </div>
+          <div class="download-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <h4>无遥测追踪</h4>
+            <p>不收集任何使用数据，不追踪用户行为，尊重你的隐私</p>
+          </div>
+          <div class="download-info-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+              <line x1="6" y1="6" x2="6.01" y2="6"/>
+              <line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>
+            <h4>完全离线运行</h4>
+            <p>不需要网络连接，所有功能完全本地运行</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- System Requirements -->
+  <section class="section section-alt">
+    <div class="container">
+      <h2 class="text-center">系统要求</h2>
+      <p class="text-center" style="max-width: 600px; margin: 0 auto 2rem;">
+        ProManager 基于 Tauri 构建，资源占用极低，可在大多数现代计算机上流畅运行。
+      </p>
+      <div class="features-grid">
+        <div class="card">
+          <h3>Windows</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              <code>Windows 10</code> 或更高版本
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              <code>x64</code> 架构处理器
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              <code>WebView2</code> 运行时（Windows 11 已预装）
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              至少 <code>100MB</code> 可用磁盘空间
+            </li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>macOS</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              <code>macOS 11</code> Big Sur 或更高版本
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              支持 <code>Intel</code> 和 <code>Apple Silicon</code>
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              至少 <code>100MB</code> 可用磁盘空间
+            </li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Linux</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              支持 <code>Ubuntu 20.04+</code>、<code>Fedora 33+</code> 等
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              需要 <code>WebKitGTK</code> 运行时
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              <code>x64</code> 架构处理器
+            </li>
+            <li style="padding: 0.5rem 0; color: var(--text-secondary);">
+              至少 <code>100MB</code> 可用磁盘空间
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Build from Source -->
+  <section class="section">
+    <div class="container text-center">
+      <h2>从源码构建</h2>
+      <p style="max-width: 600px; margin: 0 auto 2rem;">
+        如果你更倾向于从源码构建，可以克隆仓库并按照 README 中的说明进行编译。
+      </p>
+      <pre style="text-align: left; max-width: 600px; margin: 0 auto;"><code class="mono"># 克隆仓库
+git clone https://github.com/motoryang/pm-app.git
+
+# 进入目录
+cd pm-app
+
+# 安装依赖
+pnpm install
+
+# 开发模式运行
+pnpm tauri dev
+
+# 构建生产版本
+pnpm tauri build</code></pre>
+      <div style="margin-top: 2rem;">
+        <a href="https://github.com/motoryang/pm-app" target="_blank" class="btn btn-outline">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          查看 GitHub 仓库
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+            <rect width="32" height="32" rx="8" fill="url(#footer-logo-gradient)"/>
+            <path d="M8 10h16M8 16h12M8 22h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="footer-logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          ProManager
+        </div>
+        <ul class="footer-links">
+          <li><a href="index.html">首页</a></li>
+          <li><a href="features.html">功能</a></li>
+          <li><a href="download.html">下载</a></li>
+          <li><a href="open-source.html">开源</a></li>
+        </ul>
+        <div class="footer-social">
+          <a href="https://github.com/motoryang/pm-app" target="_blank" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const sunIcon = document.querySelector('.sun-icon');
+      const moonIcon = document.querySelector('.moon-icon');
+      if (theme === 'dark') {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      } else {
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      }
+    }
+
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenu.classList.toggle('active');
+    }
+
+    // Initialize theme from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    });
+  </script>
+</body>
+</html>

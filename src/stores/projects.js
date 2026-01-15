@@ -23,7 +23,7 @@ export const useProjectsStore = defineStore('projects', () => {
   let db = null
   async function getDb() {
     if (!db) {
-      db = await Database.load('sqlite:pm-app.db')
+      db = await Database.load('sqlite:pomo.db')
     }
     return db
   }
