@@ -10,6 +10,10 @@ const props = defineProps({
   shortcut: {
     type: Object,
     required: true
+  },
+  compact: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -119,6 +123,7 @@ const handleDelete = () => {
 <template>
   <CartoonCard
     class="shortcut-card"
+    :class="{ compact: compact }"
     hoverable
     padding="sm"
     @click="handleOpen"
@@ -137,7 +142,6 @@ const handleDelete = () => {
 
       <div class="shortcut-info">
         <h4 class="shortcut-title">{{ shortcut.name }}</h4>
-        <span class="shortcut-type">{{ typeLabel }}</span>
       </div>
     </div>
   </CartoonCard>
@@ -149,6 +153,14 @@ const handleDelete = () => {
   transition: all var(--transition-fast);
   padding-left: var(--spacing-xs) !important;
   padding-right: var(--spacing-xs) !important;
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: var(--border-radius-md);
+  border: none;
+}
+
+.shortcut-card:hover {
+  background-color: var(--color-bg-tertiary);
 }
 
 .shortcut-content {
@@ -213,5 +225,28 @@ const handleDelete = () => {
 .shortcut-type {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
+}
+
+.shortcut-card.compact .shortcut-content {
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.shortcut-card.compact .shortcut-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.shortcut-card.compact .favicon-img {
+  width: 24px;
+  height: 24px;
+}
+
+.shortcut-card.compact .shortcut-title {
+  font-size: var(--font-size-xs);
+}
+
+.shortcut-card.compact .shortcut-type {
+  font-size: var(--font-size-xxs);
 }
 </style>

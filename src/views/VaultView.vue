@@ -116,7 +116,6 @@ const handleInitialized = async () => {
   overflow-y: auto;
   padding: var(--spacing-lg);
   align-content: center;
-  justify-content: center;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
