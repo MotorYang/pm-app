@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Pomo - 本地优先的开发者工作空间，集成项目管理、文档、Git 和加密凭据存储">
   <meta name="keywords" content="Pomo, 项目管理, 开发者工具, Git, 文档管理, 加密存储, Tauri, Vue3">
   <title>Pomo - 本地优先的开发者工作空间</title>
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="images/logo.png" sizes="32x32" type="image/png">
 </head>
@@ -261,11 +267,9 @@
       mobileMenu.classList.toggle('active');
     }
 
-    // Initialize theme from localStorage
     document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeIcon(savedTheme);
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      updateThemeIcon(currentTheme);
     });
   </script>
 </body>
