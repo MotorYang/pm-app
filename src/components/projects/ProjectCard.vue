@@ -20,6 +20,10 @@ const props = defineProps({
   collapsed: {
     type: Boolean,
     default: false
+  },
+  compact: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -106,7 +110,14 @@ const handleCloseRenameModal = () => {
       hoverable
       shadow="sm"
       :padding="collapsed ? 'none' : 'sm'"
-      :class="['project-card', { 'project-card-active': active, 'project-card-collapsed': collapsed }]"
+      :class="[
+        'project-card',
+        {
+          'project-card-active': active,
+          'project-card-collapsed': collapsed,
+          'project-card-compact': compact && !collapsed
+        }
+      ]"
       @click="handleClick"
       @contextmenu="handleContextMenu"
   >
@@ -175,6 +186,10 @@ const handleCloseRenameModal = () => {
   border-radius: 5px;
 }
 
+.project-card-compact {
+  border-radius: var(--border-radius-md);
+}
+
 .project-card-collapsed {
   width: 44px;
   height: 44px;
@@ -191,7 +206,7 @@ const handleCloseRenameModal = () => {
 .project-content {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .project-content.collapsed {
@@ -225,10 +240,10 @@ const handleCloseRenameModal = () => {
 }
 
 .project-name {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
+  margin: 0 0 2px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

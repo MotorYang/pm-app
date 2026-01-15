@@ -71,7 +71,7 @@ const handleClick = (event) => {
 }
 
 .cartoon-card-hoverable:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
 }
 
 /* Shadow variants */
