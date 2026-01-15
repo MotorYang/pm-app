@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,19 +7,14 @@
   <meta name="keywords" content="Pomo, 项目管理, 开发者工具, Git, 文档管理, 加密存储, Tauri, Vue3">
   <title>Pomo - 本地优先的开发者工作空间</title>
   <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo.png" sizes="32x32" type="image/png">
 </head>
 <body>
   <!-- Navigation -->
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="nav-brand">
-        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="32" height="32" rx="8" fill="url(#logo-gradient)"/>
-          <path d="M8 10h16M8 16h12M8 22h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-          <defs>
-            <img src="./images/logo.png" width="32px" height="32px" alt="Pomo 图标" />
-          </defs>
-        </svg>
+          <img src="./images/logo.png" width="32" height="32" alt="Pomo 图标" />
         Pomo
       </a>
       <ul class="nav-links">
@@ -193,11 +188,7 @@
       <h2>简洁高效的界面设计</h2>
       <p>卡通风格 UI，支持亮色/暗色主题，紧凑布局最大化工作区域</p>
       <div class="screenshot-placeholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-          <path d="M8 21h8M12 17v4"/>
-        </svg>
-        <p>应用界面截图</p>
+          <img src="images/home_end.png" alt="首页图" width="900">
       </div>
     </div>
   </section>
@@ -206,7 +197,7 @@
   <section class="cta-section">
     <div class="container">
       <h2>准备好提升你的开发体验？</h2>
-      <p>ProManager 完全开源免费，无需注册账号，无数据追踪，本地运行保护你的隐私。</p>
+      <p>Pomo 完全开源免费，无需注册账号，无数据追踪，本地运行保护你的隐私。</p>
       <a href="download.html" class="btn btn-primary btn-large">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -221,8 +212,8 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          <img src="./images/logo.png" alt="ProManager 图标" width="32" height="32" />
-          ProManager
+          <img src="./images/logo.png" alt="Pomo 图标" width="32" height="32" />
+          Pomo
         </div>
         <ul class="footer-links">
           <li><a href="index.html">首页</a></li>
@@ -272,7 +263,7 @@
 
     // Initialize theme from localStorage
     document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme') || 'light';
+      const savedTheme = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
       updateThemeIcon(savedTheme);
     });
