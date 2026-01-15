@@ -119,7 +119,6 @@ pub struct ExportOptions {
 pub struct VaultExport {
     pub entries: Vec<VaultEntry>,
     pub masters: String,
-    pub exported_at: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -368,7 +367,6 @@ pub async fn export_project_handover(
         let export_payload = VaultExport {
             entries,
             masters: master,
-            exported_at: exported_at.clone(),
         };
         let decrypted = decrypt_vault_export(export_payload).await?;
 

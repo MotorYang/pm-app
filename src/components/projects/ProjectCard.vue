@@ -228,7 +228,6 @@ const handleCloseRenameModal = () => {
 /* 修正图标垂直对齐 */
 .project-icon :deep(svg) {
   display: block;
-  vertical-align: middle;
 }
 
 .project-info {
